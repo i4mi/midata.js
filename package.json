@@ -1,0 +1,29 @@
+{
+  "name": "midata",
+  "version": "1.0.0",
+  "description": "A collection of utility classes and functions to interact with the MIDATA.coop platform.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "karma start karma.conf.js",
+    "build": "webpack",
+    "build:w": "webpack -w"
+  },
+  "author": "Robin Hafen",
+  "license": "ISC",
+  "devDependencies": {
+    "jasmine": "^2.5.2",
+    "karma": "^1.3.0",
+    "karma-jasmine": "^1.0.2",
+    "karma-mocha-reporter": "^2.2.1",
+    "karma-phantomjs-launcher": "^1.0.2",
+    "karma-webpack": "^1.8.0",
+    "phantomjs": "^2.1.7",
+    "ts-loader": "^1.2.2",
+    "typescript": "^2.0.10",
+    "webpack": "^1.13.3"
+  },
+  "dependencies": {
+    "@types/fhir": "^1.0.30",
+    "es6-promise": "^4.0.5"
+  }
+}
