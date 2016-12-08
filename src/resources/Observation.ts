@@ -50,8 +50,11 @@ export class Observation extends Resource {
 };
 
 export class MultiObservation extends Resource {
-    constructor(code: fhir.CodeableConcept) {
+    constructor(code: fhir.CodeableConcept, date: Date) {
         super('Observation');
+        this.addProperty('status', 'final');
+        this.addProperty('code', code);
+        this.addProperty('effectiveDateTime', formatDate(date));
         this.addProperty('component', []);
     }
 
