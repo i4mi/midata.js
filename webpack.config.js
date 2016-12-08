@@ -1,15 +1,12 @@
 var path = require('path');
 
 module.exports = {
-    context: __dirname + '/src',
-    entry: './index.ts',
+    entry: './src/index.ts',
     output: {
-        path: __dirname + '/dist',
-        filename: 'midata.js',
-        libraryTarget: 'var',
-        library: 'midata'
+        path: './dist',
+        filename: 'midata.js'
     },
-    devtool: 'source-map',
+    devtool: 'eval-source-map',
     resolve: {
         extensions: [ '', '.ts', '.js' ]
     },

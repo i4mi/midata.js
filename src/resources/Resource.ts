@@ -25,5 +25,4 @@ export class Resource {
     get resourceType(): string {
         return this._fhir.resourceType;
     }
-
 };

@@ -2,6 +2,7 @@ import { AuthRequest, AuthResponse, RefreshAutRequest, UserRole } from './api';
 import { Promise } from 'es6-promise';
 import { apiCall } from './util';
 import { Resource } from './resources';
+import { fromFhir } from './resources/registry';
 
 
 export interface User {
@@ -101,7 +102,8 @@ export class Midata {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            payload: authRequest
         })
         .then(response => {
             let body: AuthResponse = response.body;
@@ -154,9 +156,8 @@ export class Midata {
         let shouldCreate = fhirObject.id === undefined;
         let apiMethod = shouldCreate ? this._create : this._update;
 
-        return apiMethod(resource)
+        return apiMethod(fhirObject)
         .then(response => {
-            console.log(response);
             // When the resource is created, the same resource will
             // be returned (populated with an id field in the case
             // it was newly created).
@@ -194,7 +195,7 @@ export class Midata {
     /**
      * Helper method to create FHIR resources via a HTTP POST call.
      */
-    private _create(fhirObject: any) {
+    private _create = (fhirObject: any) => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}`;
         return apiCall({
             url: url,
@@ -205,12 +206,12 @@ export class Midata {
             },
             payload: fhirObject
         });
-    }
+    };
 
     /**
      * Helper method to create FHIR resources via a HTTP PUT call.
      */
-    private _update(fhirObject: any) {
+    private _update = (fhirObject: any) => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}/${fhirObject.id}`;
         return apiCall({
             url: url,
@@ -221,14 +222,14 @@ export class Midata {
             },
             method: 'PUT'
         });
-    }
+    };
 
     /**
      * Helper method to refresh the authentication token by authorizing
      * with the help of the refresh token.
      * This will generate a new authentication as well as a new refresh token.
      */
-    private _refresh() {
+    private _refresh = () => {
         let authRequest: RefreshAutRequest = {
             appname: this._appName,
             secret: this._secret,
@@ -254,5 +255,37 @@ export class Midata {
         });
 
         return result;
+    };
+
+    search(resourceType: string, params: any = {}) {
+        let queryParts = Object.keys(params).map(key => {
+            return key + '=' + params[key]
+        });
+        let query = queryParts.join('&');
+        query = query && `?${query}` || '';
+        let url = `${this._host}/fhir/${resourceType}${query}`;
+        apiCall({
+            url: url,
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + this._authToken,
+                'Content-Type': 'application/json+fhir;charset=utf-8'
+            }
+        })
+        .then((response: any) => {
+            let resources: any[] = [];
+            if (response.body.entry) {
+                let entries = response.body.entry;
+                resources = entries.map((e: any) => {
+                    return fromFhir(e.resource);
+                });
+            }
+            console.log(resources);
+            return resources;
+        })
+        .catch((response: any) => {
+            return Promise.reject(response.body);
+        });
+
     }
 }

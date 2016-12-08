@@ -5,14 +5,14 @@ export class BloodPressure extends MultiObservation{
         let code = {
             coding: [{
                 system: "http://loinc.org",
-                code: '55284-4',
-                display: "Blood pressure systolic & diastolic"
+                // code: '55284-4',
+                // display: "Blood pressure systolic & diastolic"
                 // According to midata:
-                // code: '55417-0',
-                // display: 'Blood Pressure'
+                code: '55417-0',
+                display: 'Blood Pressure'
             }]
         };
-        super(code, data);
+        super(code, date);
 
         this.addComponent({
             code: {

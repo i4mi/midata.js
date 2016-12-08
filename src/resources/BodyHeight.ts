@@ -1,5 +1,8 @@
 import { Observation } from './Observation';
+import { registerResource } from './registry';
 
+
+@registerResource('8302-2')
 export class BodyHeight extends Observation {
     constructor(heightCm: number, date: Date) {
         let quanitity = {

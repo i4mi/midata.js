@@ -7,6 +7,7 @@ export class StepsCount extends Observation {
             unit: 'steps'
         };
         super(quanitity, date, {
+            text: 'Steps',
             coding: [{
                 system: 'http://midata.coop',
                 code: 'activities/steps',
