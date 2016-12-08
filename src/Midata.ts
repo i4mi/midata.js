@@ -280,7 +280,6 @@ export class Midata {
                     return fromFhir(e.resource);
                 });
             }
-            console.log(resources);
             return resources;
         })
         .catch((response: any) => {
