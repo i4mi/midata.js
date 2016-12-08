@@ -30,6 +30,15 @@ export interface ApiCallResponse {
     status: number
 };
 
+// TODO: Either the payload should be anything and the user has to
+// specify the content-type via the headers arg or it should always 
+// be JSON in which case the user shouldn't need to specify the content-type
+// to be application/json. 
+/**
+ * Perform an AJAX call to an API endpoint.
+ * @param args The arguments for the call.
+ * @return A promise holding an object of structure ApiCallResponse.
+ */
 export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
 
     let url = args.url;
