@@ -12,7 +12,9 @@ Install the library
 
 Include it in your index.html:
 
-    <script src="bower_components/midata.js/dist/midata.min.js"></script>
+    <!-- Include the library from your bower components directory, i.e. 'lib' or -->
+    <!-- 'bower_components' or whatver your .bowerrc file specifies. -->
+    <script src="lib/midata.js/dist/midata.min.js"></script>
 
 Then in your application code do:
 
