@@ -167,7 +167,6 @@ export class Midata {
             } else if (response.status === 200)  {  // updated
                 return response.body;
             } else {
-                
                 return Promise.reject(
                     `Unexpected response status code: ${response.status}`);
             }
@@ -186,7 +185,9 @@ export class Midata {
                     `The proposed resource violated applicable FHIR profiles
                     or server business rules. More details should be contained
                     in the error message.`);
-
+            }
+            else if (response.status === 500) {
+                return Promise.reject(response.body);
             } else {
                 return Promise.reject(
                     `Unexpected error response status code: ${response.status}`);
