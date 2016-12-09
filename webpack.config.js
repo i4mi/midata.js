@@ -2,11 +2,12 @@ const webpack = require('webpack');
 const path = require('path');
 const PROD = JSON.parse(process.env.PROD || '0');
 
+
 module.exports = {
     entry: __dirname + '/src/index.ts',
     output: {
         path: __dirname + '/dist',
-        filename: 'midata.js',
+        filename: PROD ? 'midata.min.js' : 'midata.js',
         library: 'midata',
         libraryTarget: 'umd',
         umdNamedDefine: true
