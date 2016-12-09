@@ -63,7 +63,7 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
             if (this.readyState === 4) {  // loaded
                 let status = this.status;
                 if (status >= 200 && status < 300) {  // successfuly
-                    let body;
+                    let body: any;
                     if (jsonBody) {
                         body = JSON.parse(this.responseText);
                     } else {
