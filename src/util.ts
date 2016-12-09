@@ -22,6 +22,7 @@ export interface ApiCallArgs {
     method: HttpMethod;
     payload?: any;
     headers?: any;
+    jsonBody?: boolean;
 };
 
 export interface ApiCallResponse {
@@ -45,6 +46,7 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
     let method = args.method;
     let payload = args.payload;
     let headers = args.headers;
+    let jsonBody = args.jsonBody || false;
 
     return new Promise(function(resolve, reject) {
         let xhr = new XMLHttpRequest();
@@ -59,18 +61,24 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
 
         xhr.onreadystatechange = function() {
             if (this.readyState === 4) {  // loaded
-                if (this.status  === 200) {  // successfuly
-                    let body = JSON.parse(this.responseText);
+                let status = this.status;
+                if (status >= 200 && status < 300) {  // successfuly
+                    let body;
+                    if (jsonBody) {
+                        body = JSON.parse(this.responseText);
+                    } else {
+                        body = this.responseText;
+                    }
                     resolve({
                         message: 'Request successful',
                         body: body,
-                        status: this.status
+                        status: status
                     });
                 } else {  // loaded but non-successful response
                     reject({
                         message: this.statusText,
                         body: this.responseText,
-                        status: this.status
+                        status: status
                     });
                 }
             }

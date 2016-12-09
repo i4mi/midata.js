@@ -103,6 +103,7 @@ export class Midata {
             headers: {
                 'Content-Type': 'application/json'
             },
+            jsonBody: true,
             payload: authRequest
         })
         .then(response => {
@@ -166,6 +167,7 @@ export class Midata {
             } else if (response.status === 200)  {  // updated
                 return response.body;
             } else {
+                
                 return Promise.reject(
                     `Unexpected response status code: ${response.status}`);
             }
@@ -187,7 +189,7 @@ export class Midata {
 
             } else {
                 return Promise.reject(
-                    `Unexpected response status code: ${response.status}`);
+                    `Unexpected error response status code: ${response.status}`);
             }
         });
     }
@@ -198,6 +200,7 @@ export class Midata {
     private _create = (fhirObject: any) => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}`;
         return apiCall({
+            jsonBody: false,
             url: url,
             method: 'POST',
             headers: {
@@ -214,6 +217,7 @@ export class Midata {
     private _update = (fhirObject: any) => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}/${fhirObject.id}`;
         return apiCall({
+            jsonBody: false,
             url: url,
             payload: fhirObject,
             headers: {
@@ -240,6 +244,7 @@ export class Midata {
             url: this._host + '/v1/auth',
             method: 'POST',
             payload: authRequest,
+            jsonBody: true,
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -264,7 +269,7 @@ export class Midata {
         let query = queryParts.join('&');
         query = query && `?${query}` || '';
         let url = `${this._host}/fhir/${resourceType}${query}`;
-        apiCall({
+        return apiCall({
             url: url,
             method: 'GET',
             headers: {
@@ -285,6 +290,19 @@ export class Midata {
         .catch((response: any) => {
             return Promise.reject(response.body);
         });
-
     }
+
+    // delete(resourceType: string, id: number | string) {
+    //     let url = `${this._host}/fhir/${resourceType}/${id}`;
+    //     return apiCall({
+    //         url: url,
+    //         method: 'DELETE',
+    //         headers: {
+    //             'Authorization': 'Bearer ' + this._authToken
+    //         }
+    //     })
+    //     .then((response: any) => {
+    //         console.log(response);
+    //     });
+    // }
 }

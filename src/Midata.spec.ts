@@ -11,31 +11,37 @@ describe('Midata', () => {
     beforeEach(() => {
         midata = new Midata(
             'https://test.midata.coop:9000',
-            'app',
-            'seceretxyz'
+            'testapp',
+            'mysecret'
         );
     });
 
     describe('with valid credentials', () => {
 
+        // beforeEach(() => {
+        //     util.apiCall = jasmine.createSpy().and.callFake(() => {
+        //         return Promise.resolve({
+        //             message: 'Request ok',
+        //             body: {
+        //                 authToken: '1234',
+        //                 refreshToken: 'asdf'
+        //             },
+        //             status: 200
+        //         });
+        //     });
+        // });
+
+        var login;
+
         beforeEach(() => {
-            util.apiCall = jasmine.createSpy().and.callFake(() => {
-                return Promise.resolve({
-                    message: 'Request ok',
-                    body: {
-                        authToken: '1234',
-                        refreshToken: 'asdf'
-                    },
-                    status: 200
-                });
-            });
+            login = midata.login('testuser@testuser.com', 'Testuser123');
         });
 
+
         it('#login() should return the auth and refresh token', (done) => {
-            midata.login('testuser', '123')
-            .then(response => {
-                expect(response.authToken).toBe('1234');
-                expect(response.refreshToken).toBe('asdf');
+            login.then(response => {
+                expect(response.authToken).toBeDefined();
+                expect(response.refreshToken).toBeDefined();
                 done();
             });
         });
@@ -44,13 +50,9 @@ describe('Midata', () => {
             expect(midata.authToken).toBeUndefined();
             expect(midata.refreshToken).toBeUndefined();
 
-            midata.login('testuser', '123')
-            .then((response) => {
-                expect(midata.authToken).toBe('1234');
-                expect(midata.refreshToken).toBe('asdf');
-                done();
-            })
-            .catch(() => {
+            login.then((response) => {
+                expect(midata.authToken).toBeDefined();
+                expect(midata.refreshToken).toBeDefined();
                 done();
             });
         });
@@ -58,9 +60,8 @@ describe('Midata', () => {
         it('#login() should set user property', (done) => {
             expect(midata.user).toBeUndefined();
 
-            midata.login('testuser', '123')
-            .then((response) => {
-                expect(midata.user).toEqual({name: 'testuser'});
+            login.then((response) => {
+                expect(midata.user).toEqual({name: 'testuser@testuser.com'});
                 done();
             })
             .catch(() => {
@@ -71,99 +72,106 @@ describe('Midata', () => {
         it('#loggedIn should be true when the user is logged in', (done) => {
             expect(midata.loggedIn).toBe(false);
 
-            midata.login('testuser', '123')
-            .then((response) => {
+            login.then((response) => {
                 expect(midata.loggedIn).toBe(true);
-                done();
-            })
-            .catch(() => {
                 done();
             });
         });
 
-        it('#save() should create a resource', (done) => {
+        it('#logout() should reset the state', () => {
+            login
+            .then(() => {
+                midata.logout();
+                expect(midata.user).toBeUndefined();
+                expect(midata.refreshToken).toBeUndefined();
+                expect(midata.authToken).toBeUndefined();
+                done();
+            });
+        });
+
+        it('#save() should create a resource given a FHIR object', (done) => {
             let resource = {
                 resourceType: 'Observation',
                 status: 'final',
                 code: {
-                    'text': 'Body Weight'
+                    coding: [{
+                        system: 'http://loinc.org',
+                        code: '3141-9',
+                        display: 'Weight Measured'
+                    }]
                 },
                 effectiveDateTime: '2016-01-01',
-                value: {
-                    valueQuantity: {
-                        value: 75,
-                        unit: 'kg'
-                    }
+                valueQuantity: {
+                    value: 75,
+                    unit: 'kg'
                 }
             };
 
-            midata.login('testuser', '123')
-            .then(() => {
+            login.then(() => {
                 return midata.save(resource);
             })
             .then((res) => {
-                expect(res.id) == 1;
-                done();
-            })
-            .catch((err) => {
                 done();
             });
         });
 
-        // it(`#save() when passed a resource object it
-        //     should automatically convert it to FHIR`, (done) => {
 
-        //     let bw = new BodyWeight(72, new Date());
-        //     spyOn(bw, 'toJson');
+        it('#save() return a rejected promise if the resource can\'t be created', (done) => {
+            let resource = {
+                resourceType: 'Observation',
+            };
 
-        //     midata.login('testuser', '123')
-        //     .then(() => {
-        //         return midata.save(bw);
-        //     })
-        //     .then(() => {
-        //         expect(bw.toJson).toHaveBeenCalled();
-        //         done();
-        //     })
-        //     .catch(err => {
-        //         // console.log(err);
-        //     });
-        // });
+            login.then(() => {
+                return midata.save(resource);
+            })
+            .catch(err => {
+                done();
+            });
+        });
+
+
+        it(`#save() when passed a resource object it
+            should automatically convert it to FHIR`, (done) => {
+
+            let bw = new BodyWeight(72, new Date());
+
+            login
+            .then(() => {
+                return midata.save(bw);
+            })
+            .then(() => {
+                done();
+            });
+        });
 
     });
 
 
     describe('with invalid credentials', () => {
 
+        // beforeEach(() => {
+        //     util.apiCall = jasmine.createSpy().and.callFake(() => {
+        //         return Promise.reject({
+        //             message: '',
+        //             body: 'Wrong username or password',
+        //             status: 404
+        //         });
+        //     });
+        // });
+        var login;
+
         beforeEach(() => {
-            util.apiCall = jasmine.createSpy().and.callFake(() => {
-                return Promise.reject({
-                    message: '',
-                    body: 'Wrong username or password',
-                    status: 404
-                });
-            });
+            login = midata.login('testuser@testuser.com', 'WRONG PASSWORD');
         });
 
+
         it('#login() should return a rejected promise containing the error message', (done) => {
-            midata.login('testuser', '123')
+            login
             .catch((error) => {
-                expect(error).toMatch(/Wrong/);
                 done();
             });
         });
 
-    });
-
-
-    it('#logout() should reset the state', () => {
-        midata.login('testuser', '123')
-        .then(() => {
-            midata.logout();
-            expect(midata.user).toBeUndefined();
-            expect(midata.refreshToken).toBeUndefined();
-            expect(midata.authToken).toBeUndefined();
-            done();
-        });
     });
 
 });
