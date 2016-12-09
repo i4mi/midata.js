@@ -1,17 +1,20 @@
 var path = require('path');
 
 module.exports = {
-    entry: './src/index.ts',
+    entry: __dirname + '/src/index.ts',
     output: {
-        path: './dist',
-        filename: 'midata.js'
+        path: __dirname + '/dist',
+        filename: 'midata.js',
+        library: 'midata',
+        libraryTarget: 'umd',
+        umdNamedDefine: true
     },
     devtool: 'eval-source-map',
     resolve: {
-        extensions: [ '', '.ts', '.js' ]
-    },
-    alias: {
-        '@midata': path.resolve('./src')
+        extensions: [ '', '.ts', '.js' ],
+        alias: {
+            '@midata': path.resolve('./src')
+        }
     },
     module: {
         loaders: [
