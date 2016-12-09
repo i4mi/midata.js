@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "karma start karma.conf.js",
-    "build": "rm -rf dist/ && webpack",
-    "build-w": "rm -rf dist/ && webpack -w"
+    "dev": "rm -rf dist/ && webpack -w",
+    "build": "rm -rf dist/ && PROD=1 webpack"
   },
   "author": "Robin Hafen",
   "license": "ISC",
