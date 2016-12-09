@@ -7,7 +7,7 @@ module.exports = {
     entry: __dirname + '/src/index.ts',
     output: {
         path: __dirname + '/dist',
-        filename: PROD ? 'midata.min.js' : 'midata.js',
+        filename: 'midata.js',
         library: 'midata',
         libraryTarget: 'umd',
         umdNamedDefine: true
