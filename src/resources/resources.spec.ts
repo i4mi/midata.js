@@ -17,7 +17,7 @@ describe('Resources', () => {
             'testapp',
             'mysecret'
         );
-        login = midata.login('testuser@testuser.com', 'Testuser123');
+        login = midata.login('testuser2@testuser.com', 'Testuser123');
     });
 
     it('BodyWeight should be createable', (done) => {
