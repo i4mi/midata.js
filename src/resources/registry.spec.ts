@@ -15,7 +15,7 @@ describe('registry', () => {
         expect(res).toEqual(jasmine.any(BodyWeight));
     });
 
-    it('#fromFhir() should return the same FHIR ofject if the coding is not known', () => {
+    it('#fromFhir() should return the same FHIR object if the coding is not known', () => {
         let fhir = {
             code: {
                 coding: [{
@@ -28,4 +28,37 @@ describe('registry', () => {
         expect(res).not.toEqual(jasmine.any(BodyWeight));
         expect(res).toEqual(fhir);
     });
+
+    it('#fromFhir() should return the same FHIR object if there is no code', () => {
+        let fhir = {};
+        let res = fromFhir(fhir);
+        expect(res).toEqual(fhir);
+    });
+
+    it('#fromFhir() should return the same FHIR object if there is no coding', () => {
+        let fhir = { code: {} };
+        let res = fromFhir(fhir);
+        expect(res).toEqual(fhir);
+    });
+
+    it('#fromFhir() should return the same FHIR object if there is not exactly one coding', () => {
+        let fhir = {
+            code: {
+                coding: [
+                    {}, {}
+                ]
+            }
+        };
+        let res = fromFhir(fhir);
+        expect(res).toEqual(fhir);
+
+        let fhir = {
+            code: {
+                coding: []
+            }
+        };
+        let res = fromFhir(fhir);
+        expect(res).toEqual(fhir);
+    });
+
 });
