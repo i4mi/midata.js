@@ -273,23 +273,25 @@ export class Midata {
         return apiCall({
             url: url,
             method: 'GET',
+            jsonBody: true,
             headers: {
                 'Authorization': 'Bearer ' + this._authToken,
                 'Content-Type': 'application/json+fhir;charset=utf-8'
             }
         })
         .then((response: any) => {
-            let resources: any[] = [];
-            if (response.body.entry) {
+            if (response.body.entry !== undefined) {
                 let entries = response.body.entry;
-                resources = entries.map((e: any) => {
+                let resources = entries.map((e: any) => {
                     return fromFhir(e.resource);
                 });
+                return resources;
+            } else {
+                return [];
             }
-            return resources;
         })
         .catch((response: any) => {
-            return Promise.reject(response.body);
+            return Promise.reject(response);
         });
     }
 

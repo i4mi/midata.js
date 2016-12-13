@@ -12,14 +12,23 @@ export function registerResource(code: string) {
  * function `cls`.
  */
 export function fromFhir(fhirObject: any) {
-    let coding = fhirObject.code.coding[0].code;
-    if (registry[coding] !== undefined) {
-        let resource: any = {
-            _fhir: fhirObject
-        };
-        let cls = registry[coding];
-        resource.__proto__ = cls.prototype
-        return resource;
+    let tryToMap = fhirObject.code !== undefined
+                && fhirObject.code.coding !== undefined
+                && fhirObject.code.coding.length == 1
+                && fhirObject.code.coding[0].code !== undefined;
+    if (tryToMap) {
+        let coding = fhirObject.code.coding[0].code;
+        let mappingExists = registry[coding] !== undefined;
+        if (mappingExists) {
+            let resource: any = {
+                _fhir: fhirObject
+            };
+            let cls = registry[coding];
+            resource.__proto__ = cls.prototype
+            return resource;
+        } else {
+            return fhirObject;
+        }
     } else {
         return fhirObject;
     }
