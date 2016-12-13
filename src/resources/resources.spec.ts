@@ -36,7 +36,6 @@ describe('Resources', () => {
 
     it('BodyHeight should be createable', (done) => {
         let bh = new BodyHeight(180, new Date());
-        console.log(JSON.stringify(bh._fhir));
         login.then(() => {
             return midata.save(bh);
         })

@@ -149,8 +149,6 @@ describe('Midata', () => {
             .then(() => {
                 midata.search('Observation', {})
                 .then((obs) => {
-                    console.log('results: ');
-                    console.log(obs);
                     done();
                 });
             })
