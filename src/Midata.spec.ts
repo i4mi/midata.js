@@ -144,18 +144,33 @@ describe('Midata', () => {
             });
         });
 
-        it('#search()', (done) => {
-            login
-            .then(() => {
-                midata.search('Observation', {})
-                .then((obs) => {
-                    done();
-                });
-            })
+        describe('#search()', () => {
+
+            it('without any parameters should return all resources', (done) => {
+                login
+                .then(() => {
+                    midata.search('Observation')
+                    .then((obs) => {
+                        expect(obs.length).toBeGreaterThan(0);
+                        done();
+                    });
+                })
+            });
+
+            it('should support query parameters', (done) => {
+                login
+                .then(() => {
+                    midata.search('Observation', {})
+                    .then((obs) => {
+                        expect(obs.length).toBeGreaterThan(0);
+                        done();
+                    });
+                })
+            });
+
         });
 
     });
-
 
     describe('with invalid credentials', () => {
         // beforeEach(() => {

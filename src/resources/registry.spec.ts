@@ -2,7 +2,7 @@ import { fromFhir } from './registry';
 import { BodyWeight } from './BodyWeight';
 
 
-describe('registry', () => {
+describe('When mapping FHIR resources', () => {
     it('#fromFhir() should return an instance of a class if the coding is known', () => {
         let res = fromFhir({
             code: {

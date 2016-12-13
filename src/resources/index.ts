@@ -7,3 +7,5 @@ export { StepsCount } from './StepsCount';
 export { BodyHeight } from './BodyHeight';
 export { Questionnaire } from './Questionnaire';
 export { BloodPressure } from './BloodPressure';
+export { Media } from './Media';
+export { ImageMedia } from './ImageMedia';
