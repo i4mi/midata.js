@@ -8,7 +8,7 @@ Usage
 
 Install the library
 
-    $ bower install git@github.com:i4mi/midata.js.git
+    $ bower install i4mi/midata.js#v1.0  --save
 
 Include it in your index.html:
 
@@ -18,7 +18,6 @@ Include it in your index.html:
 
 Then in your application code do:
 
-
     var md = new midata.Midata(
         'https://test.midata.ch:9000', 'my_app_name', 'my_app_secret');
 
@@ -26,6 +25,7 @@ Then in your application code do:
     md.login('user@example.com', 'my_password')
     .then(function() {
         console.log('Logged in!');
+        console.log('User id:', md.user.id);
     });
 
     // Create a FHIR resource with a simplified constructor
@@ -81,9 +81,6 @@ Autorun tests:
 
     $ npm run test
 
-Build for production
+Build for production in the `dist` directory.
 
     $ npm run build
-
-
-
