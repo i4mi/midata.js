@@ -8,9 +8,9 @@ export declare type ObservationStatus = 'registered' | 'preliminary' | 'final' |
  * https://www.hl7.org/fhir/observation.html
  */
 export declare class Observation extends Resource {
-    constructor(quantity: fhir.Quantity, date: Date, code: fhir.CodeableConcept);
+    constructor(quantity: fhir.Quantity, date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept);
 }
 export declare class MultiObservation extends Resource {
-    constructor(code: fhir.CodeableConcept, date: Date);
+    constructor(date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept);
     addComponent(component: fhir.ObservationComponent): void;
 }

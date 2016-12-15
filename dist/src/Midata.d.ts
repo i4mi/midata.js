@@ -3,16 +3,8 @@ import { Promise } from 'es6-promise';
 import { Resource } from './resources';
 export interface User {
     name: string;
+    id: string;
 }
-/**
- * Usage:
- *
- *     let auth = new MidataAuth('demo.midata.coop');
- *     auth.login({
- *         username: 'userxy',
- *         password: 'somepassword'
- *     }).then(...)
- */
 export declare class Midata {
     private _host;
     private _appName;

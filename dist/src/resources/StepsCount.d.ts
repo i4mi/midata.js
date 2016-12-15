@@ -1,4 +1,4 @@
-import { Observation } from './Observation';
-export declare class StepsCount extends Observation {
+import { VitalSigns } from './VitalSigns';
+export declare class StepsCount extends VitalSigns {
     constructor(steps: number, date: Date);
 }
