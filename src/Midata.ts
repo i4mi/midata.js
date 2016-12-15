@@ -104,6 +104,7 @@ export class Midata {
             this._authToken = body.authToken;
             this._refreshToken = body.refreshToken;
             this._user = {
+                id: body.owner,
                 name: username
             };
             return body;

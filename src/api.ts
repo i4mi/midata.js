@@ -35,7 +35,7 @@ export interface AuthResponse {
     authToken: string;
     refreshToken: string;
     status: string;
-    owner: number;
+    owner: string;
 }
 
 /**
