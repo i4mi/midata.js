@@ -1,18 +1,19 @@
 import { MultiObservation} from './Observation';
+import { VitalSigns } from './categories';
+import { registerResource } from './registry';
 
-export class BloodPressure extends MultiObservation{
+
+@registerResource('55417-0')
+export class BloodPressure extends MultiObservation {
     constructor(systolic: number, diastolic: number, date: Date) {
         let code = {
             coding: [{
                 system: "http://loinc.org",
-                // code: '55284-4',
-                // display: "Blood pressure systolic & diastolic"
-                // According to midata:
                 code: '55417-0',
                 display: 'Blood Pressure'
             }]
         };
-        super(code, date);
+        super(date, code, VitalSigns);
 
         this.addComponent({
             code: {

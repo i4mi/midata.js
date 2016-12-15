@@ -1,4 +1,6 @@
-import { Observation } from './Observation';
+import { VitalSigns } from './VitalSigns';
+import { registerResource } from './registry';
+
 
 const tempCode = {
     "coding": [
@@ -27,7 +29,8 @@ const tempCode = {
 };
 
 
-export class Temperature extends Observation {
+@registerResource('258710007')
+export class Temperature extends VitalSigns {
     constructor(tempC: number, date: Date) {
         let quanitity = {
             value: tempC,

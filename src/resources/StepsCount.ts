@@ -1,6 +1,9 @@
-import { Observation } from './Observation';
+import { VitalSigns } from './VitalSigns';
+import { registerResource } from './registry';
 
-export class StepsCount extends Observation {
+
+@registerResource('activities/steps')
+export class StepsCount extends VitalSigns {
     constructor(steps: number, date: Date) {
         let quanitity = {
             value: steps,

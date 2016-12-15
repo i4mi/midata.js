@@ -1,9 +1,9 @@
-import { Observation } from './Observation';
+import { VitalSigns } from './VitalSigns';
 import { registerResource } from './registry';
 
 
 @registerResource('8302-2')
-export class BodyHeight extends Observation {
+export class BodyHeight extends VitalSigns {
     constructor(heightCm: number, date: Date) {
         let quanitity = {
             value: heightCm,

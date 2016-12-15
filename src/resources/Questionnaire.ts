@@ -1,7 +1,7 @@
 import { Resource } from './Resource';
 
 
-export type QuestionType = 
+export type QuestionType =
     'boolean' |
     'decimal' |
     'integer' |
@@ -16,11 +16,11 @@ export interface Question {
 export interface QuestionGroup {
     title: string;
     text?: string;
-    question: Question[];
+    questions: Question[];
 }
 
 export class Questionnaire extends Resource {
-    constructor(questionGroups: QuestionGroup[]) {
+    constructor(questionGroup: QuestionGroup[] | QuestionGroup) {
         super('Questionnaire');
 
         // Other possible values: draft / retired

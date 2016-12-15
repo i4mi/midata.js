@@ -1,6 +1,9 @@
-import { Observation } from './Observation';
+import { VitalSigns } from './VitalSigns';
+import { registerResource } from './registry';
 
-export class HeartRate extends Observation {
+
+@registerResource('8867-4')
+export class HeartRate extends VitalSigns {
     constructor(beatsPerMinute: number, date: Date) {
         let quanitity = {
             value: beatsPerMinute,

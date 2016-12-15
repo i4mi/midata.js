@@ -9,3 +9,8 @@ export { Questionnaire } from './Questionnaire';
 export { BloodPressure } from './BloodPressure';
 export { Media } from './Media';
 export { ImageMedia } from './ImageMedia';
+export { Laboratory } from './Laboratory';
+export { Hemoglobin } from './Hemoglobin';
+
+import * as categories from './categories';
+export { categories };
