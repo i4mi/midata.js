@@ -7,17 +7,10 @@ import { fromFhir } from './resources/registry';
 
 export interface User {
     name: string;
+    id: string;
 }
 
-/**
- * Usage:
- *
- *     let auth = new MidataAuth('demo.midata.coop');
- *     auth.login({
- *         username: 'userxy',
- *         password: 'somepassword'
- *     }).then(...)
- */
+
 export class Midata {
 
     private _authToken: string;
@@ -182,9 +175,9 @@ export class Midata {
             }
             else if (response.status === 422) {
                 return Promise.reject(
-                    `The proposed resource violated applicable FHIR profiles
-                    or server business rules. More details should be contained
-                    in the error message.`);
+                    `The proposed resource violated applicable FHIR profiles or server business rules.
+More details should be contained in the error message:
+${response.body}`);
             }
             else if (response.status === 500) {
                 return Promise.reject(response.body);
@@ -201,7 +194,7 @@ export class Midata {
     private _create = (fhirObject: any) => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}`;
         return apiCall({
-            jsonBody: false,
+            jsonBody: false,  // needs to be false since no json is returned
             url: url,
             method: 'POST',
             headers: {
