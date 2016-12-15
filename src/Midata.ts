@@ -263,13 +263,31 @@ export class Midata {
         return result;
     };
 
+    // searchAll(params: any) {
+    //     let baseUrl = `${this._host}/fhir`;
+    //     return this._search(baseUrl, params);
+    // }
+
+    // searchCompartment(compartment: string, id: string, params: any = {}) {
+    //     let baseUrl = `${this._host}/fhir/${compartment}/${id}`;
+    // }
+
+    // searchType(resourceType: string, params: any = {}) {
+    //     return this.search(resourceType, params);
+    // }
+
     search(resourceType: string, params: any = {}) {
+        let baseUrl = `${this._host}/fhir/${resourceType}`;
+        return this._search(baseUrl, params);
+    }
+
+    private _search(baseUrl: string, params: any = {}) {
         let queryParts = Object.keys(params).map(key => {
             return key + '=' + params[key]
         });
         let query = queryParts.join('&');
         query = query && `?${query}` || '';
-        let url = `${this._host}/fhir/${resourceType}${query}`;
+        let url = baseUrl + query;
         return apiCall({
             url: url,
             method: 'GET',
@@ -294,6 +312,7 @@ export class Midata {
             return Promise.reject(response);
         });
     }
+
 
     // delete(resourceType: string, id: number | string) {
     //     let url = `${this._host}/fhir/${resourceType}/${id}`;

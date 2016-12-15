@@ -86,4 +86,5 @@ export declare class Midata {
      */
     private _refresh;
     search(resourceType: string, params?: any): Promise<{}>;
+    private _search(baseUrl, params?);
 }

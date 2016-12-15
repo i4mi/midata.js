@@ -13,22 +13,6 @@ export type ObservationStatus =
     'unknown';
 
 
-function formatDate(date: Date) {
-    let year = date.getFullYear();
-    let month = date.getMonth() + 1;
-    let day = date.getDay() + 1;
-
-    function pad(x: number) {
-        if (x < 10) {
-            return '0' + x;
-        } else {
-            return x.toString();
-        }
-    }
-    return `${year}-${pad(month)}-${pad(day)}`;
-}
-
-
 /**
  * Measurements and simple assertions made about a patient, device or other
  * subject.
@@ -43,8 +27,7 @@ export class Observation extends Resource {
         super('Observation');
         this.addProperty('status', 'final');
         this.addProperty('code', code);
-        // TODO: Properly format date according to FHIR standard
-        this.addProperty('effectiveDateTime', formatDate(date));
+        this.addProperty('effectiveDateTime', date.toISOString());
         this.addProperty('valueQuantity', quantity);
     }
 };
@@ -54,7 +37,7 @@ export class MultiObservation extends Resource {
         super('Observation');
         this.addProperty('status', 'final');
         this.addProperty('code', code);
-        this.addProperty('effectiveDateTime', formatDate(date));
+        this.addProperty('effectiveDateTime', date.toISOString());
         this.addProperty('component', []);
     }
 

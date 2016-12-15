@@ -7,8 +7,8 @@ export interface Question {
 export interface QuestionGroup {
     title: string;
     text?: string;
-    question: Question[];
+    questions: Question[];
 }
 export declare class Questionnaire extends Resource {
-    constructor(questionGroups: QuestionGroup[]);
+    constructor(questionGroup: QuestionGroup[] | QuestionGroup);
 }
