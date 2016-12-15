@@ -62,6 +62,7 @@ describe('Midata', () => {
 
             login.then((response) => {
                 expect(midata.user).toEqual(jasmine.objectContaining({name: 'testuser2@testuser.com'}));
+                expect(midata.user.id).toBeDefined();
                 done();
             })
             .catch(() => {
