@@ -19,7 +19,7 @@ Include it in your index.html:
 Then in your application code do:
 
     var md = new midata.Midata(
-        'https://test.midata.ch:9000', 'my_app_name', 'my_app_secret');
+        'https://test.midata.coop:9000', 'my_app_name', 'my_app_secret');
 
     // Login
     md.login('user@example.com', 'my_password')
