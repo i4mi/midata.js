@@ -13,7 +13,7 @@ export class Hemoglobin extends Laboratory {
             coding: [{
                 system: 'http://loinc.org',
                 code: '718-7',
-                display: 'Hemoglobin'
+                display: 'Hemoglobin [Mass/volume] in Blood'
             }]
         });
     }
