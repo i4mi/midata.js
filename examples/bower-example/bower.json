@@ -1,0 +1,24 @@
+{
+  "name": "bower-example",
+  "version": "0.0.0",
+  "homepage": "https://github.com/i4mi/midata.js",
+  "authors": [
+    "hafenr <robin.hafen@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "midata.js": "i4mi/midata.js"
+  }
+}
