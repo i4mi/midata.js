@@ -36,7 +36,7 @@ export declare class Midata {
      */
     readonly user: User;
     /**
-     * Destroy the authenication token.
+     * Destroy all authenication information.
      */
     logout(): void;
     /**
@@ -52,6 +52,11 @@ export declare class Midata {
      *         will be a rejected promise containing the error message.
      */
     login(username: string, password: string, role?: UserRole): Promise<any>;
+    /**
+     * Set login-specific properties. This method should be called either during
+     * startup or when the login method is called explicitly.
+     */
+    private _setLoginData(authToken, refreshToken, user);
     /**
      * Convenience method to create or update FHIR resources of the MIDATA
      * platform.
