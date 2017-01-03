@@ -2,7 +2,7 @@
   "name": "midata",
   "version": "1.0.0",
   "description": "A collection of utility classes and functions to interact with the MIDATA.coop platform.",
-  "main": "dist/index.js",
+  "main": "dist/midata.js",
   "scripts": {
     "test": "karma start karma.conf.js",
     "dev": "rm -rf dist/ && webpack -w",
