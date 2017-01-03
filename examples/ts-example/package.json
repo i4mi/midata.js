@@ -1,0 +1,16 @@
+{
+  "name": "ts-example",
+  "version": "1.0.0",
+  "description": "Small example app to show how MIDATA.js should be used",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "midata": "git+https://github.com/i4mi/midata.js.git",
+    "ts-loader": "^1.3.3",
+    "typescript": "^2.1.4"
+  }
+}
