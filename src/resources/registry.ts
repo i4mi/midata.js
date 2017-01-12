@@ -16,20 +16,21 @@ export function fromFhir(fhirObject: any) {
                 && fhirObject.code.coding !== undefined
                 && fhirObject.code.coding.length == 1
                 && fhirObject.code.coding[0].code !== undefined;
+    var mappingExists = false;
     if (tryToMap) {
         let coding = fhirObject.code.coding[0].code;
-        let mappingExists = registry[coding] !== undefined;
-        if (mappingExists) {
-            let resource: any = {
-                _fhir: fhirObject
-            };
-            let cls = registry[coding];
-            resource.__proto__ = cls.prototype
-            return resource;
-        } else {
-            return fhirObject;
-        }
+        mappingExists = registry[coding] !== undefined;
+    }
+    if (mappingExists) {
+        let coding = fhirObject.code.coding[0].code;
+        let resource: any = {
+            _fhir: fhirObject
+        };
+        let cls = registry[coding];
+        resource.__proto__ = cls.prototype
+        return resource;
     } else {
+        fhirObject.toJson = function() { return this; };
         return fhirObject;
     }
 }
