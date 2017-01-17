@@ -7,15 +7,23 @@ var resource = new midata.BodyWeight(23, new Date());
 // Login and subsequently try to save the resource on the server
 md.login('testuser@testuser.com', 'Testuser123')
 .then(() => {
+    // Save a known resource
     md.save(resource).then(response => {
         console.log(response);
     });
 
-    // Search for resources
+    // Search for an unknown resource (leukocytes)
     md.search('Observation', {
         code: "http://loinc.org|6690-2"
     }).then(function(resources) {
-        console.log('Got resources: ', resources);
+        console.log(resources[0].toJson());
+    });
+
+    // Search for a known resource (body weight)
+    md.search('Observation', {
+        code: "http://loinc.org|3141-9"
+    }).then(function(resources) {
+        console.log(resources[0].toJson());
     });
 });
 
