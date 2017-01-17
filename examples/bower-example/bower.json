@@ -19,6 +19,6 @@
     "tests"
   ],
   "dependencies": {
-    "midata.js": "i4mi/midata.js"
+    "midata.js": "i4mi/midata.js#v1.3"
   }
 }
