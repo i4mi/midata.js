@@ -236,7 +236,8 @@ ${response.body}`);
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + this._authToken,
-                'Content-Type': 'application/json+fhir;charset=utf-8'
+                'Content-Type': 'application/json+fhir;charset=utf-8',
+                'Prefer': 'return=representation'
             },
             payload: fhirObject
         });
@@ -253,7 +254,8 @@ ${response.body}`);
             payload: fhirObject,
             headers: {
                 'Authorization': 'Bearer ' + this._authToken,
-                'Content-Type': 'application/json+fhir;charset=utf-8'
+                'Content-Type': 'application/json+fhir;charset=utf-8',
+                'Prefer': 'return=representation'
             },
             method: 'PUT'
         });
