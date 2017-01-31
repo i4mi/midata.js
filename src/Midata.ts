@@ -188,9 +188,9 @@ export class Midata {
             // be returned (populated with an id field in the case
             // it was newly created).
             if (response.status === 201) {          // created
-                return response.body;
+                return JSON.parse(response.body);
             } else if (response.status === 200)  {  // updated
-                return response.body;
+                return JSON.parse(response.body);
             } else {
                 return Promise.reject(
                     `Unexpected response status code: ${response.status}`);
