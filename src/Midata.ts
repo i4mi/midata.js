@@ -220,7 +220,8 @@ ${response.body}`);
                 return Promise.reject(response.body);
             } else {
                 return Promise.reject(
-                    `Unexpected error response status code: ${response.status}`);
+                    `Unexpected error response status code: ${response.status}
+                    Message: ${response.body}`);
             }
         });
     }
