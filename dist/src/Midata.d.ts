@@ -5,6 +5,11 @@ export interface User {
     name: string;
     id: string;
 }
+export interface MidataError {
+    status: number;
+    message?: string;
+    response: string;
+}
 export declare class Midata {
     private _host;
     private _appName;

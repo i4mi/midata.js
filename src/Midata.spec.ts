@@ -77,6 +77,7 @@ describe('Midata', () => {
         it('#login() should persist the login to localstorage', (done) => {
             login.then((response) => {
                 var newMidata = createMidataObject();
+                console.log(localStorage.getItem('midataLoginData').authToken);
                 expect(newMidata.loggedIn).toBe(true);
             })
             .catch((err) => {

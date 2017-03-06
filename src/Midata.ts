@@ -10,6 +10,11 @@ export interface User {
     id: string;
 }
 
+export interface MidataError {
+    status: number;
+    message?: string;
+    response: string;
+}
 
 export class Midata {
 
@@ -124,7 +129,7 @@ export class Midata {
             return body;
         })
         .catch(error => {
-            return Promise.reject(error.body);
+            return Promise.reject(error);
         });
 
         return result;
@@ -192,8 +197,8 @@ export class Midata {
             } else if (response.status === 200)  {  // updated
                 return JSON.parse(response.body);
             } else {
-                return Promise.reject(
-                    `Unexpected response status code: ${response.status}`);
+                console.log(`Unexpected response status code: ${response.status}`);
+                return Promise.reject(response);
             }
         })
         .catch((response: any) => {
@@ -202,27 +207,7 @@ export class Midata {
                 // retry to save resource. Only if it still fails proceed with logout.
                 this.logout();
             }
-            else if (response.status === 400) {
-                return Promise.reject(
-                    'Resource could not be parsed or failed basic FHIR validation rules.');
-            }
-            else if (response.status === 404) {
-                return Promise.reject(
-                    'Resource type not supported or not a valid FHIR end-point.');
-            }
-            else if (response.status === 422) {
-                return Promise.reject(
-                    `The proposed resource violated applicable FHIR profiles or server business rules.
-More details should be contained in the error message:
-${response.body}`);
-            }
-            else if (response.status === 500) {
-                return Promise.reject(response.body);
-            } else {
-                return Promise.reject(
-                    `Unexpected error response status code: ${response.status}
-                    Message: ${response.body}`);
-            }
+            return Promise.reject(response);
         });
     }
 
