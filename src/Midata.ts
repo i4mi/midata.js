@@ -1,5 +1,5 @@
 import { AuthRequest, AuthResponse, RefreshAutRequest, UserRole } from './api';
-import { Promise } from 'es6-promise';
+import { Promise } from '../node_modules/es6-promise'
 import { apiCall } from './util';
 import { Resource } from './resources';
 import { fromFhir } from './resources/registry';
@@ -27,7 +27,8 @@ export class Midata {
      */
     constructor(private _host: string,
                 private _appName: string,
-                private _secret: string) {
+                private _secret: string,
+                private _CONFORMANCE_STATEMENT_ENDPOINT?: string ) {
         // Check if there is previously saved login data that was
         // put there before the last page refresh. In case there is,
         // load it.
@@ -83,6 +84,29 @@ export class Midata {
             localStorage.removeItem('midataLoginData');
         }
     }
+
+    private getFHIRConformanceStatement(): Promise<any> {
+
+
+
+        let result = apiCall({
+            url: this._CONFORMANCE_STATEMENT_ENDPOINT,
+            method: 'GET'
+
+        }).then(response => {
+            let body: AuthResponse = response.body;
+
+            console.log(body);
+            return body;
+        })
+            .catch(error => {
+                return Promise.reject(error);
+            });
+
+        return result;
+
+    }
+
 
     /**
      * Login to the MIDATA platform. This method has to be called prior to
