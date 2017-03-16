@@ -368,7 +368,7 @@ export class Midata {
 
         }).then((response : any)  => {
 
-            return response;
+            return JSON.parse(response);
 
         }).catch((response: any) => {
                 return Promise.reject(response.body);

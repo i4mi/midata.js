@@ -330,7 +330,7 @@ var Midata = (function () {
             url: this._conformance_statement_endpoint,
             method: 'GET'
         }).then(function (response) {
-            return response;
+            return JSON.parse(response);
         }).catch(function (response) {
             return es6_promise_1.Promise.reject(response.body);
         });
