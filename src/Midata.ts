@@ -1,8 +1,6 @@
 import { AuthRequest, AuthResponse, RefreshAutRequest, UserRole } from './api';
 import { Promise } from '../node_modules/es6-promise'
 import { apiCall } from './util';
-import { Resource } from './resources';
-import { fromFhir } from './resources/registry';
 
 
 export interface User {

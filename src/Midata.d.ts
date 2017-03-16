@@ -19,4 +19,5 @@ export declare class Midata {
      * @param host The url of the midata server, e.g. "https://test.midata.coop:9000".
      */
     constructor(_host: string, _appName: string, _secret: string, _conformance_statement_endpoint?: string);
+    private getFHIRConformanceStatement();
 }

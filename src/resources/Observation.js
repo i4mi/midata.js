@@ -42,3 +42,4 @@ var MultiObservation = (function (_super) {
 }(Resource_1.Resource));
 exports.MultiObservation = MultiObservation;
 ;
+//# sourceMappingURL=Observation.js.map

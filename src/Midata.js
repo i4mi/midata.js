@@ -336,3 +336,4 @@ var Midata = (function () {
     return Midata;
 }());
 exports.Midata = Midata;
+//# sourceMappingURL=Midata.js.map
