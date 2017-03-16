@@ -15,3 +15,4 @@ var VitalSigns = (function (_super) {
 }(Observation_1.Observation));
 exports.VitalSigns = VitalSigns;
 ;
+//# sourceMappingURL=VitalSigns.js.map

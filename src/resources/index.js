@@ -27,3 +27,4 @@ var Hemoglobin_1 = require('./Hemoglobin');
 exports.Hemoglobin = Hemoglobin_1.Hemoglobin;
 var categories = require('./categories');
 exports.categories = categories;
+//# sourceMappingURL=index.js.map

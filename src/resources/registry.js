@@ -39,3 +39,4 @@ function fromFhir(fhirObject) {
 exports.fromFhir = fromFhir;
 var w = window;
 w.fromFhir = fromFhir;
+//# sourceMappingURL=registry.js.map

@@ -31,3 +31,4 @@ var Resource = (function () {
 }());
 exports.Resource = Resource;
 ;
+//# sourceMappingURL=Resource.js.map

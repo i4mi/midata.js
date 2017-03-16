@@ -15,3 +15,4 @@ var Laboratory = (function (_super) {
 }(Observation_1.Observation));
 exports.Laboratory = Laboratory;
 ;
+//# sourceMappingURL=Laboratory.js.map

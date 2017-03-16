@@ -32,6 +32,9 @@ export class Midata {
         this._conformance_statement_endpoint = _conformance_statement_endpoint || "https://test.midata.coop:9000/fhir/metadata";
 
 
+        if(this._conformance_statement_endpoint){
+
+
         this.getFHIRConformanceStatement().then((body) => {
 
             console.log(body);
@@ -40,7 +43,10 @@ export class Midata {
 
         }
 
-        // Check if there is previously saved login data that was
+    }
+
+
+    // Check if there is previously saved login data that was
         // put there before the last page refresh. In case there is,
         // load it.
 
@@ -362,7 +368,7 @@ export class Midata {
 
         }).then((response : any)  => {
 
-            return response.body;
+            return response;
 
         }).catch((response: any) => {
                 return Promise.reject(response.body);

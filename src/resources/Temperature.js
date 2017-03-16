@@ -55,3 +55,4 @@ var Temperature = (function (_super) {
 }(VitalSigns_1.VitalSigns));
 exports.Temperature = Temperature;
 ;
+//# sourceMappingURL=Temperature.js.map

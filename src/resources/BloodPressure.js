@@ -58,3 +58,4 @@ var BloodPressure = (function (_super) {
 }(Observation_1.MultiObservation));
 exports.BloodPressure = BloodPressure;
 ;
+//# sourceMappingURL=BloodPressure.js.map

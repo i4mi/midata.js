@@ -35,3 +35,4 @@ var BodyHeight = (function (_super) {
 }(VitalSigns_1.VitalSigns));
 exports.BodyHeight = BodyHeight;
 ;
+//# sourceMappingURL=BodyHeight.js.map

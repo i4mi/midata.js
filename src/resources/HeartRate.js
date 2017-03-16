@@ -34,3 +34,4 @@ var HeartRate = (function (_super) {
 }(VitalSigns_1.VitalSigns));
 exports.HeartRate = HeartRate;
 ;
+//# sourceMappingURL=HeartRate.js.map

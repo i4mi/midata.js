@@ -11,9 +11,11 @@ var Midata = (function () {
         this._secret = _secret;
         this._conformance_statement_endpoint = _conformance_statement_endpoint;
         this._conformance_statement_endpoint = _conformance_statement_endpoint || "https://test.midata.coop:9000/fhir/metadata";
-        this.getFHIRConformanceStatement().then(function (body) {
-            console.log(body);
-        }, function (error) { return console.log(error); });
+        if (this._conformance_statement_endpoint) {
+            this.getFHIRConformanceStatement().then(function (body) {
+                console.log(body);
+            }, function (error) { return console.log(error); });
+        }
     }
     // Check if there is previously saved login data that was
     // put there before the last page refresh. In case there is,
@@ -328,7 +330,7 @@ var Midata = (function () {
             url: this._conformance_statement_endpoint,
             method: 'GET'
         }).then(function (response) {
-            return response.body;
+            return response;
         }).catch(function (response) {
             return es6_promise_1.Promise.reject(response.body);
         });

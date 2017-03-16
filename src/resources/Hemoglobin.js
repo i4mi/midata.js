@@ -34,3 +34,4 @@ var Hemoglobin = (function (_super) {
 }(Laboratory_1.Laboratory));
 exports.Hemoglobin = Hemoglobin;
 ;
+//# sourceMappingURL=Hemoglobin.js.map

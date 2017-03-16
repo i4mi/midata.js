@@ -35,3 +35,4 @@ var StepsCount = (function (_super) {
 }(VitalSigns_1.VitalSigns));
 exports.StepsCount = StepsCount;
 ;
+//# sourceMappingURL=StepsCount.js.map

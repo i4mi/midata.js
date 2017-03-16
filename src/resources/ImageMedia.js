@@ -26,3 +26,4 @@ var ImageMedia = (function (_super) {
 }(Media_1.Media));
 exports.ImageMedia = ImageMedia;
 ;
+//# sourceMappingURL=ImageMedia.js.map

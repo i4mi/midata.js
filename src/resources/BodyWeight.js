@@ -35,3 +35,4 @@ var BodyWeight = (function (_super) {
 }(VitalSigns_1.VitalSigns));
 exports.BodyWeight = BodyWeight;
 ;
+//# sourceMappingURL=BodyWeight.js.map

@@ -15,3 +15,4 @@ exports.Laboratory = {
         }],
     text: 'Laboratory'
 };
+//# sourceMappingURL=categories.js.map

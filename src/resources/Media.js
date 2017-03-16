@@ -20,3 +20,4 @@ var Media = (function (_super) {
 }(Resource_1.Resource));
 exports.Media = Media;
 ;
+//# sourceMappingURL=Media.js.map
