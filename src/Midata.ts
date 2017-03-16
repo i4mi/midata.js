@@ -28,54 +28,69 @@ export class Midata {
     constructor(private _host: string,
                 private _appName: string,
                 private _secret: string,
-                private _CONFORMANCE_STATEMENT_ENDPOINT?: string ) {
+                private _conformance_statement_endpoint?: string ) {
+
+
+        this._conformance_statement_endpoint = _conformance_statement_endpoint || "https://test.midata.coop:9000/fhir/metadata";
+
+
+        this.getFHIRConformanceStatement().then((body) => {
+
+            console.log(body);
+
+        }, (error: any) => console.log(error));
+
+        }
+
         // Check if there is previously saved login data that was
         // put there before the last page refresh. In case there is,
         // load it.
-        if (window.localStorage) {
-            let value = localStorage.getItem('midataLoginData');
-            let data = JSON.parse(value);
-            if (data) {
-                this._setLoginData(
-                    data.authToken, data.refreshToken, data.user);
-            }
-        }
-    }
 
-    /**
+/*        if (window.localStorage) {
+         let value = localStorage.getItem('midataLoginData');
+         let data = JSON.parse(value);
+         if (data) {
+         this._setLoginData(
+         data.authToken, data.refreshToken, data.user);
+
+
+         }
+         }*/
+
+ /*   /!**
      * If the user is logged in already.
-     */
+     *!/
     get loggedIn() {
         return this._authToken !== undefined;
     }
 
-    /**
+    /!**
      * The currently used authentication token. If the user didn't login yet
      * or recently called `logout()` this property will be undefined.
-     */
+     *!/
     get authToken() {
         return this._authToken;
     }
 
-    /**
+    /!**
      * The currently used refresh token. If the user didn't login yet
      * or recently called `logout()` this property will be undefined.
-     */
+     *!/
     get refreshToken() {
         return this._refreshToken;
     }
 
-    /**
+    /!**
      * A simple object holding information of the currently logged in user
      * such as his name.
-     */
+     *!/
     get user() {
         return this._user;
     }
 
-    /**
+    /!**
      * Destroy all authenication information.
-     */
+     *!/
     logout() {
         this._user = undefined;
         this._refreshToken = undefined;
@@ -85,30 +100,7 @@ export class Midata {
         }
     }
 
-    private getFHIRConformanceStatement(): Promise<any> {
-
-
-
-        let result = apiCall({
-            url: this._CONFORMANCE_STATEMENT_ENDPOINT,
-            method: 'GET'
-
-        }).then(response => {
-            let body: AuthResponse = response.body;
-
-            console.log(body);
-            return body;
-        })
-            .catch(error => {
-                return Promise.reject(error);
-            });
-
-        return result;
-
-    }
-
-
-    /**
+    /!**
      * Login to the MIDATA platform. This method has to be called prior to
      * creating or updating resources.
      *
@@ -119,7 +111,7 @@ export class Midata {
      *         promise that contains the newly generated authentication and
      *         refresh token. In case the login failed the return value
      *         will be a rejected promise containing the error message.
-     */
+     *!/
     login(username: string, password: string, role?: UserRole): Promise<any> {
         if (username === undefined || password === undefined) {
             throw new Error('You need to supply a username and a password!');
@@ -159,10 +151,10 @@ export class Midata {
         return result;
     }
 
-    /**
+    /!**
      * Set login-specific properties. This method should be called either during
      * startup or when the login method is called explicitly.
-     */
+     *!/
     private _setLoginData(authToken: string, refreshToken: string, user: User) {
         this._authToken = authToken;
         this._refreshToken = refreshToken;
@@ -176,7 +168,7 @@ export class Midata {
         }
     }
 
-    /**
+    /!**
      * Convenience method to create or update FHIR resources of the MIDATA
      * platform.
      *
@@ -185,7 +177,7 @@ export class Midata {
      *                 JSON schema (see the FHIR docs).
      * @return The same object that was updated/created. In the case that the
      *         object was newly created, its id field is populated.
-     */
+     *!/
     // TODO: Try to refresh authtoken when recieving a 401 and then try again.
     // TODO: Try to map response objects back to their class (e.g. BodyWeight).
     save(resource: Resource | any) {
@@ -235,9 +227,9 @@ export class Midata {
         });
     }
 
-    /**
+    /!**
      * Helper method to create FHIR resources via a HTTP POST call.
-     */
+     *!/
     private _create = (fhirObject: any) => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}`;
         return apiCall({
@@ -253,9 +245,9 @@ export class Midata {
         });
     };
 
-    /**
+    /!**
      * Helper method to create FHIR resources via a HTTP PUT call.
-     */
+     *!/
     private _update = (fhirObject: any) => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}/${fhirObject.id}`;
         return apiCall({
@@ -271,11 +263,11 @@ export class Midata {
         });
     };
 
-    /**
+    /!**
      * Helper method to refresh the authentication token by authorizing
      * with the help of the refresh token.
      * This will generate a new authentication as well as a new refresh token.
-     */
+     *!/
     private _refresh = () => {
         let authRequest: RefreshAutRequest = {
             appname: this._appName,
@@ -359,7 +351,27 @@ export class Midata {
             }
             return Promise.reject(response);
         });
-    }
+    }*/
+
+
+
+    private getFHIRConformanceStatement(): Promise<string> {
+
+
+        return apiCall({
+            url: this._conformance_statement_endpoint,
+            method: 'GET'
+
+        }).then((response : any)  => {
+
+            return response.body;
+
+        }).catch((response: any) => {
+                return Promise.reject(response.body);
+            });
+
+        }
+
 
     // delete(resourceType: string, id: number | string) {
     //     let url = `${this._host}/fhir/${resourceType}/${id}`;
