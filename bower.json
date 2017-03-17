@@ -1,6 +1,6 @@
 {
   "name": "midata",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A forked collection of utility classes to interact with MIDATA.COOP",
   "main": "dist/midata.js",
   "authors": [
