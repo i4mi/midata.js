@@ -1,3 +1,4 @@
+import { URLSearchParams } from "@angular/http";
 /**
  * The authentication request payload.
  */
@@ -12,9 +13,26 @@ export interface AuthRequest {
  * The authentication request payload for a new authentication.
  */
 export interface RefreshAutRequest {
-    appname: string;
-    secret: string;
+    grant_type: string;
     refreshToken: string;
+}
+/**
+ * The token request payload
+ */
+export interface TokenRequest {
+    encodedParams: URLSearchParams;
+}
+/**
+ * A response to successful token request
+ */
+export interface TokenResponse {
+    state: string;
+    access_token: string;
+    token_type: string;
+    scope: string;
+    expires_in: string;
+    patient: string;
+    refresh_token: string;
 }
 /**
  * The user role in an authentication request.
@@ -24,10 +42,11 @@ export declare type UserRole = 'member' | 'provider' | 'developer' | 'research';
  * A response to successful authentication request.
  */
 export interface AuthResponse {
-    authToken: string;
-    refreshToken: string;
-    status: string;
-    owner: string;
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    scope: string;
+    token_type: string;
 }
 /**
  * A request to create a new record.

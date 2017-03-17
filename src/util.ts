@@ -13,9 +13,9 @@ interface ApiError {
 
 export type HttpMethod =
     'POST'   |
-    'PUT'    |
-    'GET'    |
-    'DELETE' ;
+        'PUT'    |
+        'GET'    |
+        'DELETE' ;
 
 export interface ApiCallArgs {
     url: string;
@@ -23,6 +23,8 @@ export interface ApiCallArgs {
     payload?: any;
     headers?: any;
     jsonBody?: boolean;
+    jsonEncoded?: boolean; // wya3 - added on behalf of comment, see below
+    // in method apiCall()
 };
 
 export interface ApiCallResponse {
@@ -32,9 +34,9 @@ export interface ApiCallResponse {
 };
 
 // TODO: Either the payload should be anything and the user has to
-// specify the content-type via the headers arg or it should always 
+// specify the content-type via the headers arg or it should always
 // be JSON in which case the user shouldn't need to specify the content-type
-// to be application/json. 
+// to be application/json.
 /**
  * Perform an AJAX call to an API endpoint.
  * @param args The arguments for the call.
@@ -47,6 +49,7 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
     let payload = args.payload;
     let headers = args.headers;
     let jsonBody = args.jsonBody || false;
+    let jsonEncoded = args.jsonEncoded; // flag indicating json-encoding
 
     return new Promise(function(resolve, reject) {
         let xhr = new XMLHttpRequest();
@@ -95,9 +98,21 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
         // NOTE: Note that the payload should probably be stringified
         // before being passed into this function in order to allow
         // non-json encodings of the payload (such as url-encoded or plain text).
+        // Supplement wya3: Check for JSON encoding. Additionally check if undefined in
+        // order to ensure backward compatibility.
+
         if (payload !== undefined) {
-            xhr.send(JSON.stringify(payload));
-        } else {
+
+            console.log(jsonEncoded);
+
+
+            if (jsonEncoded || jsonEncoded == undefined) {
+                xhr.send(JSON.stringify(payload));
+            } else {
+                xhr.send(payload);
+            }
+        }
+        else {
             xhr.send();
         }
     });

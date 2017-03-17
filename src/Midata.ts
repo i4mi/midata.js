@@ -1,6 +1,17 @@
-import { AuthRequest, AuthResponse, RefreshAutRequest, UserRole } from './api';
-import { Promise } from '../node_modules/es6-promise'
-import { apiCall } from './util';
+import {
+    AuthRequest,
+    AuthResponse,
+    RefreshAutRequest,
+    UserRole,
+    TokenRequest,
+    TokenResponse
+} from './api';
+import {Promise} from '../../../node_modules/es6-promise';
+import {apiCall} from './util';
+import {InAppBrowser} from 'ionic-native';
+import {URLSearchParams} from "@angular/http";
+import {fromFhir} from "./resources/registry";
+import {Resource} from "./resources/Resource";
 
 
 export interface User {
@@ -14,11 +25,17 @@ export interface MidataError {
     response: string;
 }
 
+declare var window: any;
+declare var cordova: any;
+
 export class Midata {
 
     private _authToken: string;
     private _refreshToken: string;
     private _user: User;
+    private _authCode: string;
+    private _tokenEndpoint: string;
+    private _authEndpoint: string;
 
     /**
      * @param host The url of the midata server, e.g. "https://test.midata.coop:9000".
@@ -26,75 +43,87 @@ export class Midata {
     constructor(private _host: string,
                 private _appName: string,
                 private _secret: string,
-                private _conformance_statement_endpoint?: string ) {
+                private _conformance_statement_endpoint?: string) {
 
+
+        if (cordova && cordova.InAppBrowser) {
+
+            window.open = cordova.InAppBrowser.open;
+        }
 
         this._conformance_statement_endpoint = _conformance_statement_endpoint || "https://test.midata.coop:9000/fhir/metadata";
 
+        if (this._conformance_statement_endpoint !== undefined) {
 
-        if(this._conformance_statement_endpoint){
+            this.fetchFHIRConformanceStatement().then(() => {
+
+                console.log("Success! Conformance statement retrieved and endpoints fetched!");
 
 
-        this.getFHIRConformanceStatement().then((body) => {
+                // Check if there is previously saved login data that was
+                // put there before the last page refresh. In case there is,
+                // load it.
 
-            console.log(body);
+                if (window.localStorage) {
+                    let
+                        value = localStorage.getItem('midataLoginData');
+                    let
+                        data = JSON.parse(value);
 
-        }, (error: any) => console.log(error));
+                    if (data) {
+                        this._setLoginData(
+                            data.authToken, data.refreshToken, data.user);
+                    }
+                }
 
+
+            }, (error: any) => {
+
+                console.log(error);
+                console.log("Error while accessing or fetching conformance statement!");
+
+            });
         }
 
     }
 
 
-    // Check if there is previously saved login data that was
-        // put there before the last page refresh. In case there is,
-        // load it.
-
-/*        if (window.localStorage) {
-         let value = localStorage.getItem('midataLoginData');
-         let data = JSON.parse(value);
-         if (data) {
-         this._setLoginData(
-         data.authToken, data.refreshToken, data.user);
-
-
-         }
-         }*/
-
- /*   /!**
-     * If the user is logged in already.
-     *!/
+    /*
+     If the user is logged in already.
+     */
     get loggedIn() {
         return this._authToken !== undefined;
     }
 
-    /!**
-     * The currently used authentication token. If the user didn't login yet
-     * or recently called `logout()` this property will be undefined.
-     *!/
+    /*
+     The currently used authentication token. If the user didn't login yet
+     or recently called `logout()` this property will be undefined.
+     */
     get authToken() {
         return this._authToken;
     }
 
-    /!**
-     * The currently used refresh token. If the user didn't login yet
-     * or recently called `logout()` this property will be undefined.
-     *!/
+    /*
+     The currently used refresh token. If the user didn't login yet
+     or recently called `logout()` this property will be undefined.
+     */
     get refreshToken() {
         return this._refreshToken;
     }
 
-    /!**
-     * A simple object holding information of the currently logged in user
-     * such as his name.
-     *!/
+    /*
+     A simple object holding information of the currently logged in user
+     such as his name.
+     */
     get user() {
         return this._user;
     }
 
-    /!**
-     * Destroy all authenication information.
-     *!/
+    /*
+
+     Destroy all authenication information.
+     */
+
     logout() {
         this._user = undefined;
         this._refreshToken = undefined;
@@ -104,61 +133,61 @@ export class Midata {
         }
     }
 
-    /!**
-     * Login to the MIDATA platform. This method has to be called prior to
-     * creating or updating resources.
-     *
-     * @param username The user's identifier, most likely an email address.
-     * @param password The user's password.
-     * @param role The user's role used during the login (optional).
-     * @return If the login was successfull the return value will be a resolved
-     *         promise that contains the newly generated authentication and
-     *         refresh token. In case the login failed the return value
-     *         will be a rejected promise containing the error message.
-     *!/
-    login(username: string, password: string, role?: UserRole): Promise<any> {
-        if (username === undefined || password === undefined) {
-            throw new Error('You need to supply a username and a password!');
-        }
-        let authRequest: AuthRequest = {
-            username: username,
-            password: password,
-            appname: this._appName,
-            secret: this._secret
-        };
-        if (role !== undefined) {
-            authRequest.role = role;
-        }
+    /**
+     Login to the MIDATA platform. This method has to be called prior to
+     creating or updating resources.
 
-        let result = apiCall({
-            url: this._host + '/v1/auth',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            jsonBody: true,
-            payload: authRequest
-        })
-        .then(response => {
-            let body: AuthResponse = response.body;
-            let user = {
-                id: body.owner,
-                name: username
-            };
-            this._setLoginData(body.authToken, body.refreshToken, user);
-            return body;
-        })
-        .catch(error => {
-            return Promise.reject(error);
-        });
+     @param username The user's identifier, most likely an email address.
+     @param password The user's password.
+     @param role The user's role used during the login (optional).
+     @return If the login was successfull the return value will be a resolved
+     promise that contains the newly generated authentication and
+     refresh token. In case the login failed the return value
+     will be a rejected promise containing the error message.
+     */
+    // login(username: string, password: string, role?: UserRole): Promise<any> {
+    //   if (username === undefined || password === undefined) {
+    //     throw new Error('You need to supply a username and a password!');
+    //   }
+    //   let authRequest: AuthRequest = {
+    //     username: username,
+    //     password: password,
+    //     appname: this._appName,
+    //     secret: this._secret
+    //   };
+    //   if (role !== undefined) {
+    //     authRequest.role = role;
+    //   }
+    //
+    //   let result = apiCall({
+    //     url: this._host + '/v1/auth',
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json'
+    //     },
+    //     jsonBody: true,
+    //     payload: authRequest
+    //   })
+    //     .then(response => {
+    //       let body: AuthResponse = response.body;
+    //       let user = {
+    //         id: body.owner,
+    //         name: username
+    //       };
+    //       this._setLoginData(body.authToken, body.refreshToken, user);
+    //       return body;
+    //     })
+    //     .catch(error => {
+    //       return Promise.reject(error);
+    //     });
+    //
+    //   return result;
+    // }
 
-        return result;
-    }
-
-    /!**
-     * Set login-specific properties. This method should be called either during
-     * startup or when the login method is called explicitly.
-     *!/
+    /*
+     Set login-specific properties. This method should be called either during
+     startup or when the login method is called explicitly.
+     */
     private _setLoginData(authToken: string, refreshToken: string, user: User) {
         this._authToken = authToken;
         this._refreshToken = refreshToken;
@@ -172,16 +201,7 @@ export class Midata {
         }
     }
 
-    /!**
-     * Convenience method to create or update FHIR resources of the MIDATA
-     * platform.
-     *
-     * @param resource Either a resource object (such as an instance of class
-     *                 BodyWeight) or a basic JS object that adheres to the FHIR
-     *                 JSON schema (see the FHIR docs).
-     * @return The same object that was updated/created. In the case that the
-     *         object was newly created, its id field is populated.
-     *!/
+
     // TODO: Try to refresh authtoken when recieving a 401 and then try again.
     // TODO: Try to map response objects back to their class (e.g. BodyWeight).
     save(resource: Resource | any) {
@@ -190,10 +210,9 @@ export class Midata {
         if (this._authToken === undefined) {
             throw new Error(
                 `Can\'t create records when no user logged in first.
-                Call login() before trying to create records.`
+        Call login() before trying to create records.`
             );
         }
-
         // Convert the resource to a FHIR-structured simple js object.
         var fhirObject: any;
         if (resource instanceof Resource) {
@@ -208,32 +227,32 @@ export class Midata {
         let apiMethod = shouldCreate ? this._create : this._update;
 
         return apiMethod(fhirObject)
-        .then(response => {
-            // When the resource is created, the same resource will
-            // be returned (populated with an id field in the case
-            // it was newly created).
-            if (response.status === 201) {          // created
-                return JSON.parse(response.body);
-            } else if (response.status === 200)  {  // updated
-                return JSON.parse(response.body);
-            } else {
-                console.log(`Unexpected response status code: ${response.status}`);
+            .then(response => {
+                // When the resource is created, the same resource will
+                // be returned (populated with an id field in the case
+                // it was newly created).
+                if (response.status === 201) {          // created
+                    return JSON.parse(response.body);
+                } else if (response.status === 200) {  // updated
+                    return JSON.parse(response.body);
+                } else {
+                    console.log(`Unexpected response status code: ${response.status}`);
+                    return Promise.reject(response);
+                }
+            })
+            .catch((response: any) => {
+                if (response.status === 401) {
+                    // TODO: Try to login with refresh token if there is one and
+                    // retry to save resource. Only if it still fails proceed with logout.
+                    this.logout();
+                }
                 return Promise.reject(response);
-            }
-        })
-        .catch((response: any) => {
-            if (response.status === 401) {
-                // TODO: Try to login with refresh token if there is one and
-                // retry to save resource. Only if it still fails proceed with logout.
-                this.logout();
-            }
-            return Promise.reject(response);
-        });
+            });
     }
 
-    /!**
-     * Helper method to create FHIR resources via a HTTP POST call.
-     *!/
+    /**
+     Helper method to create FHIR resources via a HTTP POST call.
+     */
     private _create = (fhirObject: any) => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}`;
         return apiCall({
@@ -249,9 +268,9 @@ export class Midata {
         });
     };
 
-    /!**
-     * Helper method to create FHIR resources via a HTTP PUT call.
-     *!/
+    /**
+     Helper method to create FHIR resources via a HTTP PUT call.
+     */
     private _update = (fhirObject: any) => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}/${fhirObject.id}`;
         return apiCall({
@@ -267,38 +286,51 @@ export class Midata {
         });
     };
 
-    /!**
-     * Helper method to refresh the authentication token by authorizing
-     * with the help of the refresh token.
-     * This will generate a new authentication as well as a new refresh token.
-     *!/
+    /**
+     Helper method to refresh the authentication token by authorizing
+     with the help of the refresh token.
+     This will generate a new authentication as well as a new refresh token.
+     */
     private _refresh = () => {
-        let authRequest: RefreshAutRequest = {
-            appname: this._appName,
-            secret: this._secret,
-            refreshToken: this._refreshToken
-        };
 
-        let result = apiCall({
-            url: this._host + '/v1/auth',
-            method: 'POST',
-            payload: authRequest,
-            jsonBody: true,
-            headers: {
-                'Content-Type': 'application/json'
+        return new Promise<string>((resolve, reject) => {
+
+            let getEncodedParams = () => {
+
+                // because of x-www-form-urlencoded
+
+                let urlSearchParams = new URLSearchParams();
+                urlSearchParams.append("grant_type", "refresh_token");
+                urlSearchParams.append("refresh_token", this._refreshToken);
+                return urlSearchParams;
             }
-        })
-        .then(response  => {
-            let body: AuthResponse = response.body;
-            this._authToken = body.authToken;
-            this._refreshToken = body.refreshToken;
-            return body;
-        })
-        .catch((response: any) => {
-            return Promise.reject(response.body);
-        });
 
-        return result;
+            let refreshTokenRequest: TokenRequest = {
+
+                encodedParams: getEncodedParams()
+
+            }
+
+            apiCall({
+                url: this._tokenEndpoint,
+                method: 'POST',
+                payload: refreshTokenRequest.encodedParams.toString(),
+                jsonBody: true,
+                jsonEncoded: false,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+                .then(response => {
+                    let body: AuthResponse = response.body;
+                    this._authToken = body.access_token;
+                    this._refreshToken = body.refresh_token;
+                    resolve("Success!");
+                })
+                .catch((response: any) => {
+                    reject(response.body);
+                });
+        })
     };
 
     // searchAll(params: any) {
@@ -335,47 +367,190 @@ export class Midata {
                 'Content-Type': 'application/json+fhir;charset=utf-8'
             }
         })
-        .then((response: any) => {
-            if (response.body.entry !== undefined) {
-                let entries = response.body.entry;
-                let resources = entries.map((e: any) => {
-                    return fromFhir(e.resource);
-                });
-                return resources;
-            } else {
-                return [];
-            }
-        })
-        .catch((response: any) => {
-            if (response.status === 401) {
-                // TODO: Try to login with refresh token if there is one and
-                // retry the search.. Only if it still fails proceed with logout.
-                this.logout();
+            .then((response: any) => {
+                if (response.body.entry !== undefined) {
+                    let entries = response.body.entry;
+                    let resources = entries.map((e: any) => {
+                        return fromFhir(e.resource);
+                    });
+                    return resources;
+                } else {
+                    return [];
+                }
+            })
+            .catch((response: any) => {
+                if (response.status === 401) {
+                    // TODO: Try to login with refresh token if there is one and
+                    // retry the search.. Only if it still fails proceed with logout.
+                    this.logout();
+                    return Promise.reject(response);
+                }
                 return Promise.reject(response);
-            }
-            return Promise.reject(response);
+            });
+
+    }
+
+
+    authenticate(): Promise<string> {
+
+        // wrapper method, call subsequent actions from here
+
+        return new Promise((resolve, reject) => {
+
+
+            this._authenticate().then(_ => this._exchangeTokenForCode())
+                .then((accessToken) => {
+                    console.log("Success! Your MIDATA Access-Token: " + accessToken);
+                    resolve(accessToken);
+                })
+                .catch((error) => {
+                    console.log("Error during authenticaton process");
+                    reject(error);
+                })
         });
-    }*/
+    }
 
 
+    refresh(): Promise<string> {
 
-    private getFHIRConformanceStatement(): Promise<string> {
+
+        return new Promise((resolve, reject) => {
+            this._refresh().then(_ => {
+
+                console.log("Tokens refreshed!");
+
+                resolve();
+
+            })
+                .catch((error) => {
+                    reject("Error happened! " + error)
+                })
+        });
+    }
+
+
+    private _authenticate(): Promise<string> {
+
+        let USERAUTH_ENDPOINT = () => {
+
+            return this._authEndpoint +
+                "?response_type=" + 'code' +
+                "&client_id=" + this._appName +
+                "&redirect_uri=" + 'http://localhost/callback' +
+                "&aud=" + 'https:%2F%2Ftest.midata.coop:9000%2Ffhir' +
+                "&scope=" + 'user%2F*.*';
+        }
+
+        return new Promise((resolve, reject) => {
+
+
+            let browser = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
+            browser.on('loadstart').subscribe((event) => {
+
+
+                    browser.show();
+                    console.log(event.type);
+                    console.log(event.url);
+
+                    if ((event.url).indexOf("http://localhost/callback") === 0) {
+
+                        this._authCode = event.url.split("&")[1].split("=")[1];
+
+                        browser.close();
+
+                        resolve("Success!");
+
+                    }
+                },
+                (error) => {
+
+                    console.log(error.type + " Error-Code: " + error.code + "Message: " + error.message);
+
+                    reject("Error during authentication, abort");
+
+                });
+        });
+    }
+
+
+    // TODO: SET FLAG IF URL ENCODING IS X-WWW-FORM-URLENCODED
+
+    private _exchangeTokenForCode(): Promise<string> {
+
+        return new Promise<string>((resolve, reject) => {
+
+
+            let getEncodedParams = () => {
+
+                // because of x-www-form-urlencoded
+
+                let urlSearchParams = new URLSearchParams();
+                urlSearchParams.append("grant_type", "authorization_code");
+                urlSearchParams.append("code", this._authCode);
+                urlSearchParams.append("redirect_uri", "http://localhost/callback");
+                urlSearchParams.append("client_id", "oauth2test");
+
+                return urlSearchParams;
+            }
+
+            let tokenRequest: TokenRequest = {
+
+                encodedParams: getEncodedParams()
+
+            }
+
+            apiCall({
+                url: this._tokenEndpoint,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                jsonBody: true,
+                payload: tokenRequest.encodedParams.toString(),
+                jsonEncoded: false
+            })
+                .then(response => {
+                    let body: TokenResponse = response.body;
+                    let user = {
+                        id: body.patient,
+                        name: body.patient
+                    };
+
+                    // set login data
+                    this._setLoginData(body.access_token, body.refresh_token, user);
+
+                    console.log("login data set! resolve...");
+                    resolve(body.access_token);
+
+                })
+                .catch(error => {
+                    reject(error);
+                });
+        });
+    }
+
+    public fetchFHIRConformanceStatement(): Promise<string> {
 
 
         return apiCall({
             url: this._conformance_statement_endpoint,
             method: 'GET'
 
-        }).then((response : any)  => {
+        }).then((response: any) => {
 
-            return JSON.parse(response);
+            this._tokenEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["0"].valueUri;
+            this._authEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["1"].valueUri;
 
-        }).catch((response: any) => {
-                return Promise.reject(response.body);
-            });
+            console.log(this._tokenEndpoint);
+            console.log(this._authEndpoint);
 
-        }
+            return response;
 
+        }).catch((error: any) => {
+
+            return Promise.reject(error);
+        });
+    }
 
     // delete(resourceType: string, id: number | string) {
     //     let url = `${this._host}/fhir/${resourceType}/${id}`;

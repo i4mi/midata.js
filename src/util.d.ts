@@ -6,6 +6,7 @@ export interface ApiCallArgs {
     payload?: any;
     headers?: any;
     jsonBody?: boolean;
+    jsonEncoded?: boolean;
 }
 export interface ApiCallResponse {
     message: string;
