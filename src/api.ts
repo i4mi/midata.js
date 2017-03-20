@@ -1,22 +1,4 @@
 import {URLSearchParams} from "@angular/http";
-/**
- * The authentication request payload.
- */
-export interface AuthRequest {
-    appname: string;  // internal name of the application
-    secret: string;   // the secret key that has been chosen on the development portal
-    username: string; // the email of the user
-    password: string; // the user's password
-    role?: UserRole;  // the role of the user (optional, default: "member")
-}
-
-/**
- * The authentication request payload for a new authentication.
- */
-export interface RefreshAutRequest {
-    grant_type: string;      // internal name of the application
-    refreshToken: string; // the refresh token obtained from a previous login
-}
 
 /**
  * The token request payload
@@ -40,18 +22,6 @@ export interface TokenResponse {
     patient: string,
     refresh_token: string
 }
-
-
-
-/**
- * The user role in an authentication request.
- */
-export type UserRole =
-    'member'    |  // members of the cooperative (default)
-        'provider'  |  // healthcare providers
-        'developer' |  // developers
-        'research'  ;  // researchers
-
 
 /**
  * A response to successful authentication request.

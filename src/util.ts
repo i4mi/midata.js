@@ -102,10 +102,6 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
         // order to ensure backward compatibility.
 
         if (payload !== undefined) {
-
-            console.log(jsonEncoded);
-
-
             if (jsonEncoded || jsonEncoded == undefined) {
                 xhr.send(JSON.stringify(payload));
             } else {

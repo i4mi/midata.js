@@ -65,7 +65,6 @@ function apiCall(args) {
         // Supplement wya3: Check for JSON encoding. Additionally check if undefined in
         // order to ensure backward compatibility.
         if (payload !== undefined) {
-            console.log(jsonEncoded);
             if (jsonEncoded || jsonEncoded == undefined) {
                 xhr.send(JSON.stringify(payload));
             }

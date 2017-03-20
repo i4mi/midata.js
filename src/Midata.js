@@ -9,11 +9,10 @@ var Midata = (function () {
     /**
      * @param host The url of the midata server, e.g. "https://test.midata.coop:9000".
      */
-    function Midata(_host, _appName, _secret, _conformance_statement_endpoint) {
+    function Midata(_host, _appName, _conformance_statement_endpoint) {
         var _this = this;
         this._host = _host;
         this._appName = _appName;
-        this._secret = _secret;
         this._conformance_statement_endpoint = _conformance_statement_endpoint;
         /**
          Helper method to create FHIR resources via a HTTP POST call.
@@ -80,6 +79,10 @@ var Midata = (function () {
                     var body = response.body;
                     _this._authToken = body.access_token;
                     _this._refreshToken = body.refresh_token;
+                    // set login data
+                    _this._setLoginData(body.access_token, body.refresh_token);
+                    console.log("login data refreshed! resolve...");
+                    resolve(body.access_token);
                     resolve("Success!");
                 })
                     .catch(function (response) {
@@ -101,7 +104,7 @@ var Midata = (function () {
                     var value = localStorage.getItem('midataLoginData');
                     var data = JSON.parse(value);
                     if (data) {
-                        _this._setLoginData(data.authToken, data.refreshToken, data.user);
+                        _this._setLoginData(data.authToken, data.refreshToken);
                     }
                 }
             }, function (error) {
@@ -142,92 +145,27 @@ var Midata = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Midata.prototype, "user", {
-        /*
-         A simple object holding information of the currently logged in user
-         such as his name.
-         */
-        get: function () {
-            return this._user;
-        },
-        enumerable: true,
-        configurable: true
-    });
     /*
-
      Destroy all authenication information.
      */
     Midata.prototype.logout = function () {
-        this._user = undefined;
         this._refreshToken = undefined;
         this._authToken = undefined;
         if (window.localStorage) {
             localStorage.removeItem('midataLoginData');
         }
     };
-    /**
-     Login to the MIDATA platform. This method has to be called prior to
-     creating or updating resources.
-
-     @param username The user's identifier, most likely an email address.
-     @param password The user's password.
-     @param role The user's role used during the login (optional).
-     @return If the login was successfull the return value will be a resolved
-     promise that contains the newly generated authentication and
-     refresh token. In case the login failed the return value
-     will be a rejected promise containing the error message.
-     */
-    // login(username: string, password: string, role?: UserRole): Promise<any> {
-    //   if (username === undefined || password === undefined) {
-    //     throw new Error('You need to supply a username and a password!');
-    //   }
-    //   let authRequest: AuthRequest = {
-    //     username: username,
-    //     password: password,
-    //     appname: this._appName,
-    //     secret: this._secret
-    //   };
-    //   if (role !== undefined) {
-    //     authRequest.role = role;
-    //   }
-    //
-    //   let result = apiCall({
-    //     url: this._host + '/v1/auth',
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json'
-    //     },
-    //     jsonBody: true,
-    //     payload: authRequest
-    //   })
-    //     .then(response => {
-    //       let body: AuthResponse = response.body;
-    //       let user = {
-    //         id: body.owner,
-    //         name: username
-    //       };
-    //       this._setLoginData(body.authToken, body.refreshToken, user);
-    //       return body;
-    //     })
-    //     .catch(error => {
-    //       return Promise.reject(error);
-    //     });
-    //
-    //   return result;
-    // }
     /*
      Set login-specific properties. This method should be called either during
      startup or when the login method is called explicitly.
      */
-    Midata.prototype._setLoginData = function (authToken, refreshToken, user) {
+    Midata.prototype._setLoginData = function (authToken, refreshToken) {
         this._authToken = authToken;
         this._refreshToken = refreshToken;
-        this._user = user;
         if (window.localStorage) {
             localStorage.setItem('midataLoginData', JSON.stringify({
                 authToken: authToken,
-                refreshToken: refreshToken,
-                user: user
+                refreshToken: refreshToken
             }));
         }
     };
@@ -277,16 +215,6 @@ var Midata = (function () {
             return es6_promise_1.Promise.reject(response);
         });
     };
-    // searchAll(params: any) {
-    //     let baseUrl = `${this._host}/fhir`;
-    //     return this._search(baseUrl, params);
-    // }
-    // searchCompartment(compartment: string, id: string, params: any = {}) {
-    //     let baseUrl = `${this._host}/fhir/${compartment}/${id}`;
-    // }
-    // searchType(resourceType: string, params: any = {}) {
-    //     return this.search(resourceType, params);
-    // }
     Midata.prototype.search = function (resourceType, params) {
         if (params === void 0) { params = {}; }
         var baseUrl = this._host + "/fhir/" + resourceType;
@@ -332,6 +260,17 @@ var Midata = (function () {
             return es6_promise_1.Promise.reject(response);
         });
     };
+    /**
+     Login to the MIDATA platform. This method has to be called prior to
+     creating or updating resources. Calling authenticate will initiate the
+     oAuth2 authentication process. The user will be redirected to midata.coop
+     in order to login / register and grant the application access to his data.
+
+     @return If the login was successful the return value will be a resolved
+     promise that contains the newly generated authentication and
+     refresh token. In case the login failed the return value
+     will be a rejected promise containing the error message.
+     **/
     Midata.prototype.authenticate = function () {
         // wrapper method, call subsequent actions from here
         var _this = this;
@@ -342,12 +281,13 @@ var Midata = (function () {
                 resolve(accessToken);
             })
                 .catch(function (error) {
-                console.log("Error during authenticaton process");
+                console.log("Error during authentication process");
                 reject(error);
             });
         });
     };
     Midata.prototype.refresh = function () {
+        // wrapper method, call subsequent actions from here
         var _this = this;
         return new es6_promise_1.Promise(function (resolve, reject) {
             _this._refresh().then(function (_) {
@@ -386,7 +326,6 @@ var Midata = (function () {
             });
         });
     };
-    // TODO: SET FLAG IF URL ENCODING IS X-WWW-FORM-URLENCODED
     Midata.prototype._exchangeTokenForCode = function () {
         var _this = this;
         return new es6_promise_1.Promise(function (resolve, reject) {
@@ -414,12 +353,8 @@ var Midata = (function () {
             })
                 .then(function (response) {
                 var body = response.body;
-                var user = {
-                    id: body.patient,
-                    name: body.patient
-                };
                 // set login data
-                _this._setLoginData(body.access_token, body.refresh_token, user);
+                _this._setLoginData(body.access_token, body.refresh_token);
                 console.log("login data set! resolve...");
                 resolve(body.access_token);
             })
@@ -436,8 +371,6 @@ var Midata = (function () {
         }).then(function (response) {
             _this._tokenEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["0"].valueUri;
             _this._authEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["1"].valueUri;
-            console.log(_this._tokenEndpoint);
-            console.log(_this._authEndpoint);
             return response;
         }).catch(function (error) {
             return es6_promise_1.Promise.reject(error);
