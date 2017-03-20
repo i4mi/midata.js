@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a79dc14e-afcf-4ba5-b81f-3561098eee22" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bower.json" afterPath="$PROJECT_DIR$/bower.json" />
-    </list>
+    <list default="true" id="a79dc14e-afcf-4ba5-b81f-3561098eee22" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -23,8 +21,8 @@
       <file leaf-file-name="Midata.ts" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Midata.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
-              <caret line="20" column="25" lean-forward="true" selection-start-line="20" selection-start-column="25" selection-end-line="20" selection-end-column="25" />
+            <state relative-caret-position="510">
+              <caret line="34" column="41" lean-forward="false" selection-start-line="34" selection-start-column="41" selection-end-line="34" selection-end-column="41" />
               <folding>
                 <element signature="e#0#78#0" expanded="true" />
               </folding>
@@ -103,8 +101,8 @@
         <option value="$PROJECT_DIR$/src/resources/Observation.ts" />
         <option value="$PROJECT_DIR$/src/util.ts" />
         <option value="$PROJECT_DIR$/src/api.ts" />
-        <option value="$PROJECT_DIR$/src/Midata.ts" />
         <option value="$PROJECT_DIR$/bower.json" />
+        <option value="$PROJECT_DIR$/src/Midata.ts" />
       </list>
     </option>
   </component>
@@ -251,12 +249,12 @@
       <workItem from="1489758390744" duration="461000" />
       <workItem from="1489759135340" duration="873000" />
       <workItem from="1489762779179" duration="19000" />
-      <workItem from="1489997296877" duration="3418000" />
+      <workItem from="1489997296877" duration="3516000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="12491000" />
+    <option name="totallyTimeSpent" value="12589000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1680" y="23" width="2560" height="1412" extended-state="6" />
@@ -729,8 +727,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Midata.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="20" column="25" lean-forward="true" selection-start-line="20" selection-start-column="25" selection-end-line="20" selection-end-column="25" />
+        <state relative-caret-position="510">
+          <caret line="34" column="41" lean-forward="false" selection-start-line="34" selection-start-column="41" selection-end-line="34" selection-end-column="41" />
           <folding>
             <element signature="e#0#78#0" expanded="true" />
           </folding>
