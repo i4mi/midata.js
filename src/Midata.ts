@@ -1,21 +1,14 @@
 import {
-    AuthResponse,
+    TokenRefreshResponse,
     TokenRequest,
     TokenResponse
 } from './api';
 import {Promise} from '../../../node_modules/es6-promise';
-import {apiCall} from './util';
-import {InAppBrowser} from 'ionic-native';
+import {apiCall, ApiCallResponse} from './util';
+import {InAppBrowser, InAppBrowserEvent} from 'ionic-native';
 import {URLSearchParams} from "@angular/http";
 import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
-
-
-export interface MidataError {
-    status: number;
-    message?: string;
-    response: string;
-}
 
 declare var window: any;
 declare var cordova: any;
@@ -28,12 +21,20 @@ export class Midata {
     private _tokenEndpoint: string;
     private _authEndpoint: string;
 
+
+    // TODO: Handle expires_in param
+    // TODO: Add types to response params
+    // TODO: Switch between demo and productive installation (set host)
+
     /**
-     * @param host The url of the midata server, e.g. "https://test.midata.coop:9000".
+     * @param _host The url of the midata server, e.g. "https://test.midata.coop:9000".
+     * @param _appName The internal application name accessing the platform (as defined on the midata platform).
+     * @param _conformanceStatementEndpoint? The location of the endpoint identifying the OAuth authorize and token
+     *        endpoints. Optional parameter.
      */
     constructor(private _host: string,
                 private _appName: string,
-                private _conformance_statement_endpoint?: string) {
+                private _conformanceStatementEndpoint?: string) {
 
 
         if (cordova && cordova.InAppBrowser) {
@@ -41,13 +42,13 @@ export class Midata {
             window.open = cordova.InAppBrowser.open;
         }
 
-        this._conformance_statement_endpoint = _conformance_statement_endpoint || "https://test.midata.coop:9000/fhir/metadata";
+        this._conformanceStatementEndpoint = _conformanceStatementEndpoint || "https://test.midata.coop:9000/fhir/metadata";
 
-        if (this._conformance_statement_endpoint !== undefined) {
+        if (this._conformanceStatementEndpoint !== undefined) {
 
-            this.fetchFHIRConformanceStatement().then(() => {
+            this.fetchFHIRConformanceStatement().then((response) => {
 
-                console.log("Success! Conformance statement retrieved and endpoints fetched!");
+                console.log(`Success! (${response.status}, ${response.message})`);
 
                 // Check if there is previously saved login data that was
                 // put there before the last page refresh. In case there is,
@@ -64,16 +65,12 @@ export class Midata {
                             data.authToken, data.refreshToken);
                     }
                 }
+            }, (error) => {
 
-
-            }, (error: any) => {
-
-                console.log(error);
-                console.log("Error while accessing or fetching conformance statement!");
+                console.log(`Error! (${error.status}, ${error.message})`);
 
             });
         }
-
     }
 
     /*
@@ -126,9 +123,9 @@ export class Midata {
         }
     }
 
-
     // TODO: Try to refresh authtoken when recieving a 401 and then try again.
-    // TODO: Try to map response objects back to their class (e.g. BodyWeight).
+    // TODO: Try to map response objects back to their class (e.g. BodyWeight)
+
     save(resource: Resource | any) {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
@@ -213,12 +210,19 @@ export class Midata {
 
     /**
      Helper method to refresh the authentication token by authorizing
-     with the help of the refresh token.
-     This will generate a new authentication as well as a new refresh token.
+     with the help of the refresh token. This will generate a new authentication as well as
+     a new refresh token. On successful refresh, the old refresh_token will be invalid and
+     both the access_token and the refresh_token stored in the local storage will be overwritten.
+     Previous access_tokens will remain valid until their expiration timestamp is exceeded. However, possibly
+     older access_tokens are neglected due to overwrite logic.
+
+     @return a Promise of type TokenRefreshResponse. On failure the catch clause will forward an error
+     of type ApiCallResponse.
      */
+
     private _refresh = () => {
 
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<TokenRefreshResponse>((resolve, reject) => {
 
             let getEncodedParams = () => {
 
@@ -247,7 +251,7 @@ export class Midata {
                 }
             })
                 .then(response => {
-                    let body: AuthResponse = response.body;
+                    let body: TokenRefreshResponse = response.body;
                     this._authToken = body.access_token;
                     this._refreshToken = body.refresh_token;
 
@@ -255,12 +259,11 @@ export class Midata {
                     this._setLoginData(body.access_token, body.refresh_token);
 
                     console.log("login data refreshed! resolve...");
-                    resolve(body.access_token);
+                    resolve(body);
 
-                    resolve("Success!");
                 })
-                .catch((response: any) => {
-                    reject(response.body);
+                .catch((response: ApiCallResponse) => {
+                    reject(response);
                 });
         })
     };
@@ -314,54 +317,72 @@ export class Midata {
     /**
      Login to the MIDATA platform. This method has to be called prior to
      creating or updating resources. Calling authenticate will initiate the
-     oAuth2 authentication process. The user will be redirected to midata.coop
-     in order to login / register and grant the application access to his data.
+     oAuth2 authentication process. This method invokes the methods _authenticate &
+     _exchangeTokenForCode.
 
-     @return If the login was successful the return value will be a resolved
+     @return If the login process was successful the return value will be a resolved
      promise that contains the newly generated authentication and
      refresh token. In case the login failed the return value
-     will be a rejected promise containing the error message.
+     will be a rejected promise containing the error message (type any).
      **/
 
-    authenticate(): Promise<string> {
+    authenticate(): Promise<TokenResponse> {
 
         // wrapper method, call subsequent actions from here
 
         return new Promise((resolve, reject) => {
 
             this._authenticate().then(_ => this._exchangeTokenForCode())
-                .then((accessToken) => {
-                    console.log("Success! Your MIDATA Access-Token: " + accessToken);
-                    resolve(accessToken);
+                .then((body) => {
+
+                    resolve(body);
                 })
-                .catch((error) => {
-                    console.log("Error during authentication process");
+                .catch((error: any) => {
+
                     reject(error);
                 })
         });
     }
 
 
-    refresh(): Promise<string> {
+    /**
+     Helper method to refresh the authentication token by authorizing
+     with the help of the refresh token. This will generate a new authentication as well as
+     a new refresh token. On successful refresh, the old refresh_token will be invalid and
+     both the access_token and the refresh_token stored in the local storage will be overwritten.
+     Previous access_tokens will remain valid until their expiration timestamp is exceeded. However, possibly
+     older access_tokens are neglected due to overwrite logic.
+     */
+
+    refresh(): Promise<TokenRefreshResponse> {
 
         // wrapper method, call subsequent actions from here
 
         return new Promise((resolve, reject) => {
-            this._refresh().then(_ => {
+            this._refresh().then((body) => {
 
                 console.log("Tokens refreshed!");
 
-                resolve();
+                resolve(body);
 
             })
-                .catch((error) => {
-                    reject("Error happened! " + error)
+                .catch((error: ApiCallResponse) => {
+                    reject(error)
                 })
         });
     }
 
+    /**
+     The user will be redirected to midata.coop in order to login / register and grant
+     the application access to his data. If the event target is equal to the callback url
+     defined in the USERAUTH_ENDPOINT (and ,therefore, authentication on midata was successful)
+     the authentication code is extracted in stored locally. The authentication code will then be further
+     used by the method _exchangeTokenForCode().
 
-    private _authenticate(): Promise<string> {
+     @return A Promise of type InAppBrowserEvent.
+     **/
+
+    private _authenticate(): Promise<InAppBrowserEvent> {
 
         let USERAUTH_ENDPOINT = () => {
 
@@ -379,10 +400,7 @@ export class Midata {
             let browser = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
             browser.on('loadstart').subscribe((event) => {
 
-
                     browser.show();
-                    console.log(event.type);
-                    console.log(event.url);
 
                     if ((event.url).indexOf("http://localhost/callback") === 0) {
 
@@ -390,24 +408,31 @@ export class Midata {
 
                         browser.close();
 
-                        resolve("Success!");
+                        resolve(event);
 
                     }
                 },
                 (error) => {
 
-                    console.log(error.type + " Error-Code: " + error.code + "Message: " + error.message);
-
-                    reject("Error during authentication, abort");
+                    console.log(`Error! (${error.status}, ${error.message})`);
+                    reject(error);
 
                 });
         });
     }
 
-    private _exchangeTokenForCode(): Promise<string> {
 
-        return new Promise<string>((resolve, reject) => {
+    /**
+     After successful authentication on midata this method is invoked. It exchanges the authCode
+     obtained from midata with the access_token used to query the FHIR endpoint API.
 
+     @return On success the resolved promise will hold a body of type TokenResponse as defined in the interface within
+     the api class. On failure the catch clause will forward an error of type ApiCallResponse.
+     **/
+
+    private _exchangeTokenForCode(): Promise<TokenResponse> {
+
+        return new Promise<TokenResponse>((resolve, reject) => {
 
             let getEncodedParams = () => {
 
@@ -445,29 +470,39 @@ export class Midata {
                     this._setLoginData(body.access_token, body.refresh_token);
 
                     console.log("login data set! resolve...");
-                    resolve(body.access_token);
+                    resolve(body);
 
                 })
-                .catch(error => {
-                    reject(error);
+                .catch((response : ApiCallResponse) => {
+                    reject(response);
                 });
         });
     }
 
-    public fetchFHIRConformanceStatement(): Promise<string> {
+    /**
+     This method fetches the conformance statement identifying the OAuth authorize
+     and token endpoint URLs for use in requesting authorization to access FHIR resources.
+     This method is invoked whenever a new midata object is created. However, it can also
+     exclusively be called in order to update existing endpoint information.
+
+     @return In both cases (on success & and failure) the method will return a resolved promise of type ApiCallResponse
+     conforming to the interface defined within the util class.
+     **/
+
+    public fetchFHIRConformanceStatement(): Promise<ApiCallResponse> {
 
         return apiCall({
-            url: this._conformance_statement_endpoint,
+            url: this._conformanceStatementEndpoint,
             method: 'GET'
 
-        }).then((response: any) => {
+        }).then((response: ApiCallResponse) => {
 
             this._tokenEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["0"].valueUri;
             this._authEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["1"].valueUri;
 
             return response;
 
-        }).catch((error: any) => {
+        }).catch((error: ApiCallResponse) => {
 
             return Promise.reject(error);
         });

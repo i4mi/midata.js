@@ -24,9 +24,9 @@ export interface TokenResponse {
 }
 
 /**
- * A response to successful authentication request.
+ * A response to successful token refresh request.
  */
-export interface AuthResponse {
+export interface TokenRefreshResponse {
     access_token: string;
     refresh_token: string;
     expires_in: number;

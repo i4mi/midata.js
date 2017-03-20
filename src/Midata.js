@@ -6,14 +6,20 @@ var http_1 = require("@angular/http");
 var registry_1 = require("./resources/registry");
 var Resource_1 = require("./resources/Resource");
 var Midata = (function () {
+    // TODO: Handle expires_in param
+    // TODO: Add types to response params
+    // TODO: Switch between demo and productive installation (set host)
     /**
-     * @param host The url of the midata server, e.g. "https://test.midata.coop:9000".
+     * @param _host The url of the midata server, e.g. "https://test.midata.coop:9000".
+     * @param _appName The internal application name accessing the platform (as defined on the midata platform).
+     * @param _conformanceStatementEndpoint? The location of the endpoint identifying the OAuth authorize and token
+     *        endpoints. Optional parameter.
      */
-    function Midata(_host, _appName, _conformance_statement_endpoint) {
+    function Midata(_host, _appName, _conformanceStatementEndpoint) {
         var _this = this;
         this._host = _host;
         this._appName = _appName;
-        this._conformance_statement_endpoint = _conformance_statement_endpoint;
+        this._conformanceStatementEndpoint = _conformanceStatementEndpoint;
         /**
          Helper method to create FHIR resources via a HTTP POST call.
          */
@@ -50,8 +56,14 @@ var Midata = (function () {
         };
         /**
          Helper method to refresh the authentication token by authorizing
-         with the help of the refresh token.
-         This will generate a new authentication as well as a new refresh token.
+         with the help of the refresh token. This will generate a new authentication as well as
+         a new refresh token. On successful refresh, the old refresh_token will be invalid and
+         both the access_token and the refresh_token stored in the local storage will be overwritten.
+         Previous access_tokens will remain valid until their expiration timestamp is exceeded. However, possibly
+         older access_tokens are neglected due to overwrite logic.
+    
+         @return a Promise of type TokenRefreshResponse. On failure the catch clause will forward an error
+         of type ApiCallResponse.
          */
         this._refresh = function () {
             return new es6_promise_1.Promise(function (resolve, reject) {
@@ -82,21 +94,20 @@ var Midata = (function () {
                     // set login data
                     _this._setLoginData(body.access_token, body.refresh_token);
                     console.log("login data refreshed! resolve...");
-                    resolve(body.access_token);
-                    resolve("Success!");
+                    resolve(body);
                 })
                     .catch(function (response) {
-                    reject(response.body);
+                    reject(response);
                 });
             });
         };
         if (cordova && cordova.InAppBrowser) {
             window.open = cordova.InAppBrowser.open;
         }
-        this._conformance_statement_endpoint = _conformance_statement_endpoint || "https://test.midata.coop:9000/fhir/metadata";
-        if (this._conformance_statement_endpoint !== undefined) {
-            this.fetchFHIRConformanceStatement().then(function () {
-                console.log("Success! Conformance statement retrieved and endpoints fetched!");
+        this._conformanceStatementEndpoint = _conformanceStatementEndpoint || "https://test.midata.coop:9000/fhir/metadata";
+        if (this._conformanceStatementEndpoint !== undefined) {
+            this.fetchFHIRConformanceStatement().then(function (response) {
+                console.log("Success! (" + response.status + ", " + response.message + ")");
                 // Check if there is previously saved login data that was
                 // put there before the last page refresh. In case there is,
                 // load it.
@@ -108,8 +119,7 @@ var Midata = (function () {
                     }
                 }
             }, function (error) {
-                console.log(error);
-                console.log("Error while accessing or fetching conformance statement!");
+                console.log("Error! (" + error.status + ", " + error.message + ")");
             });
         }
     }
@@ -170,7 +180,7 @@ var Midata = (function () {
         }
     };
     // TODO: Try to refresh authtoken when recieving a 401 and then try again.
-    // TODO: Try to map response objects back to their class (e.g. BodyWeight).
+    // TODO: Try to map response objects back to their class (e.g. BodyWeight)
     Midata.prototype.save = function (resource) {
         var _this = this;
         // Check if the user is logged in, otherwise no record can be
@@ -263,42 +273,57 @@ var Midata = (function () {
     /**
      Login to the MIDATA platform. This method has to be called prior to
      creating or updating resources. Calling authenticate will initiate the
-     oAuth2 authentication process. The user will be redirected to midata.coop
-     in order to login / register and grant the application access to his data.
+     oAuth2 authentication process. This method invokes the methods _authenticate &
+     _exchangeTokenForCode.
 
-     @return If the login was successful the return value will be a resolved
+     @return If the login process was successful the return value will be a resolved
      promise that contains the newly generated authentication and
      refresh token. In case the login failed the return value
-     will be a rejected promise containing the error message.
+     will be a rejected promise containing the error message (type any).
      **/
     Midata.prototype.authenticate = function () {
         // wrapper method, call subsequent actions from here
         var _this = this;
         return new es6_promise_1.Promise(function (resolve, reject) {
             _this._authenticate().then(function (_) { return _this._exchangeTokenForCode(); })
-                .then(function (accessToken) {
-                console.log("Success! Your MIDATA Access-Token: " + accessToken);
-                resolve(accessToken);
+                .then(function (body) {
+                resolve(body);
             })
                 .catch(function (error) {
-                console.log("Error during authentication process");
                 reject(error);
             });
         });
     };
+    /**
+     Helper method to refresh the authentication token by authorizing
+     with the help of the refresh token. This will generate a new authentication as well as
+     a new refresh token. On successful refresh, the old refresh_token will be invalid and
+     both the access_token and the refresh_token stored in the local storage will be overwritten.
+     Previous access_tokens will remain valid until their expiration timestamp is exceeded. However, possibly
+     older access_tokens are neglected due to overwrite logic.
+     */
     Midata.prototype.refresh = function () {
         // wrapper method, call subsequent actions from here
         var _this = this;
         return new es6_promise_1.Promise(function (resolve, reject) {
-            _this._refresh().then(function (_) {
+            _this._refresh().then(function (body) {
                 console.log("Tokens refreshed!");
-                resolve();
+                resolve(body);
             })
                 .catch(function (error) {
-                reject("Error happened! " + error);
+                reject(error);
             });
         });
     };
+    /**
+     The user will be redirected to midata.coop in order to login / register and grant
+     the application access to his data. If the event target is equal to the callback url
+     defined in the USERAUTH_ENDPOINT (and ,therefore, authentication on midata was successful)
+     the authentication code is extracted in stored locally. The authentication code will then be further
+     used by the method _exchangeTokenForCode().
+
+     @return A Promise of type InAppBrowserEvent.
+     **/
     Midata.prototype._authenticate = function () {
         var _this = this;
         var USERAUTH_ENDPOINT = function () {
@@ -313,19 +338,24 @@ var Midata = (function () {
             var browser = new ionic_native_1.InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
             browser.on('loadstart').subscribe(function (event) {
                 browser.show();
-                console.log(event.type);
-                console.log(event.url);
                 if ((event.url).indexOf("http://localhost/callback") === 0) {
                     _this._authCode = event.url.split("&")[1].split("=")[1];
                     browser.close();
-                    resolve("Success!");
+                    resolve(event);
                 }
             }, function (error) {
-                console.log(error.type + " Error-Code: " + error.code + "Message: " + error.message);
-                reject("Error during authentication, abort");
+                console.log("Error! (" + error.status + ", " + error.message + ")");
+                reject(error);
             });
         });
     };
+    /**
+     After successful authentication on midata this method is invoked. It exchanges the authCode
+     obtained from midata with the access_token used to query the FHIR endpoint API.
+
+     @return On success the resolved promise will hold a body of type TokenResponse as defined in the interface within
+     the api class. On failure the catch clause will forward an error of type ApiCallResponse.
+     **/
     Midata.prototype._exchangeTokenForCode = function () {
         var _this = this;
         return new es6_promise_1.Promise(function (resolve, reject) {
@@ -356,17 +386,26 @@ var Midata = (function () {
                 // set login data
                 _this._setLoginData(body.access_token, body.refresh_token);
                 console.log("login data set! resolve...");
-                resolve(body.access_token);
+                resolve(body);
             })
-                .catch(function (error) {
-                reject(error);
+                .catch(function (response) {
+                reject(response);
             });
         });
     };
+    /**
+     This method fetches the conformance statement identifying the OAuth authorize
+     and token endpoint URLs for use in requesting authorization to access FHIR resources.
+     This method is invoked whenever a new midata object is created. However, it can also
+     exclusively be called in order to update existing endpoint information.
+
+     @return In both cases (on success & and failure) the method will return a resolved promise of type ApiCallResponse
+     conforming to the interface defined within the util class.
+     **/
     Midata.prototype.fetchFHIRConformanceStatement = function () {
         var _this = this;
         return util_1.apiCall({
-            url: this._conformance_statement_endpoint,
+            url: this._conformanceStatementEndpoint,
             method: 'GET'
         }).then(function (response) {
             _this._tokenEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["0"].valueUri;
