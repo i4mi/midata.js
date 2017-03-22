@@ -6,9 +6,6 @@ var http_1 = require("@angular/http");
 var registry_1 = require("./resources/registry");
 var Resource_1 = require("./resources/Resource");
 var Midata = (function () {
-    // TODO: Handle expires_in param
-    // TODO: Add types to response params
-    // TODO: Switch between demo and productive installation (set host)
     /**
      * @param _host The url of the midata server, e.g. "https://test.midata.coop:9000".
      * @param _appName The internal application name accessing the platform (as defined on the midata platform).
@@ -93,7 +90,7 @@ var Midata = (function () {
                     _this._refreshToken = body.refresh_token;
                     // set login data
                     _this._setLoginData(body.access_token, body.refresh_token);
-                    console.log("login data refreshed! resolve...");
+                    console.log("Login data refreshed! resolve...");
                     resolve(body);
                 })
                     .catch(function (response) {
@@ -104,7 +101,7 @@ var Midata = (function () {
         if (cordova && cordova.InAppBrowser) {
             window.open = cordova.InAppBrowser.open;
         }
-        this._conformanceStatementEndpoint = _conformanceStatementEndpoint || "https://test.midata.coop:9000/fhir/metadata";
+        this._conformanceStatementEndpoint = _conformanceStatementEndpoint || _host + "/fhir/metadata";
         if (this._conformanceStatementEndpoint !== undefined) {
             this.fetchFHIRConformanceStatement().then(function (response) {
                 console.log("Success! (" + response.status + ", " + response.message + ")");
@@ -179,14 +176,21 @@ var Midata = (function () {
             }));
         }
     };
-    // TODO: Try to refresh authtoken when recieving a 401 and then try again.
+    /**
+     *
+     * This method stores a resource onto midata.
+     *
+     * @param resourceType e.g. HeartRate
+     * @return The promise returns the created object. In case of failure, an error of type
+     *         ApiCallResponse will be returned.
+     */
     // TODO: Try to map response objects back to their class (e.g. BodyWeight)
     Midata.prototype.save = function (resource) {
         var _this = this;
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
-            throw new Error("Can't create records when no user logged in first.\n        Call login() before trying to create records.");
+            throw new Error("Can't create records when no user logged in first. Call authenticate() before trying to create records.");
         }
         // Convert the resource to a FHIR-structured simple js object.
         var fhirObject;
@@ -217,16 +221,69 @@ var Midata = (function () {
             }
         })
             .catch(function (response) {
+            // convenience variable
+            var logMsg = "Please login again using method authenticate()";
             if (response.status === 401) {
-                // TODO: Try to login with refresh token if there is one and
-                // retry to save resource. Only if it still fails proceed with logout.
-                _this.logout();
+                return new es6_promise_1.Promise(function (resolve, reject) {
+                    console.log("Error, " + response.message + " => Trying to refresh your tokens and save again...");
+                    // retry to save resource. Proceed with logout if the operation somehow still fails.
+                    // premise: existing refresh token
+                    if (_this.refreshToken) {
+                        // short logging of what's been going on during each case of the token recovery process.
+                        // try to refresh the access token using the refresh token
+                        _this.refresh().then(function (_) {
+                            console.log("Success! Tokens restored. Retry action..."); // recovery successful
+                            apiMethod(fhirObject).then(function (response) {
+                                console.log("Success! Proceed..."); // operation successful
+                                resolve(JSON.parse(response.body)); // return created object
+                            }, function (error) {
+                                // retry method call not successful, logout and force authentication
+                                _this.logout();
+                                console.log("Still receiving error, abort. " + logMsg);
+                                reject(error);
+                            });
+                        }, function (error) {
+                            // token recovery not successful, logout and force authentication
+                            _this.logout();
+                            console.log("Error during refresh process. " + logMsg);
+                            reject(error);
+                            // rather unlikely, but still...
+                            // catch other errors during callback..
+                        }).catch(function (error) {
+                            // .. and force new authentication as well in case of such happenings
+                            _this.logout();
+                            console.log("Internal Error, abort. " + logMsg);
+                            reject(error);
+                        });
+                    }
+                    else {
+                        // refresh token not existing. Force authentication by logging out.
+                        _this.logout();
+                        console.log("Refresh token not available!  " + logMsg);
+                        reject(response);
+                    }
+                });
             }
+            // No 401 error. Therefore, no retry. Return response from
+            // first apiMethod call
             return es6_promise_1.Promise.reject(response);
         });
     };
+    /**
+     * Query the midata API using FHIR resource types and optional params.
+     *
+     * @param resourceType e.g. Observation
+     * @param params e.g. {status: 'preliminary'}
+     * @return The promise returns an array of objects matching the search param(s). In case of failure, an error of type
+     *         ApiCallResponse will be returned.
+     */
     Midata.prototype.search = function (resourceType, params) {
         if (params === void 0) { params = {}; }
+        // Check if the user is logged in, otherwise no record can be
+        // created or updated.
+        if (this._authToken === undefined) {
+            throw new Error("Can't search for records when no user logged in first. Call authenticate() before trying to query the API.");
+        }
         var baseUrl = this._host + "/fhir/" + resourceType;
         return this._search(baseUrl, params);
     };
@@ -261,12 +318,68 @@ var Midata = (function () {
             }
         })
             .catch(function (response) {
+            // convenience variable
+            var logMsg = "Please login again using method authenticate()";
             if (response.status === 401) {
-                // TODO: Try to login with refresh token if there is one and
-                // retry the search.. Only if it still fails proceed with logout.
-                _this.logout();
-                return es6_promise_1.Promise.reject(response);
+                return new es6_promise_1.Promise(function (resolve, reject) {
+                    console.log("Error, " + response.message + " => Trying to refresh your tokens and save again...");
+                    // retry to save resource. Proceed with logout if the operation somehow still fails.
+                    // premise: existing refresh token
+                    if (_this.refreshToken) {
+                        // short logging of what's been going on during each case of the token recovery process.
+                        // try to refresh the access token using the refresh token
+                        _this.refresh().then(function (_) {
+                            console.log("Success! Tokens restored. Retry action..."); // recovery successful
+                            util_1.apiCall({
+                                url: url,
+                                method: 'GET',
+                                jsonBody: true,
+                                headers: {
+                                    'Authorization': 'Bearer ' + _this._authToken,
+                                    'Content-Type': 'application/json+fhir;charset=utf-8'
+                                }
+                            }).then(function (response) {
+                                if (response.body.entry !== undefined) {
+                                    var entries = response.body.entry;
+                                    // we need Promise.all here since entries is iterable
+                                    var resources = es6_promise_1.Promise.all(entries.map(function (e) {
+                                        return registry_1.fromFhir(e.resource);
+                                    }));
+                                    resolve(resources); // return array containing results
+                                }
+                                else {
+                                    resolve([]); // or return empty array if no results
+                                }
+                            }, function (error) {
+                                // retry method call not successful, logout and force authentication
+                                _this.logout();
+                                console.log("Still receiving error, abort. " + logMsg);
+                                reject(error);
+                            });
+                        }, function (error) {
+                            // token recovery not successful, logout and force authentication
+                            _this.logout();
+                            console.log("Error during refresh process. " + logMsg);
+                            reject(error);
+                            // rather unlikely, but still...
+                            // catch other errors during callback..
+                        }).catch(function (error) {
+                            // .. and force new authentication as well in case of such happenings
+                            _this.logout();
+                            console.log("Internal Error, abort. " + logMsg);
+                            reject(error);
+                        });
+                    }
+                    else {
+                        // refresh token not existing. Force authentication by logging out.
+                        _this.logout();
+                        console.log("Refresh token not available!  " + logMsg);
+                        reject(response);
+                    }
+                });
             }
+            // No 401 error. Therefore, no retry. Return response from
+            // first apiCall
             return es6_promise_1.Promise.reject(response);
         });
     };
@@ -307,7 +420,6 @@ var Midata = (function () {
         var _this = this;
         return new es6_promise_1.Promise(function (resolve, reject) {
             _this._refresh().then(function (body) {
-                console.log("Tokens refreshed!");
                 resolve(body);
             })
                 .catch(function (error) {
@@ -327,12 +439,7 @@ var Midata = (function () {
     Midata.prototype._authenticate = function () {
         var _this = this;
         var USERAUTH_ENDPOINT = function () {
-            return _this._authEndpoint +
-                "?response_type=" + 'code' +
-                "&client_id=" + _this._appName +
-                "&redirect_uri=" + 'http://localhost/callback' +
-                "&aud=" + 'https:%2F%2Ftest.midata.coop:9000%2Ffhir' +
-                "&scope=" + 'user%2F*.*';
+            return _this._authEndpoint + "?response_type=code&client_id=" + _this._appName + "&redirect_uri=http://localhost/callback&aud=" + _this._host + "%2Ffhir&scope=user%2F*.*";
         };
         return new es6_promise_1.Promise(function (resolve, reject) {
             var browser = new ionic_native_1.InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
@@ -385,7 +492,7 @@ var Midata = (function () {
                 var body = response.body;
                 // set login data
                 _this._setLoginData(body.access_token, body.refresh_token);
-                console.log("login data set! resolve...");
+                console.log("Login data set! resolve...");
                 resolve(body);
             })
                 .catch(function (response) {
