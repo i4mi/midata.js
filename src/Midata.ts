@@ -3,7 +3,7 @@ import {
     TokenRequest,
     TokenResponse
 } from './api';
-import {Promise} from '../../../node_modules/es6-promise';
+import {Promise} from 'es6-promise'
 import {apiCall, ApiCallResponse} from './util';
 import {InAppBrowser, InAppBrowserEvent} from 'ionic-native';
 import {URLSearchParams} from "@angular/http";

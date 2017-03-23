@@ -20,7 +20,6 @@
     "karma-webpack": "^1.8.0",
     "phantomjs": "^2.1.7",
     "ts-loader": "^1.2.2",
-    "typescript": "^2.0.10",
     "webpack": "^1.13.3"
   },
   "dependencies": {
