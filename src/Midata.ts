@@ -1,7 +1,7 @@
 import {
     TokenRefreshResponse,
     TokenRequest,
-    TokenResponse
+    TokenResponse, AuthRequest, UserRole, AuthResponse
 } from './api';
 import {Promise} from 'es6-promise'
 import {apiCall, ApiCallResponse} from './util';
@@ -13,6 +13,11 @@ import {Resource} from "./resources/Resource";
 declare var window: any;
 declare var cordova: any;
 
+export interface User {
+    name: string;
+    id: string;
+}
+
 export class Midata {
 
     private _authToken: string;
@@ -20,6 +25,8 @@ export class Midata {
     private _authCode: string;
     private _tokenEndpoint: string;
     private _authEndpoint: string;
+    private _user: User;
+
 
     /**
      * @param _host The url of the midata server, e.g. "https://test.midata.coop:9000".
@@ -29,6 +36,7 @@ export class Midata {
      */
     constructor(private _host: string,
                 private _appName: string,
+                private _secret?: string,
                 private _conformanceStatementEndpoint?: string) {
 
 
@@ -107,15 +115,70 @@ export class Midata {
      Set login-specific properties. This method should be called either during
      startup or when the login method is called explicitly.
      */
-    private _setLoginData(authToken: string, refreshToken: string) {
+    private _setLoginData(authToken: string, refreshToken: string, user?: User) {
         this._authToken = authToken;
         this._refreshToken = refreshToken;
+        this._user = user;
         if (window.localStorage) {
             localStorage.setItem('midataLoginData', JSON.stringify({
                 authToken: authToken,
-                refreshToken: refreshToken
+                refreshToken: refreshToken,
+                user: user
             }));
         }
+    }
+
+
+    /**
+     * Login to the MIDATA platform. This method has to be called prior to
+     * creating or updating resources.
+     *
+     * @deprecated only use this method if your app does not support oAuth2 authentication
+     * @param username The user's identifier, most likely an email address.
+     * @param password The user's password.
+     * @param role The user's role used during the login (optional).
+     * @return If the login was successful the return value will be a resolved
+     *         promise that contains the newly generated authentication and
+     *         refresh token. In case the login failed the return value
+     *         will be a rejected promise containing the error message.
+     */
+    login(username: string, password: string, role?: UserRole): Promise<any> {
+        if (username === undefined || password === undefined) {
+            throw new Error('You need to supply a username and a password!');
+        }
+        let authRequest: AuthRequest = {
+            username: username,
+            password: password,
+            appname: this._appName,
+            secret: this._secret
+        };
+        if (role !== undefined) {
+            authRequest.role = role;
+        }
+
+        let result = apiCall({
+            url: this._host + '/v1/auth',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            jsonBody: true,
+            payload: authRequest
+        })
+            .then(response => {
+                let body: AuthResponse = response.body;
+                let user = {
+                    id: body.owner,
+                    name: username
+                };
+                this._setLoginData(body.authToken, body.refreshToken, user);
+                return body;
+            })
+            .catch(error => {
+                return Promise.reject(error);
+            });
+
+        return result;
     }
 
 
@@ -633,5 +696,29 @@ export class Midata {
 
             return Promise.reject(error);
         });
+    }
+
+    /**
+     *
+     * This method deletes a resource on midata.
+     *
+     * @param resourceType e.g. HeartRate
+     * @param id (unique)
+     * @return The promise returns the response body. In case of failure, an error of type
+     *         ApiCallResponse will be returned.
+     */
+
+    delete(resourceType: string, id: number | string) {
+        let url = `${this._host}/fhir/${resourceType}/${id}`;
+        return apiCall({
+            url: url,
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + this._authToken
+            }
+        })
+            .then((response: any) => {
+                console.log(response);
+            });
     }
 }
