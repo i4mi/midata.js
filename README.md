@@ -1,83 +1,137 @@
 MIDATA.js
 =========
 
+A collection of utility classes and functions to interact with the MIDATA.coop platform.
+
+Update 2.0
+-----------
+
+- Added support for end user authentication using OAuth2
+
 Installation
-------------
+-----------
 
-There are some examples on how to install and use the library in different setups (bower, es6, typescript) in the `examples` directory. TLDR:
+The following steps will show you how to install and use the midata.js lib in your custom ionic 2 project.
 
-### bower
 
-Install the library
+1. Register your application in the midata developer backend (see https://test.midata.coop/#/developer/guide).
 
-    $ bower install i4mi/midata.js#v1.3  --save
+2. Create your ionic 2 project (skip this step if you've already created one).
 
-Include it in your index.html:
+2. Install the library
 
-    <!-- Include the library from your bower components directory, i.e. 'lib' or -->
-    <!-- 'bower_components' or whatver your .bowerrc file specifies. -->
-    <script src="lib/midata.js/dist/midata.js"></script>
+       $ npm install https://github.com/i4mi/midata.js#v2.0  --save
+    
+3. Install the `cordova inappbrowser plugin`. This plugin is required to make the platform's native in app browser handling work properly.
 
-### npm
+       $ cordova plugin add cordova-plugin-inappbrowser
+       
+4. Include the library into your project.
 
-    $ npm install https://github.com/i4mi/midata.js#v1.3  --save
+       
+       // In your target Service (e.g. network service) add the following:
+       
+       import {Midata} from 'midata';
+       
+       let midata: Midata;
+       
+       ...
+              
+Initialize the midata object within your service's constructor
+       
+       @Injectable()
+       export class DataService {
+       
+       constructor(...) {
+       
+       ... 
+      
+       midata = new Midata("https://test.midata.coop:9000","oauth2test");
+       
+       }
+         
+       // Login using oAuth2
+            
+         login(){
+           return midata.authenticate();
+         }
+           
+           
+In your target page inject your DataService and let it access the MIDATA library
 
-Usage
------
+       import {Page} from 'ionic/ionic';
+       import {DataService} from './service';
+       
+       @Component({
+       selector: 'page-target',
+       templateUrl: 'target.html'
+       })
+       
+       export class TargetPage {
+       
+         constructor(private data: DataService) {
+         
+           ...
+           
+         }
+         
+       ...
+         
+         onLogin(){
+           this.data.login().then(response => {
+             console.log(response);
+       
+             // TODO: Implement your logic (e.g. push welcome site, do stuff, etc.)
+                    
+           });
 
-The following example assumes you installed the library via bower.
+       }
+       
+       
+The following extension assumes that, after successful login, you would then subsequently like to store a measured body weight on MIDATA.
 
-    var md = new midata.Midata(
-        'https://test.midata.coop:9000', 'my_app_name', 'my_app_secret');
+In your target Service (e.g. network service) add the Resource import statement.
+              
+       import {Midata, Resource} from 'midata';
+            
+       ...
 
-    // Login
-    md.login('user@example.com', 'my_password')
-    .then(function() {
-        console.log('Logged in!');
-        console.log('User id:', md.user.id);
-    });
 
-    // Create a FHIR resource with a simplified constructor
-    var weight = new midata.BodyWeight(72, new Date());
+Implement the wrapper method
 
-    md.save(weight)
-    .then(function() {
-        console.log('Resource created!');
-    });
+       saveResource(r : Resource) {
+       
+          return midata.save(r);
+       
+       }
+       
+Back in your target page add the import statement for the BodyWeight resource
 
-    // Or, alternatively, create a FHIR resource with a JS object
-    var weight = {
-        resourceType: 'Observation',
-        code: {
-            coding: [{
-                system: 'http://loinc.org',
-                code: '3141-9',
-                display: 'Weight Measured'
-            }]
-        },
-        effectiveDateTime: '2016-01-01',
-        valueQuantity: {
-            value: 72,
-            unit: 'kg',
-            system: 'http://unitsofmeasure.org'
+
+       import {Page} from 'ionic/ionic';
+       import {DataService} from './service';
+       import {BodyWeight} from 'midata';
+       
+       ...
+       
+       
+Finally implement the service method call
+
+       ...
+       
+       onSave(){
+       
+         let bw = new BodyWeight(85, new Date()); // just for demonstration. 
+         // in practice you would most likely pass a body weight object on method invocation or fetch it from somewhere...
+       
+         this.data.saveResource(bw).then(response => {
+           console.log(response);
+              
+            // TODO: Implement your logic (notify user about successful storage on midata, do stuff, etc.)
+                           
+            });
+       
         }
-    };
-
-    // Save the resource
-    md.save(weight)
-    .then(function() {
-        console.log('Resource created!');
-    })
-    .catch(function(error) {
-        console.log('There was an error!', error)
-    });
-
-    // Search for resources
-    md.search('Observation', {
-        code: "http://loinc.org|6690-2"
-    }).then(function(resources) {
-        console.log('Got resources: ', resources);
-    });
 
 
 Development
