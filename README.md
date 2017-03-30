@@ -14,9 +14,11 @@ Installation
 The following steps will show you how to install and use the midata.js lib in your custom ionic 2 project.
 
 
-1. Register your application in the midata developer backend (see https://test.midata.coop/#/developer/guide).
+1. Register your application in the midata developer backend (see https://test.midata.coop/#/developer/guide). 
 
-2. Create your ionic 2 project (skip this step if you've already created one).
+   **Important:** Use `http://localhost/callback` as redirect URI.
+
+2. Create your ionic 2 project `ionic start %YOUR_PROJECTNAME blank --v2` (skip this step if you've already created one).
 
 2. Install the library
 
@@ -25,11 +27,12 @@ The following steps will show you how to install and use the midata.js lib in yo
 3. Install the `cordova inappbrowser plugin`. This plugin is required to make the platform's native in app browser handling work properly.
 
        $ cordova plugin add cordova-plugin-inappbrowser
-       
-4. Include the library into your project.
+         
+Usage
+-----------
 
        
-       // In your target Service (e.g. network service) add the following:
+In your target service (e.g. network service) add the following:
        
        import {Midata} from 'midata';
        
@@ -46,7 +49,8 @@ Initialize the midata object within your service's constructor
        
        ... 
       
-       midata = new Midata("https://test.midata.coop:9000","oauth2test");
+       midata = new Midata("https://test.midata.coop:9000","oauth2test"); // the app name (2nd statement) must match
+       // the internal app name that you configured upon registration of your application on MIDATA.
        
        }
          
@@ -88,9 +92,9 @@ In your target page inject your DataService and let it access the MIDATA library
        }
        
        
-The following extension assumes that, after successful login, you would then subsequently like to store a measured body weight on MIDATA.
+The following extension assumes that after successful login you would then subsequently like to store a measured body weight onto MIDATA.
 
-In your target Service (e.g. network service) add the Resource import statement.
+In your target service (e.g. network service) add the Resource import statement.
               
        import {Midata, Resource} from 'midata';
             
