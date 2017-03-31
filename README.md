@@ -3,10 +3,15 @@ MIDATA.js
 
 A collection of utility classes and functions to interact with the MIDATA.coop platform.
 
-Update 2.0
------------
+
 
 - Added support for end user authentication using OAuth2
+
+Release Notes
+-----------
+
+- 2.1: Minor. Reintroduced get user method
+- 2.0: Added support for end user authentication using OAuth2
 
 Installation
 -----------
@@ -18,7 +23,7 @@ The following steps will show you how to install and use the midata.js lib in yo
 
    **Important:** Use `http://localhost/callback` as redirect URI.
 
-2. Create your ionic 2 project `ionic start %YOUR_PROJECTNAME blank --v2` (skip this step if you've already created one).
+2. Create your ionic 2 project `ionic start %YOUR_PROJECTNAME blank% --v2` (skip this step if you've already created one).
 
 2. Install the library
 
@@ -138,7 +143,7 @@ Finally implement the service method call
         }
 
 
-Development
+For Developers
 -----------
 
 ### Initial setup
