@@ -11,7 +11,7 @@ import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
 
 declare var window: any;
-declare var cordova: any;
+//declare var cordova: any;
 
 export interface User {
     name: string;
@@ -40,10 +40,10 @@ export class Midata {
                 private _conformanceStatementEndpoint?: string) {
 
 
-        if (cordova && cordova.InAppBrowser) {
-
-            window.open = cordova.InAppBrowser.open;
-        }
+        // if (cordova && cordova.InAppBrowser) {
+        //
+        //     window.open = cordova.InAppBrowser.open;
+        // }
 
         this._conformanceStatementEndpoint = _conformanceStatementEndpoint || `${_host}/fhir/metadata`;
 
@@ -97,6 +97,14 @@ export class Midata {
      */
     get refreshToken() {
         return this._refreshToken;
+    }
+
+    /*
+     The current user as created upon execution of login(). If no user is set,
+     this property will be undefined.
+     */
+    get user(){
+        return this._user;
     }
 
     /*

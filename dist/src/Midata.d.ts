@@ -27,6 +27,7 @@ export declare class Midata {
     readonly loggedIn: boolean;
     readonly authToken: string;
     readonly refreshToken: string;
+    readonly user: User;
     logout(): void;
     private _setLoginData(authToken, refreshToken, user?);
     /**
