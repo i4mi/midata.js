@@ -3,10 +3,6 @@ MIDATA.js
 
 A collection of utility classes and functions to interact with the MIDATA.coop platform.
 
-
-
-- Added support for end user authentication using OAuth2
-
 Release Notes
 -----------
 
