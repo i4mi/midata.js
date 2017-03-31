@@ -19,7 +19,7 @@ The following steps will show you how to install and use the midata.js lib in yo
 
    **Important:** Use `http://localhost/callback` as redirect URI.
 
-2. Create your ionic 2 project `ionic start %YOUR_PROJECTNAME blank% --v2` (skip this step if you've already created one).
+2. Create your ionic 2 project `ionic start %YOUR_PROJECTNAME% blank --v2` (skip this step if you've already created one).
 
 2. Install the library
 
