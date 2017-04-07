@@ -22,7 +22,19 @@ export class Resource {
         return this._fhir.id;
     }
 
+    relativeID(idParam: string){
+
+        this._fhir.id = idParam;
+
+    }
+
     get resourceType(): string {
         return this._fhir.resourceType;
     }
+
+
+    get reference(): string {
+        return `${this._fhir.resourceType}/${this._fhir.id}`
+    }
+
 };

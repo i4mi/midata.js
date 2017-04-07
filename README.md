@@ -5,7 +5,7 @@ A collection of utility classes and functions to interact with the MIDATA.coop p
 
 Release Notes
 -----------
-
+- 2.2: Minor. Added support for Bundles.
 - 2.1: Minor. Reintroduced get user method
 - 2.0: Added support for end user authentication using OAuth2
 
@@ -23,7 +23,7 @@ The following steps will show you how to install and use the midata.js lib in yo
 
 2. Install the library
 
-       $ npm install https://github.com/i4mi/midata.js#v2.1  --save
+       $ npm install https://github.com/i4mi/midata.js#v2.2  --save
     
 3. Install the `cordova inappbrowser plugin`. This plugin is required to make the platform's native in app browser handling work properly.
 
@@ -55,7 +55,7 @@ Initialize the midata object within your service's constructor
        
        }
          
-       // Login using oAuth2
+       // login using oAuth2
             
          login(){
            return midata.authenticate();

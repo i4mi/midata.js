@@ -11,7 +11,7 @@ import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
 
 declare var window: any;
-declare var cordova: any;
+// declare var cordova: any;
 
 export interface User {
     name: string;
@@ -40,10 +40,10 @@ export class Midata {
                 private _conformanceStatementEndpoint?: string) {
 
 
-         if (cordova && cordova.InAppBrowser) {
-
-             window.open = cordova.InAppBrowser.open;
-         }
+         // if (cordova && cordova.InAppBrowser) {
+         //
+         //     window.open = cordova.InAppBrowser.open;
+         // }
 
         this._conformanceStatementEndpoint = _conformanceStatementEndpoint || `${_host}/fhir/metadata`;
 
@@ -218,7 +218,8 @@ export class Midata {
 
         // If the resource didn't have an id, then the resource has to be
         // created on the server.
-        let shouldCreate = fhirObject.id === undefined;
+        let shouldCreate = fhirObject.id === undefined || fhirObject.resourceType === "Bundle"; // By default
+        // a bundle holds an id upon creation. Therefore, additionally check for resource type
         let apiMethod = shouldCreate ? this._create : this._update;
 
         return apiMethod(fhirObject)
@@ -300,7 +301,15 @@ export class Midata {
      Helper method to create FHIR resources via a HTTP POST call.
      */
     private _create = (fhirObject: any) => {
-        let url = `${this._host}/fhir/${fhirObject.resourceType}`;
+
+        let url: string; // for convenience
+
+        if(fhirObject.resourceType === "Bundle"){
+            url = `${this._host}/fhir`;
+        } else {
+            url = `${this._host}/fhir/${fhirObject.resourceType}`;
+        }
+
         return apiCall({
             jsonBody: false,  // needs to be false since no json is returned
             url: url,

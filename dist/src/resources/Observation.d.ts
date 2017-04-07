@@ -14,3 +14,8 @@ export declare class MultiObservation extends Resource {
     constructor(date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept);
     addComponent(component: fhir.ObservationComponent): void;
 }
+export declare class MiTrendsObservation extends Resource {
+    constructor(date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept, status: ObservationStatus, bodySite?: fhir.CodeableConcept, comment?: string);
+    addComponent(component: fhir.ObservationComponent): void;
+    addRelated(resource: Resource): void;
+}

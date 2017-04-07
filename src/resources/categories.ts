@@ -15,3 +15,13 @@ export const Laboratory: fhir.CodeableConcept = {
     }],
     text: 'Laboratory'
 };
+
+export const Survey: fhir.CodeableConcept = {
+    coding: [{
+        system: 'http://hl7.org/fhir/observation-category',
+        code: 'survey',
+        display: 'Survey'
+    }],
+    text: 'Survey'
+
+};

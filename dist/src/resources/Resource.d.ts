@@ -5,5 +5,7 @@ export declare class Resource {
     removeProperty(key: string): void;
     toJson(): any;
     readonly id: string;
+    relativeID(idParam: string): void;
     readonly resourceType: string;
+    readonly reference: string;
 }
