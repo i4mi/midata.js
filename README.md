@@ -5,7 +5,7 @@ A collection of utility classes and functions to interact with the MIDATA.coop p
 
 Release Notes
 -----------
-- 2.2: Minor. Added support for Bundles.
+- 2.2: Minor. Added support for Bundles
 - 2.1: Minor. Reintroduced get user method
 - 2.0: Added support for end user authentication using OAuth2
 
