@@ -24,6 +24,7 @@
     "webpack": "^1.13.3"
   },
   "dependencies": {
+    "@types/fhir": "^1.0.30",
     "es6-promise": "^4.0.5",
   }
 }
