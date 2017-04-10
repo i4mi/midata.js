@@ -3,7 +3,6 @@ import stringMatching = jasmine.stringMatching;
 import {Promise} from "es6-promise";
 
 // http://www.hl7.org/fhir/bundle-type
-
 export type BundleType =
     'document'       |
         'message'      |
@@ -17,7 +16,7 @@ export type BundleType =
 
 export class Bundle extends Resource {
 
-    constructor(type : BundleType) {
+    constructor(type: BundleType) {
 
         super('Bundle');
 
@@ -41,7 +40,7 @@ export class Bundle extends Resource {
                 var length: number = Number(this._fhir.entry.length) || 0;
 
                 // set the relative id
-                entry.relativeID(String(length+=1));
+                entry.relativeID(String(length += 1));
 
                 // push entry to array
                 this._fhir.entry.push({
@@ -61,4 +60,15 @@ export class Bundle extends Resource {
 
         });
     }
-};
+
+
+    // TODO: GET ENTRY BY ID, CODE, GET ENTRIES
+
+    get entries(): any {
+
+        return super.getProperty("entry");
+
+    }
+
+}
+;

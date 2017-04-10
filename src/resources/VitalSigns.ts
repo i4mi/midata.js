@@ -1,9 +1,8 @@
 import { VitalSigns as VitalSignsCategory } from './categories';
-import { Observation } from './Observation';
+import {QuantityObservation} from "./Observation";
 
 
-export class VitalSigns extends Observation {
-
+export class VitalSigns extends QuantityObservation {
     constructor(quantity: fhir.Quantity,
                 date: Date,
                 code: fhir.CodeableConcept) {

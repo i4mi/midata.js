@@ -1,10 +1,10 @@
-import { MultiObservation} from './Observation';
 import { VitalSigns } from './categories';
 import { registerResource } from './registry';
+import {Observation} from "./Observation";
 
 
 @registerResource('55417-0')
-export class BloodPressure extends MultiObservation {
+export class BloodPressure extends Observation {
     constructor(systolic: number, diastolic: number, date: Date) {
         let code = {
             coding: [{

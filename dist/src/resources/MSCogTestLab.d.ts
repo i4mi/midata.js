@@ -1,6 +1,6 @@
-import { MiTrendsObservation, ObservationStatus } from "./Observation";
-export declare class MSCogTestLab extends MiTrendsObservation {
-    constructor(date: Date, status: ObservationStatus, tryAmount: number);
+import { Observation } from "./Observation";
+export declare class MSCogTestLab extends Observation {
+    constructor(date: Date, tryAmount: number);
     addNbClicks(clickAmount: number): void;
     addNbPointsLab(pointsLabAmount: number): void;
     addNbCorrectConnections(correctConnectionsAmount: number): void;

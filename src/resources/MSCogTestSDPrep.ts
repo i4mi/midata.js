@@ -1,10 +1,10 @@
 import {Survey} from './categories';
 import {registerResource} from './registry';
-import {MiTrendsObservation, ObservationStatus} from "./Observation";
+import {Observation} from "./Observation";
 
 @registerResource('MSCogTestSDPrep')
-export class MSCogTestSDPrep extends MiTrendsObservation {
-    constructor(date: Date, status: ObservationStatus) {
+export class MSCogTestSDPrep extends Observation {
+    constructor(date: Date) {
         let code = {
             coding: [
                 {
@@ -15,7 +15,7 @@ export class MSCogTestSDPrep extends MiTrendsObservation {
             ]
         };
 
-        super(date, code, Survey, status);
+        super(date, code, Survey);
 
     }
 

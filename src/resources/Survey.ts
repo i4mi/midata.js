@@ -1,8 +1,8 @@
 import { Survey as SurveyCategory } from './categories';
-import { Observation } from './Observation';
+import {QuantityObservation} from "./Observation";
 
 
-export class Survey extends Observation {
+export class Survey extends QuantityObservation {
     constructor(quantity: fhir.Quantity,
                 date: Date,
                 code: fhir.CodeableConcept) {

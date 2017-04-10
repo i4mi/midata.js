@@ -1,15 +1,4 @@
-import { Resource } from './Resource';
-
-
-// https://www.hl7.org/fhir/valueset-observation-status.html
-export type ObservationStatus =
-    'registered'       |
-        'preliminary'      |
-        'final'            |
-        'amended'          |
-        'cancelled'        |
-        'entered-in-error' |
-        'unknown';
+import {Resource} from './Resource';
 
 /**
  * Measurements and simple assertions made about a patient, device or other
@@ -19,73 +8,29 @@ export type ObservationStatus =
  */
 export class Observation extends Resource {
 
-    constructor(quantity: fhir.Quantity,
-                date: Date,
-                code: fhir.CodeableConcept,
-                category: fhir.CodeableConcept) {
-        super('Observation');
-        this.addProperty('status', 'final');
-        this.addProperty('code', code);
-        this.addProperty('effectiveDateTime', date.toISOString());
-        this.addProperty('valueQuantity', quantity);
-        this.addProperty('category', category);
-    }
-};
-
-export class MultiObservation extends Resource {
     constructor(date: Date,
                 code: fhir.CodeableConcept,
                 category: fhir.CodeableConcept) {
         super('Observation');
-        this.addProperty('status', 'final');
+        this.addProperty('status', 'preliminary');
+        this.addProperty('category', category);
         this.addProperty('code', code);
         this.addProperty('effectiveDateTime', date.toISOString());
-        this.addProperty('component', []);
-        this.addProperty('category', category);
     }
 
     addComponent(component: fhir.ObservationComponent) {
+
+        if (this._fhir['component'] == null) {
+            this.addProperty('component', []);
+        }
         this._fhir.component.push(component);
     }
 
-};
-
-
-
-export class MiTrendsObservation extends Resource {
-    constructor(date: Date,
-                code: fhir.CodeableConcept,
-                category: fhir.CodeableConcept,
-                status: ObservationStatus,
-                bodySite?: fhir.CodeableConcept,
-                comment?: string) {
-        super('Observation');
-        this.addProperty('status', status);
-        this.addProperty('code', code);
-        this.addProperty('effectiveDateTime', date.toISOString());
-
-        if (bodySite) {
-            this.addProperty('bodySite', bodySite); // added for MitrendS
-        }
-
-        if (comment) {
-            this.addProperty('comment', comment); //
-        }
-
-        this.addProperty('component', []);
-        this.addProperty('category', category);
-    }
-
-    addComponent(component: fhir.ObservationComponent) {
-        this._fhir.component.push(component);
-    }
-
-
-    addRelated(resource: Resource){
-        if (this._fhir['related'] == null){ // check null or undefined
+    addRelated(resource: Resource) {
+        if (this._fhir['related'] == null) {
             this.addProperty('related', []);
         }
-        this._fhir.related.push({ // push reference from handed resource
+        this._fhir.related.push({
 
             type: "has-member",
             target: {
@@ -93,4 +38,17 @@ export class MiTrendsObservation extends Resource {
             }
         });
     }
-};
+}
+;
+
+export class QuantityObservation extends Observation {
+
+    constructor(quantity: fhir.Quantity,
+                date: Date,
+                code: fhir.CodeableConcept,
+                category: fhir.CodeableConcept) {
+        super(date, code, category);
+        this.addProperty('valueQuantity', quantity);
+    }
+}
+;

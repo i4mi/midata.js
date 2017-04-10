@@ -5,4 +5,5 @@ export declare type BundleType = 'document' | 'message' | 'transaction' | 'trans
 export declare class Bundle extends Resource {
     constructor(type: BundleType);
     addEntry(method: fhir.code, url: fhir.uri, entry: Resource): Promise<string>;
+    readonly entries: any;
 }

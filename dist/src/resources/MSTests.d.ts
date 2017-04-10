@@ -1,6 +1,6 @@
-import { MiTrendsObservation, ObservationStatus } from "./Observation";
 import { Resource } from './Resource';
-export declare class MSTests extends MiTrendsObservation {
-    constructor(date: Date, status: ObservationStatus, comment: string);
+import { Observation } from "./Observation";
+export declare class MSTests extends Observation {
+    constructor(date: Date, comment: string);
     addRelated(resource: Resource): void;
 }

@@ -1,6 +1,6 @@
-import { MiTrendsObservation, ObservationStatus } from "./Observation";
-export declare class MSCogTestSD extends MiTrendsObservation {
-    constructor(date: Date, status: ObservationStatus);
+import { Observation } from "./Observation";
+export declare class MSCogTestSD extends Observation {
+    constructor(date: Date);
     addNbCorrectPartResults(firstPeriod: string, secondPeriod: string, thirdPeriod: string, fourthPeriod: string): void;
     addNbIncorrectPartResults(firstPeriod: string, secondPeriod: string, thirdPeriod: string, fourthPeriod: string): void;
     addClickFreqPartResults(firstPeriod: string, secondPeriod: string, thirdPeriod: string, fourthPeriod: string): void;

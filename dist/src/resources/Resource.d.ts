@@ -6,6 +6,7 @@ export declare class Resource {
     toJson(): any;
     readonly id: string;
     relativeID(idParam: string): void;
+    getProperty(property: string): any;
     readonly resourceType: string;
     readonly reference: string;
 }

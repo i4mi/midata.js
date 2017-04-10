@@ -1,13 +1,13 @@
 import {Survey} from "./categories";
-import {MiTrendsObservation, ObservationStatus} from "./Observation";
 import {registerResource} from "./registry";
+import {Observation} from "./Observation";
 
 export type handSide = "left" | "right";
 export type x = 1 | 2 | 3 | 4;
 
 @registerResource('MSMotTestLine')
-export class MSMotTestLine extends MiTrendsObservation {
-    constructor(date: Date, status: ObservationStatus, handSide: handSide) {
+export class MSMotTestLine extends Observation {
+    constructor(date: Date, handSide: handSide) {
         let code = {
             coding: [
                 {
@@ -28,7 +28,9 @@ export class MSMotTestLine extends MiTrendsObservation {
             ]
         };
 
-        super(date, code, Survey, status, bodySite);
+        super(date, code, Survey);
+
+        super.addProperty("bodysite", bodySite);
 
     }
 

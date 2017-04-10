@@ -1,8 +1,8 @@
 import { Laboratory as LaboratoryCategory } from './categories';
-import { Observation } from './Observation';
+import {QuantityObservation} from "./Observation";
 
 
-export class Laboratory extends Observation {
+export class Laboratory extends QuantityObservation {
     constructor(quantity: fhir.Quantity,
                 date: Date,
                 code: fhir.CodeableConcept) {

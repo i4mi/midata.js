@@ -1,5 +1,5 @@
 /// <reference types="fhir" />
-import { Observation } from './Observation';
-export declare class Laboratory extends Observation {
+import { QuantityObservation } from "./Observation";
+export declare class Laboratory extends QuantityObservation {
     constructor(quantity: fhir.Quantity, date: Date, code: fhir.CodeableConcept);
 }

@@ -28,6 +28,10 @@ export class Resource {
 
     }
 
+    getProperty(property: string){
+        return this._fhir[property];
+    }
+
     get resourceType(): string {
         return this._fhir.resourceType;
     }
@@ -36,5 +40,4 @@ export class Resource {
     get reference(): string {
         return `${this._fhir.resourceType}/${this._fhir.id}`
     }
-
 };
