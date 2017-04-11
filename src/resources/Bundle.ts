@@ -78,7 +78,6 @@ export class Bundle extends Resource {
             let filtered: fhir.BundleEntry[] = [];
             for (let entry of observationEntries) {
                 for (let codeValue of entry.resource.code.coding) {
-                    console.log(codeValue);
                     if (codeValue.code === withCode) {
                         filtered.push(entry);
                     }
