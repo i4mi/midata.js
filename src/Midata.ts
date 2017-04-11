@@ -592,17 +592,19 @@ export class Midata {
 
     private _authenticate(): Promise<InAppBrowserEvent> {
 
+        return new Promise((resolve, reject) => {
+
         let USERAUTH_ENDPOINT = () => {
             return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*`;
         };
 
+        console.log("Method called");
 
         if (this._platform.is('mobile')){
 
+            console.log("this is mobile");
+
             this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
-
-        return new Promise((resolve, reject) => {
-
 
             this._iab.on('loadstart').subscribe((event) => {
 
@@ -624,11 +626,12 @@ export class Midata {
                     reject(error);
 
                 });
-        });
 
         } else {
             console.log("InAppBrowser not available");
         }
+
+        });
     }
 
 
