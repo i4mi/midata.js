@@ -9,7 +9,7 @@ import { Resource } from './Resource';
 export declare class Observation extends Resource {
     constructor(date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept);
     addComponent(component: fhir.ObservationComponent): void;
-    addRelated(resource: Resource): void;
+    addRelated(resource: any): void;
 }
 export declare class QuantityObservation extends Observation {
     constructor(quantity: fhir.Quantity, date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept);

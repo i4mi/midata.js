@@ -26,16 +26,26 @@ export class Observation extends Resource {
         this._fhir.component.push(component);
     }
 
-    addRelated(resource: Resource) {
-        console.log(resource);
+    // TODO: COMMENT
+
+    addRelated(resource: any) {
         if (this._fhir['related'] == null) {
             this.addProperty('related', []);
+        }
+
+        let ref;
+        if (resource instanceof Resource) {
+            ref = resource.reference
+        } else if (resource.resourceType && resource.id) {
+            ref = `${resource.resourceType}/${resource.id}`
+        } else {
+            throw new Error("Error, invalid Object");
         }
         this._fhir.related.push({
 
             type: "has-member",
             target: {
-                reference: resource.reference
+                reference: ref
             }
         });
     }
