@@ -20,7 +20,18 @@ export class MSCogTestSD extends Observation {
 
     }
 
-    addNbCorrectPartResults(firstPeriod: string, secondPeriod: string, thirdPeriod: string, fourthPeriod: string) {
+    addNbCorrectPartResults(data: String[]) {
+
+        let dataStream: string;
+
+        for (let entry of data){
+            if(dataStream == null){
+                dataStream = `${entry}`
+            } else {
+                dataStream = `${dataStream} ${entry}`
+            }
+
+        }
 
         super.addComponent({
             code: {
@@ -36,7 +47,7 @@ export class MSCogTestSD extends Observation {
                 },
                 period: 15000,
                 dimensions: 1,
-                data: `${firstPeriod} ${secondPeriod} ${thirdPeriod} ${fourthPeriod}`
+                data: dataStream
             }
         })
 

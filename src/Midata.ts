@@ -11,7 +11,6 @@ import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
 
 declare var window: any;
-//declare var cordova: any;
 
 export interface User {
     name: string;
@@ -98,7 +97,7 @@ export class Midata {
      The current user as created upon execution of login(). If no user is set,
      this property will be undefined.
      */
-    get user(){
+    get user() {
         return this._user;
     }
 
@@ -299,7 +298,7 @@ export class Midata {
 
         let url: string; // for convenience
 
-        if(fhirObject.resourceType === "Bundle"){
+        if (fhirObject.resourceType === "Bundle") {
             url = `${this._host}/fhir`;
         } else {
             url = `${this._host}/fhir/${fhirObject.resourceType}`;
@@ -593,19 +592,19 @@ export class Midata {
             let USERAUTH_ENDPOINT = () => {
                 return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*`;
             };
-                this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
-                this._iab.on('loadstart').subscribe((event) => {
-                        this._iab.show();
-                        if ((event.url).indexOf("http://localhost/callback") === 0) {
-                            this._authCode = event.url.split("&")[1].split("=")[1];
-                            this._iab.close();
-                            resolve(event);
-                        }
-                    },
-                    (error) => {
-                        console.log(`Error! (${error.status}, ${error.message})`);
-                        reject(error);
-                    });
+            this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
+            this._iab.on('loadstart').subscribe((event) => {
+                    this._iab.show();
+                    if ((event.url).indexOf("http://localhost/callback") === 0) {
+                        this._authCode = event.url.split("&")[1].split("=")[1];
+                        this._iab.close();
+                        resolve(event);
+                    }
+                },
+                (error) => {
+                    console.log(`Error! (${error.status}, ${error.message})`);
+                    reject(error);
+                });
         });
     }
 
