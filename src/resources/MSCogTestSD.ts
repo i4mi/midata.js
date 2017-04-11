@@ -20,18 +20,7 @@ export class MSCogTestSD extends Observation {
 
     }
 
-    addNbCorrectPartResults(data: String[]) {
-
-        let dataStream: string;
-
-        for (let entry of data){
-            if(dataStream == null){
-                dataStream = `${entry}`
-            } else {
-                dataStream = `${dataStream} ${entry}`
-            }
-
-        }
+    addNbCorrectPartResults(data: string[]) {
 
         super.addComponent({
             code: {
@@ -47,14 +36,14 @@ export class MSCogTestSD extends Observation {
                 },
                 period: 15000,
                 dimensions: 1,
-                data: dataStream
+                data: this._extractDataStream(data)
             }
         })
 
     }
 
 
-    addNbIncorrectPartResults(firstPeriod: string, secondPeriod: string, thirdPeriod: string, fourthPeriod: string) {
+    addNbIncorrectPartResults(data: string[]) {
 
         super.addComponent({
             code: {
@@ -70,13 +59,13 @@ export class MSCogTestSD extends Observation {
                 },
                 period: 15000,
                 dimensions: 1,
-                data: `${firstPeriod} ${secondPeriod} ${thirdPeriod} ${fourthPeriod}`
+                data: this._extractDataStream(data)
             }
         })
 
     }
 
-    addClickFreqPartResults(firstPeriod: string, secondPeriod: string, thirdPeriod: string, fourthPeriod: string) {
+    addClickFreqPartResults(data: string[]) {
 
         super.addComponent({
             code: {
@@ -92,7 +81,7 @@ export class MSCogTestSD extends Observation {
                 },
                 period: 15000,
                 dimensions: 1,
-                data: `${firstPeriod} ${secondPeriod} ${thirdPeriod} ${fourthPeriod}`
+                data: this._extractDataStream(data)
             }
         })
 
@@ -168,6 +157,18 @@ export class MSCogTestSD extends Observation {
             }
         })
 
+    }
+
+    private _extractDataStream(data: string[]){
+        let dataStream: string;
+        for (let entry of data){
+            if(dataStream == null){
+                dataStream = `${entry}`
+            } else {
+                dataStream = `${dataStream} ${entry}`
+            }
+        }
+        return dataStream;
     }
 
 }

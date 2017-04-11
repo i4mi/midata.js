@@ -73,14 +73,14 @@ export class Bundle extends Resource {
     getEntries(withCode?: fhir.code) {
         if (withCode) {
             // TODO: Consider other Resource types (e.g. Patient)
-            let observations = super.getProperty("entry").filter((entry: fhir.BundleEntry) =>
+            let observationEntries = super.getProperty("entry").filter((entry: fhir.BundleEntry) =>
             entry.resource.resourceType === "Observation");
-            let filtered: fhir.Observation[] = [];
-            for (let observation of observations) {
-                for (let codeValue of observation.resource.code.coding) {
+            let filtered: fhir.BundleEntry[] = [];
+            for (let entry of observationEntries) {
+                for (let codeValue of entry.resource.code.coding) {
                     console.log(codeValue);
                     if (codeValue.code === withCode) {
-                        filtered.push(observation.resource);
+                        filtered.push(entry);
                     }
                 }
             }
