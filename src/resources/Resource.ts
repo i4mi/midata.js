@@ -6,6 +6,10 @@ export class Resource {
         this._fhir.resourceType = resourceType;
     }
 
+    getProperty(property: string) {
+        return this._fhir[property];
+    }
+
     addProperty(property: string, value: any) {
         this._fhir[property] = value;
     }
@@ -22,22 +26,18 @@ export class Resource {
         return this._fhir.id;
     }
 
-    relativeID(idParam: string){
+    setRelativeId(idParam: string) {
 
         this._fhir.id = idParam;
 
-    }
-
-    getProperty(property: string){
-        return this._fhir[property];
     }
 
     get resourceType(): string {
         return this._fhir.resourceType;
     }
 
-
     get reference(): string {
         return `${this._fhir.resourceType}/${this._fhir.id}`
     }
-};
+}
+;

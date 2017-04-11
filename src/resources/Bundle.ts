@@ -1,6 +1,7 @@
 import {Resource} from './Resource';
 import stringMatching = jasmine.stringMatching;
 import {Promise} from "es6-promise";
+import BundleEntry = fhir.BundleEntry;
 
 // http://www.hl7.org/fhir/bundle-type
 export type BundleType =
@@ -20,7 +21,7 @@ export class Bundle extends Resource {
 
         super('Bundle');
 
-        super.relativeID("bundle-transaction");
+        super.setRelativeId("bundle-transaction");
 
         this.addProperty('type', type);
         this.addProperty('entry', []);
@@ -40,7 +41,7 @@ export class Bundle extends Resource {
                 var length: number = Number(this._fhir.entry.length) || 0;
 
                 // set the relative id
-                entry.relativeID(String(length += 1));
+                entry.setRelativeId(String(length += 1));
 
                 // push entry to array
                 this._fhir.entry.push({
@@ -61,14 +62,33 @@ export class Bundle extends Resource {
         });
     }
 
-
-    // TODO: GET ENTRY BY ID, CODE, GET ENTRIES
-
-    get entries(): any {
-
-        return super.getProperty("entry");
+    getEntries(withCode?: fhir.code) {
+        if (withCode) {
+            // TODO: Consider other Resource types (e.g. Patient)
+            let observations = super.getProperty("entry").filter((entry: fhir.BundleEntry) =>
+            entry.resource.resourceType === "Observation");
+            let filtered: fhir.Observation[] = [];
+            for (let observation of observations) {
+                for (let codeValue of observation.resource.code.coding) {
+                    console.log(codeValue);
+                    if (codeValue.code === withCode) {
+                        filtered.push(observation.resource);
+                    }
+                }
+            }
+            return filtered;
+        } else {
+            return super.getProperty("entry");
+        }
 
     }
 
+    getEntry(withId: string) {
+        for (let entry of super.getProperty("entry")) {
+            if (`${entry.resource.resourceType}/${entry.resource.id}` === withId) {
+                return entry as fhir.BundleEntry;
+            }
+        }
+    }
 }
 ;

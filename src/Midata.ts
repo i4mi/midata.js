@@ -11,7 +11,7 @@ import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
 
 declare var window: any;
-declare var cordova: any;
+//declare var cordova: any;
 
 export interface User {
     name: string;
@@ -34,16 +34,17 @@ export class Midata {
      * @param _conformanceStatementEndpoint? The location of the endpoint identifying the OAuth authorize and token
      *        endpoints. Optional parameter.
      */
-    constructor(private _host: string,
+    constructor(private iab: InAppBrowser,
+                private _host: string,
                 private _appName: string,
                 private _secret?: string,
                 private _conformanceStatementEndpoint?: string) {
 
 
-         if (cordova && cordova.InAppBrowser) {
-
-             window.open = cordova.InAppBrowser.open;
-         }
+         // if (cordova && cordova.InAppBrowser) {
+         //
+         //     window.open = cordova.InAppBrowser.open;
+         // }
 
         this._conformanceStatementEndpoint = _conformanceStatementEndpoint || `${_host}/fhir/metadata`;
 
@@ -603,7 +604,7 @@ export class Midata {
         return new Promise((resolve, reject) => {
 
 
-            let browser = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
+            const browser = this.iab.create(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
             browser.on('loadstart').subscribe((event) => {
 
                     browser.show();
