@@ -18,7 +18,6 @@ export declare class Midata {
     private _authEndpoint;
     private _user;
     private _iab;
-    private _platform;
     /**
      * @param _host The url of the midata server, e.g. "https://test.midata.coop:9000".
      * @param _appName The internal application name accessing the platform (as defined on the midata platform).
