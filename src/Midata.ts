@@ -42,6 +42,11 @@ export class Midata {
                 private _secret?: string,
                 private _conformanceStatementEndpoint?: string) {
 
+
+        //this._platform = new Platform();
+
+        console.log(this._platform.platforms());
+
         this._conformanceStatementEndpoint = _conformanceStatementEndpoint || `${_host}/fhir/metadata`;
 
         if (this._conformanceStatementEndpoint !== undefined) {
@@ -594,42 +599,42 @@ export class Midata {
 
         return new Promise((resolve, reject) => {
 
-        let USERAUTH_ENDPOINT = () => {
-            return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*`;
-        };
+            let USERAUTH_ENDPOINT = () => {
+                return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*`;
+            };
 
-        console.log("Method called");
+            console.log("Method called");
 
-        if (this._platform.is('mobile')){
+            if (this._platform.is('mobile')){
 
-            console.log("this is mobile");
+                console.log("this is mobile");
 
-            this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
+                this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
 
-            this._iab.on('loadstart').subscribe((event) => {
+                this._iab.on('loadstart').subscribe((event) => {
 
-                    this._iab.show();
+                        this._iab.show();
 
-                    if ((event.url).indexOf("http://localhost/callback") === 0) {
+                        if ((event.url).indexOf("http://localhost/callback") === 0) {
 
-                        this._authCode = event.url.split("&")[1].split("=")[1];
+                            this._authCode = event.url.split("&")[1].split("=")[1];
 
-                        this._iab.close();
+                            this._iab.close();
 
-                        resolve(event);
+                            resolve(event);
 
-                    }
-                },
-                (error) => {
+                        }
+                    },
+                    (error) => {
 
-                    console.log(`Error! (${error.status}, ${error.message})`);
-                    reject(error);
+                        console.log(`Error! (${error.status}, ${error.message})`);
+                        reject(error);
 
-                });
+                    });
 
-        } else {
-            console.log("InAppBrowser not available");
-        }
+            } else {
+                console.log("InAppBrowser not available");
+            }
 
         });
     }

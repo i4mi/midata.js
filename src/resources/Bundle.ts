@@ -15,6 +15,14 @@ export type BundleType =
         'searchset' |
         'collection';
 
+// http://hl7.org/fhir/http-verb
+export type httpVerb =
+
+    'GET' |
+        'POST' |
+        'PUT' |
+        'DELETE';
+
 export class Bundle extends Resource {
 
     constructor(type: BundleType) {
@@ -32,7 +40,7 @@ export class Bundle extends Resource {
     // An entry in a bundle resource - will either contain a resource,
     // or information about a resource (transactions and history only).
 
-    addEntry(method: fhir.code, url: fhir.uri, entry: Resource) {
+    addEntry(method: httpVerb, url: fhir.uri, entry: Resource) {
 
         return new Promise<string>((resolve, reject) => {
 
