@@ -27,6 +27,7 @@ export class Observation extends Resource {
     }
 
     addRelated(resource: Resource) {
+        console.log(resource);
         if (this._fhir['related'] == null) {
             this.addProperty('related', []);
         }

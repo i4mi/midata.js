@@ -70,11 +70,13 @@ export class Bundle extends Resource {
         });
     }
 
-    getEntries(withCode?: fhir.code) {
-        if (withCode) {
-            // TODO: Consider other Resource types (e.g. Patient)
+    // TODO: comment
+
+    getObservationEntries(withCode?: fhir.code) {
+
             let observationEntries = super.getProperty("entry").filter((entry: fhir.BundleEntry) =>
             entry.resource.resourceType === "Observation");
+        if (withCode) {
             let filtered: fhir.BundleEntry[] = [];
             for (let entry of observationEntries) {
                 for (let codeValue of entry.resource.code.coding) {
@@ -85,10 +87,12 @@ export class Bundle extends Resource {
             }
             return filtered;
         } else {
-            return super.getProperty("entry");
+            return observationEntries;
         }
 
     }
+
+    // TODO: comment
 
     getEntry(withId: string) {
         for (let entry of super.getProperty("entry")) {
