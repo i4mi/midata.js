@@ -2,6 +2,7 @@ import {Resource} from './Resource';
 import stringMatching = jasmine.stringMatching;
 import {Promise} from "es6-promise";
 import BundleEntry = fhir.BundleEntry;
+import {Observation} from "./Observation";
 
 // http://www.hl7.org/fhir/bundle-type
 export type BundleType =
@@ -77,7 +78,7 @@ export class Bundle extends Resource {
             let observationEntries = super.getProperty("entry").filter((entry: fhir.BundleEntry) =>
             entry.resource.resourceType === "Observation");
         //if (withCode) {
-            let filtered: fhir.Observation[] = [];
+            let filtered: Observation[] = [];
             for (let entry of observationEntries) {
                 for (let codeValue of entry.resource.code.coding) {
                     //if (!withCode || codeValue.code === withCode) {
