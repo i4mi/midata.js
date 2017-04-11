@@ -7,6 +7,6 @@ export declare type httpVerb = 'GET' | 'POST' | 'PUT' | 'DELETE';
 export declare class Bundle extends Resource {
     constructor(type: BundleType);
     addEntry(method: httpVerb, url: fhir.uri, entry: Resource): Promise<string>;
-    getObservationEntries(withCode?: fhir.code): any;
+    getObservationEntries(withCode?: fhir.code): fhir.Observation[];
     getEntry(withId: string): BundleEntry;
 }

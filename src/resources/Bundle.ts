@@ -76,19 +76,20 @@ export class Bundle extends Resource {
 
             let observationEntries = super.getProperty("entry").filter((entry: fhir.BundleEntry) =>
             entry.resource.resourceType === "Observation");
-        if (withCode) {
-            let filtered: fhir.BundleEntry[] = [];
+        //if (withCode) {
+            let filtered: fhir.Observation[] = [];
             for (let entry of observationEntries) {
                 for (let codeValue of entry.resource.code.coding) {
-                    if (codeValue.code === withCode) {
-                        filtered.push(entry);
-                    }
+                    //if (!withCode || codeValue.code === withCode) {
+                        filtered.push(entry.resource);
+                    //}
                 }
             }
             return filtered;
-        } else {
-            return observationEntries;
-        }
+        //}
+        //else {
+        //    return observationEntries;
+        //}
 
     }
 
