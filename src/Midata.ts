@@ -6,6 +6,7 @@ import {
 import {Promise} from 'es6-promise'
 import {apiCall, ApiCallResponse} from './util';
 import {InAppBrowser, InAppBrowserEvent} from 'ionic-native';
+import {Platform} from 'ionic-angular'
 import {URLSearchParams} from "@angular/http";
 import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
@@ -26,6 +27,8 @@ export class Midata {
     private _tokenEndpoint: string;
     private _authEndpoint: string;
     private _user: User;
+    private _iab: InAppBrowser;
+    private _platform: Platform;
 
 
     /**
@@ -34,17 +37,10 @@ export class Midata {
      * @param _conformanceStatementEndpoint? The location of the endpoint identifying the OAuth authorize and token
      *        endpoints. Optional parameter.
      */
-    constructor(private iab: InAppBrowser,
-                private _host: string,
+    constructor(private _host: string,
                 private _appName: string,
                 private _secret?: string,
                 private _conformanceStatementEndpoint?: string) {
-
-
-         // if (cordova && cordova.InAppBrowser) {
-         //
-         //     window.open = cordova.InAppBrowser.open;
-         // }
 
         this._conformanceStatementEndpoint = _conformanceStatementEndpoint || `${_host}/fhir/metadata`;
 
@@ -597,23 +593,26 @@ export class Midata {
     private _authenticate(): Promise<InAppBrowserEvent> {
 
         let USERAUTH_ENDPOINT = () => {
-
             return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*`;
         };
+
+
+        if (this._platform.is('mobile')){
+
+            this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
 
         return new Promise((resolve, reject) => {
 
 
-            const browser = this.iab.create(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
-            browser.on('loadstart').subscribe((event) => {
+            this._iab.on('loadstart').subscribe((event) => {
 
-                    browser.show();
+                    this._iab.show();
 
                     if ((event.url).indexOf("http://localhost/callback") === 0) {
 
                         this._authCode = event.url.split("&")[1].split("=")[1];
 
-                        browser.close();
+                        this._iab.close();
 
                         resolve(event);
 
@@ -626,6 +625,10 @@ export class Midata {
 
                 });
         });
+
+        } else {
+            console.log("InAppBrowser not available");
+        }
     }
 
 

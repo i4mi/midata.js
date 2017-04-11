@@ -1,14 +1,12 @@
 import { TokenRefreshResponse, TokenResponse, UserRole } from './api';
 import { Promise } from 'es6-promise';
 import { ApiCallResponse } from './util';
-import { InAppBrowser } from 'ionic-native';
 import { Resource } from "./resources/Resource";
 export interface User {
     name: string;
     id: string;
 }
 export declare class Midata {
-    private iab;
     private _host;
     private _appName;
     private _secret;
@@ -19,13 +17,15 @@ export declare class Midata {
     private _tokenEndpoint;
     private _authEndpoint;
     private _user;
+    private _iab;
+    private _platform;
     /**
      * @param _host The url of the midata server, e.g. "https://test.midata.coop:9000".
      * @param _appName The internal application name accessing the platform (as defined on the midata platform).
      * @param _conformanceStatementEndpoint? The location of the endpoint identifying the OAuth authorize and token
      *        endpoints. Optional parameter.
      */
-    constructor(iab: InAppBrowser, _host: string, _appName: string, _secret?: string, _conformanceStatementEndpoint?: string);
+    constructor(_host: string, _appName: string, _secret?: string, _conformanceStatementEndpoint?: string);
     readonly loggedIn: boolean;
     readonly authToken: string;
     readonly refreshToken: string;
