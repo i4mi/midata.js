@@ -12,6 +12,8 @@ export {ImageMedia} from './ImageMedia';
 export {Laboratory} from './Laboratory';
 export {Hemoglobin} from './Hemoglobin';
 
+export {registerResource} from './registry';
+
 export {MSCogTestLab} from './MSCogTestLab';
 export {Bundle} from './Bundle';
 export {Survey} from './Survey';
