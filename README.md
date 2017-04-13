@@ -25,11 +25,11 @@ The following steps will show you how to install and use the midata.js lib in yo
 
 **npm**
 
-       $ npm install https://github.com/i4mi/midata.js#v2.2  --save
+       $ npm install https://github.com/i4mi/midata.js --save
        
 **bower**
 
-       $ bower install midata.js
+       $ bower install midata.js --save
        
     
 3. Install the `cordova inappbrowser plugin`. This plugin is required to make the platform's native in app browser handling work properly.
