@@ -58,8 +58,9 @@ export class Midata {
                         data = JSON.parse(value);
 
                     if (data) {
+
                         this._setLoginData(
-                            data.authToken, data.refreshToken);
+                            data.authToken, data.refreshToken, data.user);
                     }
                 }
             }, (error) => {
