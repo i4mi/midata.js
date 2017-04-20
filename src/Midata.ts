@@ -542,11 +542,9 @@ export class Midata {
 
             this._authenticate().then(_ => this._exchangeTokenForCode())
                 .then((body) => {
-
                     resolve(body);
                 })
                 .catch((error: any) => {
-
                     reject(error);
                 })
         });
@@ -630,7 +628,7 @@ export class Midata {
                 urlSearchParams.append("grant_type", "authorization_code");
                 urlSearchParams.append("code", this._authCode);
                 urlSearchParams.append("redirect_uri", "http://localhost/callback");
-                urlSearchParams.append("client_id", "oauth2test");
+                urlSearchParams.append("client_id", this._appName);
 
                 return urlSearchParams;
             };
@@ -651,17 +649,14 @@ export class Midata {
             })
                 .then(response => {
                     let body: TokenResponse = response.body;
-                    this.search("Patient").then((response: any) => {
-                        let user = {
-                            id: response[0].id,
-                            name: response[0].telecom[0].value
-                        } as User;
-
-                        this._setLoginData(body.access_token, body.refresh_token, user);
-
-                        console.log("Login data set! resolve...");
-                        resolve(body);
-                    })
+                    let user : User = {
+                        id: body.patient,
+                        name: "mockuser@midata.coop" // fhir api does not deliver this information
+                        // apply mockuser to name property - temp
+                    }
+                    this._setLoginData(body.access_token, body.refresh_token, user);
+                    console.log("Login data set! resolve...");
+                    resolve(body);
                 })
                 .catch((response: ApiCallResponse) => {
                     reject(response);
