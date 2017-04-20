@@ -636,9 +636,7 @@ export class Midata {
             };
 
             let tokenRequest: TokenRequest = {
-
                 encodedParams: getEncodedParams()
-
             };
 
             apiCall({
@@ -653,13 +651,17 @@ export class Midata {
             })
                 .then(response => {
                     let body: TokenResponse = response.body;
+                    this.search("Patient").then((response: any) => {
+                        let user = {
+                            id: response[0].id,
+                            name: response[0].telecom[0].value
+                        } as User;
 
-                    // set login data
-                    this._setLoginData(body.access_token, body.refresh_token);
+                        this._setLoginData(body.access_token, body.refresh_token, user);
 
-                    console.log("Login data set! resolve...");
-                    resolve(body);
-
+                        console.log("Login data set! resolve...");
+                        resolve(body);
+                    })
                 })
                 .catch((response: ApiCallResponse) => {
                     reject(response);
