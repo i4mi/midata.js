@@ -363,9 +363,7 @@ export class Midata {
             };
 
             let refreshTokenRequest: TokenRequest = {
-
                 encodedParams: getEncodedParams()
-
             };
 
             apiCall({
@@ -382,9 +380,12 @@ export class Midata {
                     let body: TokenRefreshResponse = response.body;
                     this._authToken = body.access_token;
                     this._refreshToken = body.refresh_token;
-
-                    // set login data
-                    this._setLoginData(body.access_token, body.refresh_token);
+                    let user : User = {
+                        id: body.patient,
+                        name: "mockuser@midata.coop" // fhir api does not deliver this information
+                        // apply mockuser to name property - temp
+                    }
+                    this._setLoginData(body.access_token, body.refresh_token, user);
 
                     console.log("Login data refreshed! resolve...");
                     resolve(body);

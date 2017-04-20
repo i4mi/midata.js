@@ -50,6 +50,7 @@ export interface TokenRefreshResponse {
     refresh_token: string;
     expires_in: number;
     scope: string;
+    patient: string;
     token_type: string;
 }
 /**
