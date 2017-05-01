@@ -52,7 +52,7 @@ export class Midata {
 
                 console.log(`Success! (${response.status}, ${response.message})`);
 
-                this._initSessionParams(128).then(() => {
+
 
                     // Check if there is previously saved login data that was
                     // put there before the last page refresh. In case there is,
@@ -72,7 +72,6 @@ export class Midata {
                 }, (error) => {
                     console.log(`Error! ${error}`);
                 });
-            })
         }
     }
 
@@ -114,6 +113,9 @@ export class Midata {
     logout() {
         this._refreshToken = undefined;
         this._authToken = undefined;
+        this._state = undefined;
+        this._codeVerifier = undefined;
+        this._codeChallenge = undefined;
         if (window.localStorage) {
             localStorage.removeItem('midataLoginData');
         }
@@ -596,33 +598,36 @@ export class Midata {
 
         return new Promise((resolve, reject) => {
 
-            let USERAUTH_ENDPOINT = () => {
-                return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}`;
-            };
-            this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
-            this._iab.on('loadstart').subscribe((event) => {
+            this._initSessionParams(128).then(() => {
 
-                    this._iab.show();
-                    if ((event.url).indexOf("http://localhost/callback") === 0) {
+                let USERAUTH_ENDPOINT = () => {
+                    return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}`;
+                };
+                this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
+                this._iab.on('loadstart').subscribe((event) => {
 
-                        let _state = event.url.split("&")[0].split("=")[1];
+                        this._iab.show();
+                        if ((event.url).indexOf("http://localhost/callback") === 0) {
 
-                        if (_state && _state === this._state) {
+                            let _state = event.url.split("&")[0].split("=")[1];
 
-                            this._authCode = event.url.split("&")[1].split("=")[1];
-                            this._iab.close();
-                            resolve(event);
+                            if (_state && _state === this._state) {
 
-                        } else {
-                            this._iab.close();
-                            reject(event);
+                                this._authCode = event.url.split("&")[1].split("=")[1];
+                                this._iab.close();
+                                resolve(event);
+
+                            } else {
+                                this._iab.close();
+                                reject(event);
+                            }
                         }
-                    }
-                },
-                (error) => {
-                    console.log(`Error! (${error.status}, ${error.message})`);
-                    reject(error);
-                });
+                    },
+                    (error) => {
+                        console.log(`Error! ${error}`);
+                        reject(error);
+                    });
+            });
         });
     }
 
