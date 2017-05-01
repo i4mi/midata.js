@@ -52,37 +52,27 @@ export class Midata {
 
                 console.log(`Success! (${response.status}, ${response.message})`);
 
+                this._initSessionParams(128).then(() => {
 
-                // TODO: INIT SESSION PARAMS
+                    // Check if there is previously saved login data that was
+                    // put there before the last page refresh. In case there is,
+                    // load it.
+                    if (window.localStorage) {
+                        let
+                            value = localStorage.getItem('midataLoginData');
+                        let
+                            data = JSON.parse(value);
 
-                this._initSessionParams(127).then((msg) => {
-                    console.log(this._state);
-                    console.log(this._codeVerifier);
-                    console.log(this._codeChallenge);
-                })
+                        if (data) {
 
-
-                // Check if there is previously saved login data that was
-                // put there before the last page refresh. In case there is,
-                // load it.
-
-                if (window.localStorage) {
-                    let
-                        value = localStorage.getItem('midataLoginData');
-                    let
-                        data = JSON.parse(value);
-
-                    if (data) {
-
-                        this._setLoginData(
-                            data.authToken, data.refreshToken, data.user);
+                            this._setLoginData(
+                                data.authToken, data.refreshToken, data.user);
+                        }
                     }
-                }
-            }, (error) => {
-
-                console.log(`Error! (${error.status}, ${error.message})`);
-
-            });
+                }, (error) => {
+                    console.log(`Error! ${error}`);
+                });
+            })
         }
     }
 
@@ -606,36 +596,33 @@ export class Midata {
 
         return new Promise((resolve, reject) => {
 
-            this._initRndString(127).then((stateParam) => {
+            let USERAUTH_ENDPOINT = () => {
+                return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}`;
+            };
+            this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
+            this._iab.on('loadstart').subscribe((event) => {
 
-                let USERAUTH_ENDPOINT = () => {
-                    return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${stateParam}`;
-                };
-                this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
-                this._iab.on('loadstart').subscribe((event) => {
+                    this._iab.show();
+                    if ((event.url).indexOf("http://localhost/callback") === 0) {
 
-                        this._iab.show();
-                        if ((event.url).indexOf("http://localhost/callback") === 0) {
+                        let _state = event.url.split("&")[0].split("=")[1];
 
-                            let _state = event.url.split("&")[0].split("=")[1];
+                        if (_state && _state === this._state) {
 
-                            if (_state && _state === stateParam) {
+                            this._authCode = event.url.split("&")[1].split("=")[1];
+                            this._iab.close();
+                            resolve(event);
 
-                                this._authCode = event.url.split("&")[1].split("=")[1];
-                                this._iab.close();
-                                resolve(event);
-
-                            } else {
-                                this._iab.close();
-                                reject(event);
-                            }
+                        } else {
+                            this._iab.close();
+                            reject(event);
                         }
-                    },
-                    (error) => {
-                        console.log(`Error! (${error.status}, ${error.message})`);
-                        reject(error);
-                    });
-            });
+                    }
+                },
+                (error) => {
+                    console.log(`Error! (${error.status}, ${error.message})`);
+                    reject(error);
+                });
         });
     }
 
