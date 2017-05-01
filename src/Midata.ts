@@ -29,8 +29,8 @@ export class Midata {
 
 
     private _state: string;
-    private _code_verifier: string;
-    private _code_challenge: string;
+    private _codeVerifier: string;
+    private _codeChallenge: string;
 
 
     /**
@@ -57,8 +57,8 @@ export class Midata {
 
                 this._initSessionParams(127).then((msg) => {
                     console.log(this._state);
-                    console.log(this._code_verifier);
-                    console.log(this._code_challenge);
+                    console.log(this._codeVerifier);
+                    console.log(this._codeChallenge);
                 })
 
 
@@ -623,6 +623,7 @@ export class Midata {
 
                                 this._authCode = event.url.split("&")[1].split("=")[1];
                                 this._iab.close();
+                                resolve(event);
 
                             } else {
                                 this._iab.close();
@@ -701,12 +702,14 @@ export class Midata {
             this._initRndString(length).then((stateString) => {
                 this._state = stateString;
                 this._initRndString(length).then((codeVerifier) => {
-                    this._code_verifier = codeVerifier;
+                    this._codeVerifier = codeVerifier;
                     // TODO: SHA256 Hash
-                    this._code_challenge = btoa(codeVerifier);
+                    this._codeChallenge = btoa(codeVerifier);
+                    resolve("OK");
                 })
+            }).catch((error) => {
+                reject(error.toString());
             })
-            resolve("OK");
         })
     }
 
