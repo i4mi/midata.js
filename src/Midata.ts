@@ -28,6 +28,11 @@ export class Midata {
     private _iab: InAppBrowser;
 
 
+    private _state: string;
+    private _code_verifier: string;
+    private _code_challenge: string;
+
+
     /**
      * @param _host The url of the midata server, e.g. "https://test.midata.coop:9000".
      * @param _appName The internal application name accessing the platform (as defined on the midata platform).
@@ -46,6 +51,16 @@ export class Midata {
             this.fetchFHIRConformanceStatement().then((response) => {
 
                 console.log(`Success! (${response.status}, ${response.message})`);
+
+
+                // TODO: INIT SESSION PARAMS
+
+                this._initSessionParams(127).then((msg) => {
+                    console.log(this._state);
+                    console.log(this._code_verifier);
+                    console.log(this._code_challenge);
+                })
+
 
                 // Check if there is previously saved login data that was
                 // put there before the last page refresh. In case there is,
@@ -380,7 +395,7 @@ export class Midata {
                     let body: TokenRefreshResponse = response.body;
                     this._authToken = body.access_token;
                     this._refreshToken = body.refresh_token;
-                    let user : User = {
+                    let user: User = {
                         id: body.patient,
                         name: "mockuser@midata.coop" // fhir api does not deliver this information
                         // apply mockuser to name property - temp
@@ -588,23 +603,38 @@ export class Midata {
      **/
 
     private _authenticate(): Promise<InAppBrowserEvent> {
+
         return new Promise((resolve, reject) => {
-            let USERAUTH_ENDPOINT = () => {
-                return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*`;
-            };
-            this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
-            this._iab.on('loadstart').subscribe((event) => {
-                    this._iab.show();
-                    if ((event.url).indexOf("http://localhost/callback") === 0) {
-                        this._authCode = event.url.split("&")[1].split("=")[1];
-                        this._iab.close();
-                        resolve(event);
-                    }
-                },
-                (error) => {
-                    console.log(`Error! (${error.status}, ${error.message})`);
-                    reject(error);
-                });
+
+            this._initRndString(127).then((stateParam) => {
+
+                let USERAUTH_ENDPOINT = () => {
+                    return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${stateParam}`;
+                };
+                this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
+                this._iab.on('loadstart').subscribe((event) => {
+
+                        this._iab.show();
+                        if ((event.url).indexOf("http://localhost/callback") === 0) {
+
+                            let _state = event.url.split("&")[0].split("=")[1];
+
+                            if (_state && _state === stateParam) {
+
+                                this._authCode = event.url.split("&")[1].split("=")[1];
+                                this._iab.close();
+
+                            } else {
+                                this._iab.close();
+                                reject(event);
+                            }
+                        }
+                    },
+                    (error) => {
+                        console.log(`Error! (${error.status}, ${error.message})`);
+                        reject(error);
+                    });
+            });
         });
     }
 
@@ -650,7 +680,7 @@ export class Midata {
             })
                 .then(response => {
                     let body: TokenResponse = response.body;
-                    let user : User = {
+                    let user: User = {
                         id: body.patient,
                         name: "mockuser@midata.coop" // fhir api does not deliver this information
                         // apply mockuser to name property - temp
@@ -662,6 +692,36 @@ export class Midata {
                 .catch((response: ApiCallResponse) => {
                     reject(response);
                 });
+        });
+    }
+
+
+    private _initSessionParams(length: number): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            this._initRndString(length).then((stateString) => {
+                this._state = stateString;
+                this._initRndString(length).then((codeVerifier) => {
+                    this._code_verifier = codeVerifier;
+                    // TODO: SHA256 Hash
+                    this._code_challenge = btoa(codeVerifier);
+                })
+            })
+            resolve("OK");
+        })
+    }
+
+    private _initRndString(length: number): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            if (length && length >= 0) {
+                var _state = "";
+                var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+                for (var i = 0; i < length; i++) {
+                    _state += possible.charAt(Math.floor(Math.random() * possible.length));
+                }
+                resolve(_state);
+            } else {
+                reject("Error");
+            }
         });
     }
 

@@ -18,6 +18,9 @@ export declare class Midata {
     private _authEndpoint;
     private _user;
     private _iab;
+    private _state;
+    private _code_verifier;
+    private _code_challenge;
     /**
      * @param _host The url of the midata server, e.g. "https://test.midata.coop:9000".
      * @param _appName The internal application name accessing the platform (as defined on the midata platform).
@@ -123,6 +126,8 @@ export declare class Midata {
      the api class. On failure the catch clause will forward an error of type ApiCallResponse.
      **/
     private _exchangeTokenForCode();
+    private _initSessionParams(length);
+    private _initRndString(length);
     /**
      This method fetches the conformance statement identifying the OAuth authorize
      and token endpoint URLs for use in requesting authorization to access FHIR resources.

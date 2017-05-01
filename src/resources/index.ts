@@ -16,7 +16,5 @@ export {Survey} from './Survey';
 
 export {registerResource} from './registry';
 
-
-
 import * as categories from './categories';
 export {categories};
