@@ -652,6 +652,7 @@ export class Midata {
                 urlSearchParams.append("code", this._authCode);
                 urlSearchParams.append("redirect_uri", "http://localhost/callback");
                 urlSearchParams.append("client_id", this._appName);
+                urlSearchParams.append("code_verifier", this._codeVerifier);
 
                 return urlSearchParams;
             };
