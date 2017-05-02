@@ -697,7 +697,8 @@ export class Midata {
                     this._codeVerifier = codeVerifier;
 
                     // TODO: SHA256 Hash
-                    this._codeChallenge = btoa(SHA256(codeVerifier));
+                    var sampleCodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+                    this._codeChallenge = SHA256(sampleCodeVerifier);
                     console.log(this._codeChallenge);
                     resolve("OK");
                 })
