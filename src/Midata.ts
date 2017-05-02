@@ -600,7 +600,7 @@ export class Midata {
             this._initSessionParams(128).then(() => {
 
                 let USERAUTH_ENDPOINT = () => {
-                    return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}$code_challenge_method=S256`;
+                    return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
                 };
                 this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
                 this._iab.on('loadstart').subscribe((event) => {
@@ -653,7 +653,6 @@ export class Midata {
                 urlSearchParams.append("redirect_uri", "http://localhost/callback");
                 urlSearchParams.append("client_id", this._appName);
                 urlSearchParams.append("code_verifier", this._codeVerifier);
-                urlSearchParams.append("code_challenge_method", "S256");
 
                 return urlSearchParams;
             };
