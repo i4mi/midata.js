@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@types/fhir": "^1.0.30",
+    "crypto-js": "^3.1.9-1",
     "es6-promise": "^4.0.5"
   }
 }

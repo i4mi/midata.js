@@ -11,6 +11,7 @@ import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
 
 declare var window: any;
+let SHA256 = require("crypto-js/sha256");
 
 export interface User {
     name: string;
@@ -31,7 +32,6 @@ export class Midata {
     private _state: string;
     private _codeVerifier: string;
     private _codeChallenge: string;
-
 
     /**
      * @param _host The url of the midata server, e.g. "https://test.midata.coop:9000".
@@ -695,8 +695,10 @@ export class Midata {
                 this._state = stateString;
                 this._initRndString(length).then((codeVerifier) => {
                     this._codeVerifier = codeVerifier;
+
                     // TODO: SHA256 Hash
-                    this._codeChallenge = btoa(codeVerifier);
+                    this._codeChallenge = btoa(SHA256(codeVerifier));
+                    console.log(this._codeChallenge);
                     resolve("OK");
                 })
             }).catch((error) => {
