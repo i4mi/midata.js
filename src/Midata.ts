@@ -11,7 +11,6 @@ import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
 
 declare var window: any;
-let SHA256 = require("crypto-js/sha256");
 
 export interface User {
     name: string;
@@ -601,7 +600,7 @@ export class Midata {
             this._initSessionParams(128).then(() => {
 
                 let USERAUTH_ENDPOINT = () => {
-                    return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}`;
+                    return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}$code_challenge_method=S256`;
                 };
                 this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
                 this._iab.on('loadstart').subscribe((event) => {
@@ -653,6 +652,7 @@ export class Midata {
                 urlSearchParams.append("code", this._authCode);
                 urlSearchParams.append("redirect_uri", "http://localhost/callback");
                 urlSearchParams.append("client_id", this._appName);
+                urlSearchParams.append("code_verifier", this._codeVerifier);
 
                 return urlSearchParams;
             };
@@ -696,10 +696,11 @@ export class Midata {
                 this._initRndString(length).then((codeVerifier) => {
                     this._codeVerifier = codeVerifier;
 
-                    // TODO: SHA256 Hash
+                    // TODO: this._codeChallenge = BASE64URL-ENCODE(SHA256(ASCII(this._codeVerifier)))
                     var sampleCodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
-                    this._codeChallenge = SHA256(sampleCodeVerifier);
-                    console.log(this._codeChallenge);
+                    var sampleCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
+                    this._codeVerifier = sampleCodeVerifier;
+                    this._codeChallenge = sampleCodeChallenge;
                     resolve("OK");
                 })
             }).catch((error) => {
@@ -722,7 +723,6 @@ export class Midata {
             }
         });
     }
-
 
     /**
      This method fetches the conformance statement identifying the OAuth authorize
