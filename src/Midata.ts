@@ -705,13 +705,16 @@ export class Midata {
                     this._codeVerifier = sampleCodeVerifier;
                     this._codeChallenge = sampleCodeChallenge;
 
+                    console.log(sampleCodeVerifier);
+
                     var shaObj = new jsSHA(sampleCodeVerifier,"TEXT").getHash("B64");
 
                     console.log(sampleCodeVerifier);
                     console.log("B64 Hash of sampleCodeVerifier");
-                    console.log(shaObj);
-                    console.log("Base64 URL Encoded Hash of sampleCodeVerifier");
-                    console.log(base64EncodeURL(shaObj));
+
+                    // console.log(shaObj);
+                    // console.log("Base64 URL Encoded Hash of sampleCodeVerifier");
+                    // console.log(base64EncodeURL(shaObj));
 
                     resolve("OK");
                 })
