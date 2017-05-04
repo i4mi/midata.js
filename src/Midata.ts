@@ -4,13 +4,15 @@ import {
     TokenResponse, AuthRequest, UserRole, AuthResponse
 } from './api';
 import {Promise} from 'es6-promise'
-import {apiCall, ApiCallResponse} from './util';
+import {apiCall, ApiCallResponse, base64EncodeURL} from './util';
 import {InAppBrowser, InAppBrowserEvent} from 'ionic-native';
 import {URLSearchParams} from "@angular/http";
 import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
+const jsSHA = require("jssha");
 
 declare var window: any;
+
 
 export interface User {
     name: string;
@@ -697,10 +699,20 @@ export class Midata {
                     this._codeVerifier = codeVerifier;
 
                     // TODO: this._codeChallenge = BASE64URL-ENCODE(SHA256(ASCII(this._codeVerifier)))
+
                     var sampleCodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
                     var sampleCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
                     this._codeVerifier = sampleCodeVerifier;
                     this._codeChallenge = sampleCodeChallenge;
+
+                    var shaObj = new jsSHA(sampleCodeVerifier,"TEXT").getHash("B64");
+
+                    console.log(sampleCodeVerifier);
+                    console.log("B64 Hash of sampleCodeVerifier");
+                    console.log(shaObj);
+                    console.log("Base64 URL Encoded Hash of sampleCodeVerifier");
+                    console.log(base64EncodeURL(shaObj));
+
                     resolve("OK");
                 })
             }).catch((error) => {

@@ -19,3 +19,12 @@ export interface ApiCallResponse {
  * @return A promise holding an object of structure ApiCallResponse.
  */
 export declare function apiCall(args: ApiCallArgs): Promise<ApiCallResponse>;
+/**
+ * Generates a Base64 encoded string URL friendly,
+ * i.e. '+' and '/' are replaced with '-' and '_' also any trailing '='
+ * characters are removed
+ *
+ * @param str str the encoded string
+ * @return str the URL friendly encoded String
+ */
+export declare function base64EncodeURL(str: string): string;

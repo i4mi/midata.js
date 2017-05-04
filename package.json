@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@types/fhir": "^1.0.30",
-    "es6-promise": "^4.0.5"
+    "es6-promise": "^4.0.5",
+    "jssha": "^2.2.0"
   }
 }
