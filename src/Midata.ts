@@ -9,7 +9,7 @@ import {InAppBrowser, InAppBrowserEvent} from 'ionic-native';
 import {URLSearchParams} from "@angular/http";
 import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
-const jsSHA = require("jssha");
+let jsSHA = require("jssha");
 
 declare var window: any;
 
@@ -707,14 +707,16 @@ export class Midata {
 
                     console.log(sampleCodeVerifier);
 
-                    var shaObj = new jsSHA(sampleCodeVerifier,"TEXT").getHash("B64");
+                    var shaObj = new jsSHA("SHA-256","TEXT");
+                    shaObj.update(sampleCodeVerifier);
+                    var hash = shaObj.getHash("B64");
 
-                    console.log(sampleCodeVerifier);
                     console.log("B64 Hash of sampleCodeVerifier");
+                    console.log(hash);
 
-                    // console.log(shaObj);
-                    // console.log("Base64 URL Encoded Hash of sampleCodeVerifier");
-                    // console.log(base64EncodeURL(shaObj));
+
+                     console.log("Base64 URL Encoded Hash of sampleCodeVerifier");
+                     console.log(base64EncodeURL(hash));
 
                     resolve("OK");
                 })
