@@ -697,27 +697,11 @@ export class Midata {
                 this._state = stateString;
                 this._initRndString(length).then((codeVerifier) => {
                     this._codeVerifier = codeVerifier;
-
-                    // TODO: this._codeChallenge = BASE64URL-ENCODE(SHA256(ASCII(this._codeVerifier)))
-
-                    var sampleCodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
-                    var sampleCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
-                    this._codeVerifier = sampleCodeVerifier;
-                    this._codeChallenge = sampleCodeChallenge;
-
-                    console.log(sampleCodeVerifier);
-
-                    var shaObj = new jsSHA("SHA-256","TEXT");
-                    shaObj.update(sampleCodeVerifier);
-                    var hash = shaObj.getHash("B64");
-
-                    console.log("B64 Hash of sampleCodeVerifier");
-                    console.log(hash);
-
-
-                     console.log("Base64 URL Encoded Hash of sampleCodeVerifier");
-                     console.log(base64EncodeURL(hash));
-
+                    // this._codeChallenge = BASE64URL-ENCODE(SHA256(ASCII(this._codeVerifier)))
+                    var shaObj = new jsSHA("SHA-256","TEXT"); // create a SHA-256 Base64 hash out of the
+                    shaObj.update(this._codeVerifier); // generated code_verifier
+                    var hash = shaObj.getHash("B64");  // transform the hash value into the Base64URL encoded
+                    this._codeChallenge = base64EncodeURL(hash); // code_challenge
                     resolve("OK");
                 })
             }).catch((error) => {
