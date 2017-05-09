@@ -14,3 +14,15 @@ export declare class Observation extends Resource {
 export declare class QuantityObservation extends Observation {
     constructor(quantity: fhir.Quantity, date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept);
 }
+export declare class ValueObservation extends Observation {
+    constructor(valueType: valueType, date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept);
+    private _isValueQuantity(type);
+    private _isCodeableConcept(type);
+}
+export interface ValueQuantity {
+    _quantity: fhir.Quantity;
+}
+export interface CodeableConcept {
+    _codeableConcept: fhir.CodeableConcept;
+}
+export declare type valueType = ValueQuantity | CodeableConcept;

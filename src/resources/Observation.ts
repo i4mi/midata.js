@@ -1,4 +1,5 @@
 import {Resource} from './Resource';
+import ClaimItemDetail = fhir.ClaimItemDetail;
 
 /**
  * Measurements and simple assertions made about a patient, device or other
@@ -63,3 +64,44 @@ export class QuantityObservation extends Observation {
     }
 }
 ;
+
+
+export class ValueObservation extends Observation {
+
+    constructor(valueType: valueType,
+                date: Date,
+                code: fhir.CodeableConcept,
+                category: fhir.CodeableConcept) {
+        super(date, code, category);
+
+        if (this._isValueQuantity(valueType)) {
+            this.addProperty('valueQuantity', valueType._quantity);
+        } else if (this._isCodeableConcept(valueType)) {
+            this.addProperty('valueCodeableConcept', valueType._codeableConcept);
+        } else {
+            console.log("Internal Error");
+        }
+    }
+
+    private _isValueQuantity(type: valueType): type is ValueQuantity {
+        return (<ValueQuantity>type)._quantity !== undefined;
+    }
+
+    private _isCodeableConcept(type: valueType): type is CodeableConcept {
+        return (<CodeableConcept>type)._codeableConcept !== undefined;
+    }
+}
+;
+
+export interface ValueQuantity {
+    _quantity: fhir.Quantity
+}
+
+export interface CodeableConcept {
+    _codeableConcept: fhir.CodeableConcept
+}
+
+export type valueType =
+
+    ValueQuantity |
+    CodeableConcept;

@@ -13,6 +13,7 @@ export { Laboratory } from './Laboratory';
 export { Hemoglobin } from './Hemoglobin';
 export { Bundle } from './Bundle';
 export { Survey } from './Survey';
+export { DrugCrave } from './DrugCrave';
 export { registerResource } from './registry';
 import * as categories from './categories';
 export { categories };
