@@ -7,8 +7,8 @@ export class DrugCrave extends ValueObservation {
     constructor(midataConceptCoding: fhir.Coding, snomedConceptCoding: fhir.Coding, date: Date) {
         let codeableConcept: CodeableConcept = {
             _codeableConcept: {
-                "coding": [ midataConceptCoding, snomedConceptCoding],
-                "text": "Craving for drugs"
+                coding: [midataConceptCoding, snomedConceptCoding],
+                text: "Craving for drugs"
             }
         };
         super(codeableConcept, date, {
