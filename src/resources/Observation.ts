@@ -53,19 +53,6 @@ export class Observation extends Resource {
 }
 ;
 
-export class QuantityObservation extends Observation {
-
-    constructor(quantity: fhir.Quantity,
-                date: Date,
-                code: fhir.CodeableConcept,
-                category: fhir.CodeableConcept) {
-        super(date, code, category);
-        this.addProperty('valueQuantity', quantity);
-    }
-}
-;
-
-
 export class ValueObservation extends Observation {
 
     constructor(valueType: valueType,

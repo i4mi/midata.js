@@ -1,26 +1,6 @@
-//import { VitalSigns } from './VitalSigns';
-import { VitalSigns} from './categories';
-import { registerResource } from './registry';
+import {VitalSigns} from './categories';
+import {registerResource} from './registry';
 import {ValueObservation, ValueQuantity} from "./Observation";
-
-
-// @registerResource('8867-4')
-// export class HeartRate extends VitalSigns {
-//     constructor(beatsPerMinute: number, date: Date) {
-//         let quanitity = {
-//             value: beatsPerMinute,
-//             unit: 'bpm'
-//         };
-//         super(quanitity, date, {
-//             coding: [{
-//                 system: 'http://loinc.org',
-//                 code: '8867-4',
-//                 display: 'Heart Rate'
-//             }]
-//         });
-//     }
-// };
-
 
 @registerResource('8867-4')
 export class HeartRate extends ValueObservation {
@@ -39,4 +19,5 @@ export class HeartRate extends ValueObservation {
             }]
         }, VitalSigns);
     }
-};
+}
+;

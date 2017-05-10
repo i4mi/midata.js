@@ -1,13 +1,13 @@
+import {Survey} from "./categories";
 import {registerResource} from "./registry";
 import {CodeableConcept, ValueObservation} from "./Observation";
-import {Survey} from "./categories";
 
 @registerResource('228438002')
 export class DrugCrave extends ValueObservation {
-    constructor(midataConceptCoding: fhir.Coding, snomedConceptCoding: fhir.Coding, date: Date) {
+    constructor(systemConceptCoding: fhir.Coding[], date: Date) {
         let codeableConcept: CodeableConcept = {
             _codeableConcept: {
-                coding: [midataConceptCoding, snomedConceptCoding],
+                coding: systemConceptCoding,
                 text: "Craving for drugs"
             }
         };
@@ -19,4 +19,5 @@ export class DrugCrave extends ValueObservation {
             }]
         }, Survey);
     }
-};
+}
+;

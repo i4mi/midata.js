@@ -1,11 +1,10 @@
-import { Resource } from './Resource';
-
+import {Resource} from './Resource';
 
 export type QuestionType =
     'boolean' |
     'decimal' |
     'integer' |
-    'date'    |
+    'date' |
     'dateTime';
 
 export interface Question {
@@ -26,4 +25,5 @@ export class Questionnaire extends Resource {
         // Other possible values: draft / retired
         this.addProperty('status', 'published');
     }
-};
+}
+;

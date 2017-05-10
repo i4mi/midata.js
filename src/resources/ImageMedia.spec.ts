@@ -1,5 +1,6 @@
 import { ImageMedia } from './ImageMedia';
-import { Midata } from '@midata/Midata';
+import {Midata} from "../Midata";
+
 
 
 describe('ImageMedia', () => {

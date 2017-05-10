@@ -9,6 +9,8 @@ import {InAppBrowser, InAppBrowserEvent} from 'ionic-native';
 import {URLSearchParams} from "@angular/http";
 import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
+
+
 let jsSHA = require("jssha");
 
 declare var window: any;
@@ -54,25 +56,24 @@ export class Midata {
                 console.log(`Success! (${response.status}, ${response.message})`);
 
 
+                // Check if there is previously saved login data that was
+                // put there before the last page refresh. In case there is,
+                // load it.
+                if (window.localStorage) {
+                    let
+                        value = localStorage.getItem('midataLoginData');
+                    let
+                        data = JSON.parse(value);
 
-                    // Check if there is previously saved login data that was
-                    // put there before the last page refresh. In case there is,
-                    // load it.
-                    if (window.localStorage) {
-                        let
-                            value = localStorage.getItem('midataLoginData');
-                        let
-                            data = JSON.parse(value);
+                    if (data) {
 
-                        if (data) {
-
-                            this._setLoginData(
-                                data.authToken, data.refreshToken, data.user);
-                        }
+                        this._setLoginData(
+                            data.authToken, data.refreshToken, data.user);
                     }
-                }, (error) => {
-                    console.log(`Error! ${error}`);
-                });
+                }
+            }, (error) => {
+                console.log(`Error! ${error}`);
+            });
         }
     }
 
@@ -698,7 +699,7 @@ export class Midata {
                 this._initRndString(length).then((codeVerifier) => {
                     this._codeVerifier = codeVerifier;
                     // this._codeChallenge = BASE64URL-ENCODE(SHA256(ASCII(this._codeVerifier)))
-                    var shaObj = new jsSHA("SHA-256","TEXT"); // create a SHA-256 Base64 hash out of the
+                    var shaObj = new jsSHA("SHA-256", "TEXT"); // create a SHA-256 Base64 hash out of the
                     shaObj.update(this._codeVerifier); // generated code_verifier
                     var hash = shaObj.getHash("B64");  // transform the hash value into the Base64URL encoded
                     this._codeChallenge = base64EncodeURL(hash); // code_challenge

@@ -11,9 +11,6 @@ export declare class Observation extends Resource {
     addComponent(component: fhir.ObservationComponent): void;
     addRelated(resource: any): void;
 }
-export declare class QuantityObservation extends Observation {
-    constructor(quantity: fhir.Quantity, date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept);
-}
 export declare class ValueObservation extends Observation {
     constructor(valueType: valueType, date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept);
     private _isValueQuantity(type);

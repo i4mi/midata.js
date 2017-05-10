@@ -1,5 +1,4 @@
-import { Media, Base64Str } from './Media';
-
+import {Media, Base64Str} from './Media';
 
 const supportedImageTypes = ['png', 'gif', 'jpg'];
 
@@ -11,9 +10,7 @@ export type ImageType =
 export class ImageMedia extends Media {
     constructor(filename: string, data: Base64Str) {
         let type: string;
-
         let matches = filename.match(/\.(\w+)$/);
-
         if (matches !== null) {
             type = matches[1].toLowerCase();
             if (supportedImageTypes.indexOf(type) === -1) {
@@ -22,7 +19,7 @@ export class ImageMedia extends Media {
         } else {
             throw new Error('The filename requires a file extension!');
         }
-
         super(filename, 'photo', `image/${type}`, data);
     }
-};
+}
+;

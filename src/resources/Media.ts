@@ -1,10 +1,9 @@
-import { Resource } from './Resource';
-
+import {Resource} from './Resource';
 
 // The Media resource contains photos, videos, and audio recordings.
 // It is used with media acquired or used as part of the healthcare
 // process.
-export type MediaType = 
+export type MediaType =
     'photo' |
     'video' |
     'audio' ;
@@ -21,5 +20,5 @@ export class Media extends Resource {
             title: filename
         });
     }
-
-};
+}
+;
