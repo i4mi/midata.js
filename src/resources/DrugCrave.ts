@@ -4,7 +4,7 @@ import {CodeableConcept, ValueObservation} from "./Observation";
 
 @registerResource('228438002')
 export class DrugCrave extends ValueObservation {
-    constructor(systemConceptCoding: fhir.Coding[], date: Date) {
+    constructor(systemConceptCoding: [fhir.Coding], date: Date) {
         let codeableConcept: CodeableConcept = {
             _codeableConcept: {
                 coding: systemConceptCoding,
