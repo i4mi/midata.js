@@ -16,5 +16,7 @@ export {DrugCrave} from './DrugCrave';
 
 export {registerResource} from './registry';
 
-import * as categories from './categories';
-export {categories};
+import {Survey, Laboratory, VitalSigns} from "./categories";
+
+export {Survey, Laboratory,VitalSigns} from './categories';
+

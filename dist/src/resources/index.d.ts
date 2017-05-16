@@ -13,5 +13,4 @@ export { Hemoglobin } from './Hemoglobin';
 export { Bundle } from './Bundle';
 export { DrugCrave } from './DrugCrave';
 export { registerResource } from './registry';
-import * as categories from './categories';
-export { categories };
+export { Survey, Laboratory, VitalSigns } from './categories';
