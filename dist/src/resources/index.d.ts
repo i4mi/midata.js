@@ -1,5 +1,5 @@
 export { Resource } from './Resource';
-export { Observation } from './Observation';
+export { Observation, ValueObservation, ValueQuantity, CodeableConcept } from './Observation';
 export { BodyWeight } from './BodyWeight';
 export { Temperature } from './Temperature';
 export { HeartRate } from './HeartRate';
