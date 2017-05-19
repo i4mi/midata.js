@@ -11,6 +11,5 @@ export { Media } from './Media';
 export { ImageMedia } from './ImageMedia';
 export { Hemoglobin } from './Hemoglobin';
 export { Bundle } from './Bundle';
-export { DrugCrave } from './DrugCrave';
 export { registerResource } from './registry';
 export { Survey, Laboratory, VitalSigns } from './categories';

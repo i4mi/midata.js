@@ -48,29 +48,9 @@ export class Midata {
                 private _conformanceStatementEndpoint?: string) {
 
         this._conformanceStatementEndpoint = _conformanceStatementEndpoint || `${_host}/fhir/metadata`;
-
         if (this._conformanceStatementEndpoint !== undefined) {
-
             this.fetchFHIRConformanceStatement().then((response) => {
-
                 console.log(`Success! (${response.status}, ${response.message})`);
-
-
-                // Check if there is previously saved login data that was
-                // put there before the last page refresh. In case there is,
-                // load it.
-                if (window.localStorage) {
-                    let
-                        value = localStorage.getItem('midataLoginData');
-                    let
-                        data = JSON.parse(value);
-
-                    if (data) {
-
-                        this._setLoginData(
-                            data.authToken, data.refreshToken, data.user);
-                    }
-                }
             }, (error) => {
                 console.log(`Error! ${error}`);
             });
@@ -118,9 +98,6 @@ export class Midata {
         this._state = undefined;
         this._codeVerifier = undefined;
         this._codeChallenge = undefined;
-        if (window.localStorage) {
-            localStorage.removeItem('midataLoginData');
-        }
     }
 
     /*
@@ -131,13 +108,6 @@ export class Midata {
         this._authToken = authToken;
         this._refreshToken = refreshToken;
         this._user = user;
-        if (window.localStorage) {
-            localStorage.setItem('midataLoginData', JSON.stringify({
-                authToken: authToken,
-                refreshToken: refreshToken,
-                user: user
-            }));
-        }
     }
 
 

@@ -11,12 +11,8 @@ export {Media} from './Media';
 export {ImageMedia} from './ImageMedia';
 export {Hemoglobin} from './Hemoglobin';
 export {Bundle} from './Bundle';
-
-export {DrugCrave} from './DrugCrave';
-
 export {registerResource} from './registry';
 
 import {Survey, Laboratory, VitalSigns} from "./categories";
-
 export {Survey, Laboratory,VitalSigns} from './categories';
 
