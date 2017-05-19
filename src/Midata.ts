@@ -327,7 +327,7 @@ export class Midata {
      of type ApiCallResponse.
      */
 
-    private _refresh = () => {
+    private _refresh = (withRefreshToken?: string) => {
 
         return new Promise<TokenRefreshResponse>((resolve, reject) => {
 
@@ -337,7 +337,11 @@ export class Midata {
 
                 let urlSearchParams = new URLSearchParams();
                 urlSearchParams.append("grant_type", "refresh_token");
-                urlSearchParams.append("refresh_token", this._refreshToken);
+                if(withRefreshToken){
+                    urlSearchParams.append("refresh_token", withRefreshToken);
+                } else {
+                    urlSearchParams.append("refresh_token", this._refreshToken);
+                }
                 return urlSearchParams;
             };
 
@@ -540,12 +544,12 @@ export class Midata {
      older access_tokens are neglected due to overwrite logic.
      */
 
-    refresh(): Promise<TokenRefreshResponse> {
+    refresh(withRefreshToken?: string): Promise<TokenRefreshResponse> {
 
         // wrapper method, call subsequent actions from here
 
         return new Promise((resolve, reject) => {
-            this._refresh().then((body) => {
+            this._refresh(withRefreshToken).then((body) => {
                 resolve(body);
 
             })

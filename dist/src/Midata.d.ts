@@ -107,7 +107,7 @@ export declare class Midata {
      Previous access_tokens will remain valid until their expiration timestamp is exceeded. However, possibly
      older access_tokens are neglected due to overwrite logic.
      */
-    refresh(): Promise<TokenRefreshResponse>;
+    refresh(withRefreshToken?: string): Promise<TokenRefreshResponse>;
     /**
      The user will be redirected to midata.coop in order to login / register and grant
      the application access to his data. If the event target is equal to the callback url
