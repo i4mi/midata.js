@@ -1,24 +1,25 @@
 import {VitalSigns} from './categories';
 import {registerResource} from './registry';
-import {ValueObservation, ValueQuantity} from "./Observation";
+import {Observation, Quantity} from "./Observation";
 
 @registerResource('8302-2')
-export class BodyHeight extends ValueObservation {
+export class BodyHeight extends Observation {
     constructor(heightCm: number, date: Date) {
-        let quantity: ValueQuantity = {
+        let quantity: Quantity = {
             _quantity: {
                 value: heightCm,
                 unit: 'cm',
-                system: 'http://unitsofmeasure.org'
+                system: 'http://unitsofmeasure.org',
+                code:  'cm'
             }
         };
-        super(quantity, date, {
+        super(date, {
             coding: [{
                 system: 'http://loinc.org',
                 code: '8302-2',
                 display: 'Body Height'
             }]
-        }, VitalSigns);
+        }, VitalSigns, quantity);
     }
 }
 ;

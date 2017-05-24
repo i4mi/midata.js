@@ -1,4 +1,4 @@
-import { ValueObservation } from "./Observation";
-export declare class BodyHeight extends ValueObservation {
+import { Observation } from "./Observation";
+export declare class BodyHeight extends Observation {
     constructor(heightCm: number, date: Date);
 }

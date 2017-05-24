@@ -1,3 +1,5 @@
+// All codes from system http://hl7.org/fhir/observation-category
+
 export const VitalSigns: fhir.CodeableConcept = {
     coding: [{
         system: 'http://hl7.org/fhir/observation-category',
@@ -23,5 +25,17 @@ export const Survey: fhir.CodeableConcept = {
         display: 'Survey'
     }],
     text: 'Survey'
+
+};
+
+// All codes from system http://hl7.org/fhir/medication-statement-category
+
+export const PatientSpecified: fhir.CodeableConcept = {
+    coding: [{
+        system: 'http://hl7.org/fhir/medication-statement-category',
+        code: 'patientspecified',
+        display: 'Patient Specified'
+    }],
+    text: 'Patient Specified'
 
 };

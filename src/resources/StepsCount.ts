@@ -1,24 +1,25 @@
 import {VitalSigns} from "./categories";
 import {registerResource} from './registry';
-import {ValueObservation, ValueQuantity} from "./Observation";
+import {Observation, Quantity} from "./Observation";
 
 @registerResource('activities/steps')
-export class StepsCount extends ValueObservation {
+export class StepsCount extends Observation {
     constructor(steps: number, date: Date) {
-        let quantity: ValueQuantity = {
+        let quantity: Quantity = {
             _quantity: {
                 value: steps,
                 unit: 'steps'
+                // TODO: UCUM steps missing?
             }
         };
-        super(quantity, date, {
+        super(date, {
             text: 'Steps',
             coding: [{
                 system: 'http://midata.coop',
                 code: 'activities/steps',
                 display: 'Steps'
             }]
-        }, VitalSigns);
+        }, VitalSigns, quantity);
     }
 }
 ;

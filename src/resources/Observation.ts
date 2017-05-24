@@ -11,12 +11,33 @@ export class Observation extends Resource {
 
     constructor(date: Date,
                 code: fhir.CodeableConcept,
-                category: fhir.CodeableConcept) {
+                category: fhir.CodeableConcept,
+                valueType?: valueType) {
         super('Observation');
+        // check type of value property
+        if (valueType) {
+            if (this._isValueQuantity(valueType)) {
+                this.addProperty('valueQuantity', valueType._quantity);
+            } else if (this._isCodeableConcept(valueType)) {
+                this.addProperty('valueCodeableConcept', valueType._codeableConcept);
+            } else {
+                console.log("Internal Error");
+            }
+        }
         this.addProperty('status', 'preliminary');
         this.addProperty('category', category);
         this.addProperty('code', code);
         this.addProperty('effectiveDateTime', date.toISOString());
+    }
+
+    // Determine the type by using user-defined type guards.
+
+    private _isValueQuantity(type: valueType): type is Quantity {
+        return (<Quantity>type)._quantity !== undefined;
+    }
+
+    private _isCodeableConcept(type: valueType): type is CodeableConcept {
+        return (<CodeableConcept>type)._codeableConcept !== undefined;
     }
 
     addComponent(component: fhir.ObservationComponent) {
@@ -55,37 +76,9 @@ export class Observation extends Resource {
 }
 ;
 
-export class ValueObservation extends Observation {
-
-    constructor(valueType: valueType,
-                date: Date,
-                code: fhir.CodeableConcept,
-                category: fhir.CodeableConcept) {
-        super(date, code, category);
-        // check type of value property
-        if (this._isValueQuantity(valueType)) {
-            this.addProperty('valueQuantity', valueType._quantity);
-        } else if (this._isCodeableConcept(valueType)) {
-            this.addProperty('valueCodeableConcept', valueType._codeableConcept);
-        } else {
-            console.log("Internal Error");
-        }
-    }
-
-    // Determine the type by using user-defined type guards.
-
-    private _isValueQuantity(type: valueType): type is ValueQuantity {
-        return (<ValueQuantity>type)._quantity !== undefined;
-    }
-    private _isCodeableConcept(type: valueType): type is CodeableConcept {
-        return (<CodeableConcept>type)._codeableConcept !== undefined;
-    }
-}
-;
-
 // Definition of interfaces each declaring it's property with the corresponding value[x] type (see below).
 
-export interface ValueQuantity {
+export interface Quantity {
     _quantity: fhir.Quantity
 }
 
@@ -100,5 +93,5 @@ export interface CodeableConcept {
 
 export type valueType =
 
-    ValueQuantity |
+    Quantity |
     CodeableConcept;

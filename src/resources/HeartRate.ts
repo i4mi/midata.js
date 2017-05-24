@@ -1,23 +1,24 @@
 import {VitalSigns} from './categories';
 import {registerResource} from './registry';
-import {ValueObservation, ValueQuantity} from "./Observation";
+import {Observation, Quantity} from "./Observation";
 
 @registerResource('8867-4')
-export class HeartRate extends ValueObservation {
+export class HeartRate extends Observation {
     constructor(beatsPerMinute: number, date: Date) {
-        let quantity: ValueQuantity = {
+        let quantity: Quantity = {
             _quantity: {
                 value: beatsPerMinute,
-                unit: 'bpm'
+                unit: 'bpm',
+                // TODO: UCUM bpm missing?
             }
         };
-        super(quantity, date, {
+        super(date, {
             coding: [{
                 system: 'http://loinc.org',
                 code: '8867-4',
                 display: 'Heart Rate'
             }]
-        }, VitalSigns);
+        }, VitalSigns, quantity);
     }
 }
 ;

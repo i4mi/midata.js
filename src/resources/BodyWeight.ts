@@ -1,24 +1,25 @@
 import {VitalSigns} from './categories';
 import {registerResource} from './registry';
-import {ValueObservation, ValueQuantity} from "./Observation";
+import {Observation, Quantity} from "./Observation";
 
 @registerResource('3141-9')
-export class BodyWeight extends ValueObservation {
+export class BodyWeight extends Observation {
     constructor(weightKg: number, date: Date) {
-        let quantity: ValueQuantity = {
+        let quantity: Quantity = {
             _quantity: {
                 value: weightKg,
                 unit: 'kg',
-                system: 'http://unitsofmeasure.org'
+                system: 'http://unitsofmeasure.org',
+                code: 'kg'
             }
         };
-        super(quantity, date, {
+        super(date, {
             coding: [{
                 system: 'http://loinc.org',
                 code: '3141-9',
                 display: 'Weight Measured'
             }]
-        }, VitalSigns);
+        }, VitalSigns, quantity);
     }
 }
 ;

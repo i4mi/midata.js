@@ -7,19 +7,16 @@ import { Resource } from './Resource';
  * https://www.hl7.org/fhir/observation.html
  */
 export declare class Observation extends Resource {
-    constructor(date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept);
+    constructor(date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept, valueType?: valueType);
+    private _isValueQuantity(type);
+    private _isCodeableConcept(type);
     addComponent(component: fhir.ObservationComponent): void;
     addRelated(resource: any): void;
 }
-export declare class ValueObservation extends Observation {
-    constructor(valueType: valueType, date: Date, code: fhir.CodeableConcept, category: fhir.CodeableConcept);
-    private _isValueQuantity(type);
-    private _isCodeableConcept(type);
-}
-export interface ValueQuantity {
+export interface Quantity {
     _quantity: fhir.Quantity;
 }
 export interface CodeableConcept {
     _codeableConcept: fhir.CodeableConcept;
 }
-export declare type valueType = ValueQuantity | CodeableConcept;
+export declare type valueType = Quantity | CodeableConcept;

@@ -25,7 +25,8 @@ export class BloodPressure extends Observation {
             },
             valueQuantity: {
                 value: systolic,
-                unit: 'mm[Hg]'
+                unit: 'mm[Hg]',
+                code: 'mm[Hg]'
             }
         });
 
@@ -39,8 +40,11 @@ export class BloodPressure extends Observation {
             },
             valueQuantity: {
                 value: diastolic,
-                unit: 'mm[Hg]'
+                unit: 'mm[Hg]',
+                system: 'http://unitsofmeasure.org',
+                code: 'mm[Hg]'
             }
         });
     }
-};
+}
+;

@@ -1,6 +1,6 @@
 import {VitalSigns} from './categories';
 import {registerResource} from './registry';
-import {ValueObservation, ValueQuantity} from "./Observation";
+import {Observation, Quantity} from "./Observation";
 
 const tempCode = {
     "coding": [
@@ -29,17 +29,17 @@ const tempCode = {
 };
 
 @registerResource('258710007')
-export class Temperature extends ValueObservation {
+export class Temperature extends Observation {
     constructor(tempC: number, date: Date) {
-        let quantity: ValueQuantity = {
+        let quantity: Quantity = {
             _quantity: {
                 value: tempC,
                 unit: 'degrees C',
-                code: '258710007',
-                system: 'http://snomed.info/sct'
+                system: 'http://snomed.info/sct',
+                code: '258710007'
             }
         };
-        super(quantity, date, tempCode, VitalSigns);
+        super(date, tempCode, VitalSigns, quantity);
     }
 }
 ;

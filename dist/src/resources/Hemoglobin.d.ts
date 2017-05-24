@@ -1,4 +1,4 @@
-import { ValueObservation } from "./Observation";
-export declare class Hemoglobin extends ValueObservation {
+import { Observation } from "./Observation";
+export declare class Hemoglobin extends Observation {
     constructor(gdl: number, date: Date);
 }
