@@ -640,19 +640,11 @@ export class Midata {
 
                     console.log(endpoint);
 
-                console.log(this._user.email);
-                console.log(typeof this._user.email);
-                console.log(typeof this._user.email != "undefined");
-
-                if (typeof this._user.email != "undefined") {
+                if (typeof this._user != "undefined" && typeof this._user.email != "undefined") {
                     endpoint = `${endpoint}&email=${this._user.email}`
                 }
 
-                console.log(this._user.language);
-                console.log(typeof this._user.language);
-                console.log(typeof this._user.language != "undefined");
-
-                if (typeof this._user.language != "undefined") {
+                if (typeof this._user != "undefined" && typeof this._user.language != "undefined") {
                     endpoint = `${endpoint}&language=${this._user.language}`
                 }
 
