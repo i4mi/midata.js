@@ -3,8 +3,8 @@ import { Promise } from 'es6-promise';
 import { ApiCallResponse } from './util';
 import { Resource } from "./resources/Resource";
 export interface User {
-    name: string;
-    id: string;
+    name?: string;
+    id?: string;
     email?: string;
     language?: language;
 }

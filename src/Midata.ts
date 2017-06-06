@@ -19,8 +19,8 @@ declare var window: any;
 The user
  */
 export interface User {
-    name: string;
-    id: string;
+    name?: string;
+    id?: string;
     email?: string;
     language?: language
 }
@@ -101,17 +101,32 @@ export class Midata {
     }
 
     /*
-    Set the current user's email address.
-    */
-    setUserEmail(email: string){
-        this._user.email = email;
+     Set the current user's email address.
+     */
+    setUserEmail(email: string) {
+        if (this._user) {
+            this._user.email = email;
+        }
+        else {
+            let user: User = {
+                email: email
+            }
+            this._user.email = user.email;
+        }
     }
 
     /*
-      Set the current user's language.
+     Set the current user's language.
      */
-    setUserLanguage(language: language){
-        this._user.language = language;
+    setUserLanguage(language: language) {
+        if (this._user) {
+            this._user.language = language
+        } else {
+            let user: User = {
+                language: language
+            }
+            this._user.language = user.language;
+        }
     }
 
     /*
@@ -133,7 +148,9 @@ export class Midata {
     private _setLoginData(authToken: string, refreshToken: string, user?: User) {
         this._authToken = authToken;
         this._refreshToken = refreshToken;
+        if(user){
         this._user = user;
+        }
     }
 
 
@@ -175,10 +192,16 @@ export class Midata {
         })
             .then(response => {
                 let body: AuthResponse = response.body;
-                let user = {
+                let user : User
+                if (this._user) {
+                    this._user.id = body.owner;
+                    this._user.name =  username;
+                } else {
+                user = {
                     id: body.owner,
                     name: username
                 };
+                }
                 this._setLoginData(body.authToken, body.refreshToken, user);
                 return body;
             })
@@ -387,12 +410,15 @@ export class Midata {
             })
                 .then(response => {
                     let body: TokenRefreshResponse = response.body;
+                    let user : User
                     this._authToken = body.access_token;
                     this._refreshToken = body.refresh_token;
-                    let user: User = {
+                    if (this._user) {
+                        this._user.id = body.patient;
+                    } else {
+                    user = {
                         id: body.patient,
-                        name: "mockuser@midata.coop" // fhir api does not deliver this information
-                        // apply mockuser to name property - temp
+                    };
                     }
                     this._setLoginData(body.access_token, body.refresh_token, user);
 
@@ -690,10 +716,13 @@ export class Midata {
             })
                 .then(response => {
                     let body: TokenResponse = response.body;
-                    let user: User = {
+                    let user: User
+                    if (this._user) {
+                        this._user.id = body.patient;
+                    } else {
+                    user = {
                         id: body.patient,
-                        name: "mockuser@midata.coop" // fhir api does not deliver this information
-                        // apply mockuser to name property - temp
+                    };
                     }
                     this._setLoginData(body.access_token, body.refresh_token, user);
                     console.log("Login data set! resolve...");
