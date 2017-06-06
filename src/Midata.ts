@@ -111,7 +111,7 @@ export class Midata {
             let user: User = {
                 email: email
             }
-            this._user.email = user.email;
+            this._user = user;
         }
     }
 
@@ -125,7 +125,7 @@ export class Midata {
             let user: User = {
                 language: language
             }
-            this._user.language = user.language;
+            this._user = user;
         }
     }
 
