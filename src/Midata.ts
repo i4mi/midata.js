@@ -630,9 +630,7 @@ export class Midata {
 
                 let USERAUTH_ENDPOINT = () => {
 
-                    let baseEndpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
-
-                    var endpoint = baseEndpoint;
+                    var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
 
                     if (this._user.email) {
                         endpoint = `${endpoint}&email=${this._user.email}`
