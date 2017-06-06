@@ -15,11 +15,23 @@ let jsSHA = require("jssha");
 
 declare var window: any;
 
-
+/*
+The user
+ */
 export interface User {
     name: string;
     id: string;
+    email?: string;
+    language?: language
 }
+
+/*
+Languages currently supported by MIDATA
+ */
+export type language = 'en' |
+    'de' |
+    'it' |
+    'fr';
 
 export class Midata {
 
@@ -81,11 +93,25 @@ export class Midata {
     }
 
     /*
-     The current user as created upon execution of login(). If no user is set,
+     The current user as created upon execution of login() or authenticate(). If no user is set,
      this property will be undefined.
      */
     get user() {
         return this._user;
+    }
+
+    /*
+    Set the current user's email address.
+    */
+    setUserEmail(email: string){
+        this._user.email = email;
+    }
+
+    /*
+      Set the current user's language.
+     */
+    setUserLanguage(language: language){
+        this._user.language = language;
     }
 
     /*
@@ -577,8 +603,22 @@ export class Midata {
             this._initSessionParams(128).then(() => {
 
                 let USERAUTH_ENDPOINT = () => {
-                    return `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
+
+                    let baseEndpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
+
+                    var endpoint = baseEndpoint;
+
+                    if (this._user.email) {
+                        endpoint = `${endpoint}&email=${this._user.email}`
+                    }
+
+                    if (this._user.language) {
+                        endpoint = `${endpoint}$language=${this._user.language}`
+                    }
+
+                    return endpoint;
                 };
+
                 this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
                 this._iab.on('loadstart').subscribe((event) => {
 

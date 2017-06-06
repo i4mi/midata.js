@@ -5,7 +5,10 @@ import { Resource } from "./resources/Resource";
 export interface User {
     name: string;
     id: string;
+    email?: string;
+    language?: language;
 }
+export declare type language = 'en' | 'de' | 'it' | 'fr';
 export declare class Midata {
     private _host;
     private _appName;
@@ -32,6 +35,8 @@ export declare class Midata {
     readonly authToken: string;
     readonly refreshToken: string;
     readonly user: User;
+    setUserEmail(email: string): void;
+    setUserLanguage(language: language): void;
     logout(): void;
     private _setLoginData(authToken, refreshToken, user?);
     /**

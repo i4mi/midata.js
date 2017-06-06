@@ -28,6 +28,16 @@ export const Survey: fhir.CodeableConcept = {
 
 };
 
+export const SocialHistory: fhir.CodeableConcept = {
+    coding: [{
+        system: 'http://hl7.org/fhir/observation-category',
+        code: 'social-history',
+        display: 'Social History'
+    }],
+    text: 'Social History'
+
+};
+
 // All codes from system http://hl7.org/fhir/medication-statement-category
 
 export const PatientSpecified: fhir.CodeableConcept = {
