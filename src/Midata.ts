@@ -634,27 +634,22 @@ export class Midata {
 
                 console.log("After Session Params");
 
-                //let USERAUTH_ENDPOINT = () => {
-
                     console.log("In local function");
 
                     var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
 
                     console.log(endpoint);
 
-                    if (this._user.email) {
+                    if (typeof this._user.email != "undefined") {
                         endpoint = `${endpoint}&email=${this._user.email}`
                     }
 
-                    if (this._user.language) {
+                    if (typeof this._user.language != "undefined") {
                         endpoint = `${endpoint}&language=${this._user.language}`
                     }
 
                     console.log("before assignment");
                     console.log(endpoint);
-
-                    //return endpoint;
-                //};
 
                 this._iab = new InAppBrowser(endpoint, '_blank', 'location=yes');
                 this._iab.on('loadstart').subscribe((event) => {
