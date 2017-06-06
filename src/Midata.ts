@@ -624,13 +624,23 @@ export class Midata {
 
     private _authenticate(): Promise<InAppBrowserEvent> {
 
+        console.log("In Authenticate");
+
         return new Promise((resolve, reject) => {
+
+            console.log("In Promise");
 
             this._initSessionParams(128).then(() => {
 
+                console.log("After Session Params");
+
                 let USERAUTH_ENDPOINT = () => {
 
+                    console.log("In local function");
+
                     var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
+
+                    console.log(endpoint);
 
                     if (this._user.email) {
                         endpoint = `${endpoint}&email=${this._user.email}`
@@ -639,6 +649,9 @@ export class Midata {
                     if (this._user.language) {
                         endpoint = `${endpoint}&language=${this._user.language}`
                     }
+
+                    console.log("before return");
+                    console.log(endpoint);
 
                     return endpoint;
                 };
