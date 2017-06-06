@@ -634,7 +634,7 @@ export class Midata {
 
                 console.log("After Session Params");
 
-                let USERAUTH_ENDPOINT = () => {
+                //let USERAUTH_ENDPOINT = () => {
 
                     console.log("In local function");
 
@@ -650,13 +650,13 @@ export class Midata {
                         endpoint = `${endpoint}&language=${this._user.language}`
                     }
 
-                    console.log("before return");
+                    console.log("before assignment");
                     console.log(endpoint);
 
-                    return endpoint;
-                };
+                    //return endpoint;
+                //};
 
-                this._iab = new InAppBrowser(USERAUTH_ENDPOINT(), '_blank', 'location=yes');
+                this._iab = new InAppBrowser(endpoint, '_blank', 'location=yes');
                 this._iab.on('loadstart').subscribe((event) => {
 
                         this._iab.show();
