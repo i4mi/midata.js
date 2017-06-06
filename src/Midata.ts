@@ -639,7 +639,7 @@ export class Midata {
                     }
 
                     if (this._user.language) {
-                        endpoint = `${endpoint}$language=${this._user.language}`
+                        endpoint = `${endpoint}&language=${this._user.language}`
                     }
 
                     return endpoint;
