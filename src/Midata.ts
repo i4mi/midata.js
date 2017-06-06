@@ -139,6 +139,7 @@ export class Midata {
         this._state = undefined;
         this._codeVerifier = undefined;
         this._codeChallenge = undefined;
+        this._user = undefined;
     }
 
     /*
@@ -624,21 +625,11 @@ export class Midata {
 
     private _authenticate(): Promise<InAppBrowserEvent> {
 
-        console.log("In Authenticate");
-
         return new Promise((resolve, reject) => {
-
-            console.log("In Promise");
 
             this._initSessionParams(128).then(() => {
 
-                console.log("After Session Params");
-
-                    console.log("In local function");
-
-                    var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
-
-                    console.log(endpoint);
+                var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
 
                 if (typeof this._user != "undefined" && typeof this._user.email != "undefined") {
                     endpoint = `${endpoint}&email=${this._user.email}`
@@ -647,9 +638,6 @@ export class Midata {
                 if (typeof this._user != "undefined" && typeof this._user.language != "undefined") {
                     endpoint = `${endpoint}&language=${this._user.language}`
                 }
-
-                    console.log("before assignment");
-                    console.log(endpoint);
 
                 this._iab = new InAppBrowser(endpoint, '_blank', 'location=yes');
                 this._iab.on('loadstart').subscribe((event) => {
