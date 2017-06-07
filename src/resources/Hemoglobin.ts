@@ -4,13 +4,13 @@ import {Observation, Quantity} from "./Observation";
 
 @registerResource('718-7')
 export class Hemoglobin extends Observation {
-    constructor(gdl: number, date: Date) {
+    constructor(gl: number, date: Date) {
         let quantity: Quantity = {
             _quantity: {
-                value: gdl,
-                unit: 'g/dL',
+                value: gl,
+                unit: 'g/L',
                 system: 'http://unitsofmeasure.org',
-                code: 'g/dL'
+                code: 'g/L'
             }
         };
         super(date, {
