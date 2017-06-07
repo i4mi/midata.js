@@ -193,6 +193,7 @@ export class Midata {
         })
             .then(response => {
                 let body: AuthResponse = response.body;
+                // TODO: Here...
                 let user : User
                 if (this._user) {
                     this._user.id = body.owner;
@@ -411,6 +412,7 @@ export class Midata {
             })
                 .then(response => {
                     let body: TokenRefreshResponse = response.body;
+                    // TODO: Here...
                     let user : User
                     this._authToken = body.access_token;
                     this._refreshToken = body.refresh_token;
@@ -710,17 +712,21 @@ export class Midata {
             })
                 .then(response => {
                     let body: TokenResponse = response.body;
-                    let user: User
-                    if (this._user) {
-                        this._user.id = body.patient;
-                    } else {
-                    user = {
-                        id: body.patient,
-                    };
-                    }
-                    this._setLoginData(body.access_token, body.refresh_token, user);
-                    console.log("Login data set! resolve...");
-                    resolve(body);
+                    this.search(`Patient/${body.patient}`).then((msg) => {
+                        console.log(msg);
+                        let user: User
+                        if (this._user) {
+                            // TODO: Here...
+                            this._user.id = body.patient;
+                        } else {
+                            user = {
+                                id: body.patient,
+                            };
+                        }
+                        this._setLoginData(body.access_token, body.refresh_token, user);
+                        console.log("Login data set! resolve...");
+                        resolve(body);
+                    })
                 })
                 .catch((response: ApiCallResponse) => {
                     reject(response);
