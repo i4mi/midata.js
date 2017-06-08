@@ -154,7 +154,6 @@ export class Midata {
         }
     }
 
-
     /**
      * Login to the MIDATA platform. This method has to be called prior to
      * creating or updating resources.
@@ -712,8 +711,6 @@ export class Midata {
             })
                 .then(response => {
                     let body: TokenResponse = response.body;
-                    this.search(`Patient/${body.patient}`).then((msg) => {
-                        console.log(msg);
                         let user: User
                         if (this._user) {
                             // TODO: Here...
@@ -724,6 +721,8 @@ export class Midata {
                             };
                         }
                         this._setLoginData(body.access_token, body.refresh_token, user);
+                        this.search(`Patient/${body.patient}`).then((msg) => {
+                        console.log(msg);
                         console.log("Login data set! resolve...");
                         resolve(body);
                     })
