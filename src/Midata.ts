@@ -167,56 +167,58 @@ export class Midata {
      *         refresh token. In case the login failed the return value
      *         will be a rejected promise containing the error message.
      */
-    login(username: string, password: string, role?: UserRole): Promise<any> {
-        if (username === undefined || password === undefined) {
-            throw new Error('You need to supply a username and a password!');
-        }
-        let authRequest: AuthRequest = {
-            username: username,
-            password: password,
-            appname: this._appName,
-            secret: this._secret
-        };
-        if (role !== undefined) {
-            authRequest.role = role;
-        }
+    login(username: string, password: string, role?: UserRole): Promise<AuthResponse> {
 
-        let result = apiCall({
-            url: this._host + '/v1/auth',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            jsonBody: true,
-            payload: authRequest
-        })
-            .then(response => {
-                let body: AuthResponse = response.body;
-                // TODO: Here...
-                let user : User
-                if (this._user) {
-                    this._user.id = body.owner;
-                    this._user.name =  username;
-                } else {
-                user = {
-                    id: body.owner,
-                    name: username
-                };
-                }
-                this._setLoginData(body.authToken, body.refreshToken, user);
-                this.search("Patient", {_id: body.owner}).then((msg: any) => {
-                    console.log(msg);
-                    console.log(msg[0].telecom[0].value)
-                    this.setUserEmail(msg[0].telecom[0].value);
-                    console.log("Login data set! resolve...");
-                    return body;
-                });
+        return new Promise<AuthResponse>((resolve, reject) => {
+
+            if (username === undefined || password === undefined) {
+                throw new Error('You need to supply a username and a password!');
+            }
+            let authRequest: AuthRequest = {
+                username: username,
+                password: password,
+                appname: this._appName,
+                secret: this._secret
+            };
+            if (role !== undefined) {
+                authRequest.role = role;
+            }
+
+            apiCall({
+                url: this._host + '/v1/auth',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                jsonBody: true,
+                payload: authRequest
             })
-            .catch(error => {
-                return Promise.reject(error);
-            });
-
-        return result;
+                .then(response => {
+                    let body: AuthResponse = response.body;
+                    // TODO: Here...
+                    let user: User
+                    if (this._user) {
+                        this._user.id = body.owner;
+                        this._user.name = username;
+                    } else {
+                        user = {
+                            id: body.owner,
+                            name: username
+                        };
+                    }
+                    this._setLoginData(body.authToken, body.refreshToken, user);
+                    this.search("Patient", {_id: body.owner}).then((msg: any) => {
+                        console.log(msg);
+                        console.log(msg[0].telecom[0].value)
+                        this.setUserEmail(msg[0].telecom[0].value);
+                        console.log("Login data set! resolve...");
+                        resolve(body);
+                    });
+                })
+                .catch(error => {
+                    reject(error);
+                });
+        });
     }
 
 

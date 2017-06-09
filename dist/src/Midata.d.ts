@@ -1,4 +1,4 @@
-import { TokenRefreshResponse, TokenResponse, UserRole } from './api';
+import { TokenRefreshResponse, TokenResponse, UserRole, AuthResponse } from './api';
 import { Promise } from 'es6-promise';
 import { ApiCallResponse } from './util';
 import { Resource } from "./resources/Resource";
@@ -52,7 +52,7 @@ export declare class Midata {
      *         refresh token. In case the login failed the return value
      *         will be a rejected promise containing the error message.
      */
-    login(username: string, password: string, role?: UserRole): Promise<any>;
+    login(username: string, password: string, role?: UserRole): Promise<AuthResponse>;
     /**
      *
      * This method stores a resource onto midata.
