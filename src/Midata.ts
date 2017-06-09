@@ -721,7 +721,7 @@ export class Midata {
                             };
                         }
                         this._setLoginData(body.access_token, body.refresh_token, user);
-                        this.search(`Patient/${body.patient}`).then((msg) => {
+                        this.search("Patient", {_id: body.patient}).then((msg) => {
                         console.log(msg);
                         console.log("Login data set! resolve...");
                         resolve(body);
