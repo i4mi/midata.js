@@ -204,7 +204,13 @@ export class Midata {
                 };
                 }
                 this._setLoginData(body.authToken, body.refreshToken, user);
-                return body;
+                this.search("Patient", {_id: body.owner}).then((msg: any) => {
+                    console.log(msg);
+                    console.log(msg[0].telecom[0].value)
+                    this.setUserEmail(msg[0].telecom[0].value);
+                    console.log("Login data set! resolve...");
+                    return body;
+                });
             })
             .catch(error => {
                 return Promise.reject(error);
@@ -413,8 +419,6 @@ export class Midata {
                     let body: TokenRefreshResponse = response.body;
                     // TODO: Here...
                     let user : User
-                    this._authToken = body.access_token;
-                    this._refreshToken = body.refresh_token;
                     if (this._user) {
                         this._user.id = body.patient;
                     } else {
@@ -423,10 +427,13 @@ export class Midata {
                     };
                     }
                     this._setLoginData(body.access_token, body.refresh_token, user);
-
-                    console.log("Login data refreshed! resolve...");
-                    resolve(body);
-
+                    this.search("Patient", {_id: body.patient}).then((msg: any) => {
+                        console.log(msg);
+                        console.log(msg[0].telecom[0].value)
+                        this.setUserEmail(msg[0].telecom[0].value);
+                        console.log("Login data refreshed! resolve...");
+                        resolve(body);
+                    });
                 })
                 .catch((response: ApiCallResponse) => {
                     reject(response);
@@ -721,8 +728,10 @@ export class Midata {
                             };
                         }
                         this._setLoginData(body.access_token, body.refresh_token, user);
-                        this.search("Patient", {_id: body.patient}).then((msg) => {
+                        this.search("Patient", {_id: body.patient}).then((msg : any) => {
                         console.log(msg);
+                        console.log(msg[0].telecom[0].value)
+                        this.setUserEmail(msg[0].telecom[0].value);
                         console.log("Login data set! resolve...");
                         resolve(body);
                     })
