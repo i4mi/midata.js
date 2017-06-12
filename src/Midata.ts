@@ -195,7 +195,6 @@ export class Midata {
             })
                 .then(response => {
                     let body: AuthResponse = response.body;
-                    // TODO: Here...
                     let user: User
                     if (this._user) {
                         this._user.id = body.owner;
@@ -419,7 +418,6 @@ export class Midata {
             })
                 .then(response => {
                     let body: TokenRefreshResponse = response.body;
-                    // TODO: Here...
                     let user : User
                     if (this._user) {
                         this._user.id = body.patient;
@@ -722,7 +720,6 @@ export class Midata {
                     let body: TokenResponse = response.body;
                         let user: User
                         if (this._user) {
-                            // TODO: Here...
                             this._user.id = body.patient;
                         } else {
                             user = {
