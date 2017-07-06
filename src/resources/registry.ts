@@ -55,7 +55,7 @@ export function fromFhir(fhirObject: any) {
              _fhir: fhirObject
          };
          let cls = registry.resourceTypes[coding];
-         resource.__proto__ = cls.prototype
+         resource.__proto__ = cls.prototype;
          return resource;
      }
 

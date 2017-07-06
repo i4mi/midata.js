@@ -206,13 +206,13 @@ export class Midata {
                         };
                     }
                     this._setLoginData(body.authToken, body.refreshToken, user);
-                    this.search("Patient", {_id: body.owner}).then((msg: any) => {
-                        console.log(msg);
-                        console.log(msg[0].telecom[0].value)
-                        this.setUserEmail(msg[0].telecom[0].value);
+                   // this.search("Patient", {_id: body.owner}).then((msg: any) => {
+                        //console.log(msg);
+                        //console.log(msg[0].telecom[0].value)
+                        // this.setUserEmail(msg[0].telecom[0].value);
                         console.log("Login data set! resolve...");
                         resolve(body);
-                    });
+                    //});
                 })
                 .catch(error => {
                     reject(error);
