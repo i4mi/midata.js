@@ -1,4 +1,5 @@
 import {Resource} from './Resource';
+import {registerResource} from './registry';
 
 export type QuestionType =
     'boolean' |
@@ -18,6 +19,7 @@ export interface QuestionGroup {
     questions: Question[];
 }
 
+@registerResource('resourceType', 'questionnaire')
 export class Questionnaire extends Resource {
     constructor(questionGroup: QuestionGroup[] | QuestionGroup) {
         super('Questionnaire');

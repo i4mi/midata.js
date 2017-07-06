@@ -1,4 +1,5 @@
 import {Resource} from "./Resource";
+import {registerResource} from './registry';
 
 // https://www.hl7.org/fhir/codesystem-medication-statement-status.html
 
@@ -18,6 +19,7 @@ export type medicationTaken =
     "unk" |
     "na";
 
+@registerResource('resourceType', 'medicationStatement')
 export class MedicationStatement extends Resource {
 
     constructor(date: Date,

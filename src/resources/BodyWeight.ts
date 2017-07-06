@@ -2,7 +2,7 @@ import {VitalSigns} from './categories';
 import {registerResource} from './registry';
 import {Observation, Quantity} from "./Observation";
 
-@registerResource('3141-9')
+@registerResource('code', '3141-9')
 export class BodyWeight extends Observation {
     constructor(weightKg: number, date: Date) {
         let quantity: Quantity = {

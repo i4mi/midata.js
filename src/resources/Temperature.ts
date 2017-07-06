@@ -28,7 +28,7 @@ const tempCode = {
     "text": "Body temperature"
 };
 
-@registerResource('258710007')
+@registerResource('code', '258710007')
 export class Temperature extends Observation {
     constructor(tempC: number, date: Date) {
         let quantity: Quantity = {

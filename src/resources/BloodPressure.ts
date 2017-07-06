@@ -3,7 +3,7 @@ import { registerResource } from './registry';
 import {Observation} from "./Observation";
 
 
-@registerResource('55417-0')
+@registerResource('code', '55417-0')
 export class BloodPressure extends Observation {
     constructor(systolic: number, diastolic: number, date: Date) {
         let code = {

@@ -1,4 +1,5 @@
 import {Resource} from './Resource';
+import {registerResource} from './registry';
 
 // The Media resource contains photos, videos, and audio recordings.
 // It is used with media acquired or used as part of the healthcare
@@ -10,6 +11,7 @@ export type MediaType =
 
 export type Base64Str = string;
 
+@registerResource('resourceType', 'media')
 export class Media extends Resource {
     constructor(filename: string, mediaType: MediaType, mimetype: string, data: Base64Str) {
         super('Media');

@@ -2,7 +2,7 @@ import {VitalSigns} from './categories';
 import {registerResource} from './registry';
 import {Observation, Quantity} from "./Observation";
 
-@registerResource('8867-4')
+@registerResource('code', '8867-4')
 export class HeartRate extends Observation {
     constructor(beatsPerMinute: number, date: Date) {
         let quantity: Quantity = {
