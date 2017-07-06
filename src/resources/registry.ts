@@ -23,6 +23,7 @@ export function registerResource(type: mappingType, key: string) {
  * function `cls`.
  */
 export function fromFhir(fhirObject: any) {
+    console.log(fhirObject);
     let tryToMap = fhirObject.code !== undefined
                 && fhirObject.code.coding !== undefined
                 && fhirObject.code.coding.length == 1
@@ -38,6 +39,7 @@ export function fromFhir(fhirObject: any) {
             _fhir: fhirObject
         };
         let cls = registry.codes[coding];
+        console.log(cls);
         resource.__proto__ = cls.prototype;
         return resource;
     } else if (fhirObject.resourceType !== undefined) {
@@ -55,11 +57,13 @@ export function fromFhir(fhirObject: any) {
              _fhir: fhirObject
          };
          let cls = registry.resourceTypes[coding];
+         console.log(cls);
          resource.__proto__ = cls.prototype;
          return resource;
      }
 
     } else {
+        console.log("No mapping");
         // No mapping exists, throw an error...
         throw new Error(`Mapping Error!`)
     }
