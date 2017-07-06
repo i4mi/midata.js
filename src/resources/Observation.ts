@@ -8,7 +8,7 @@ import {registerResource} from './registry';
  *
  * https://www.hl7.org/fhir/observation.html
  */
-@registerResource('resourceType', 'observation')
+@registerResource('resourceType', 'Observation')
 export class Observation extends Resource {
 
     constructor(date: Date,
