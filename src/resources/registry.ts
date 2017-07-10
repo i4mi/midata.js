@@ -55,9 +55,13 @@ export function fromFhir(fhirObject: any) {
      if (tryToMap) {
          let coding = fhirObject.resourceType;
          mappingExists = registry.resourceTypes[coding] !== undefined;
+         console.log("Existiert ein Mapping?");
+         console.log(mappingExists);
      }
      if (mappingExists) {
          let coding = fhirObject.resourceType;
+         console.log("Das Coding:");
+         console.log(coding);
          let resource: any = {
              _fhir: fhirObject
          };
