@@ -1,5 +1,3 @@
-import {Resource} from "./Resource";
-
 const registry: any = {
     codes: <any>[],
     resourceTypes: <any>[]
@@ -76,7 +74,9 @@ export function fromFhir(fhirObject: any) {
          let resource: any = {
              _fhir: fhirObject
          };
-         resource.__proto__ = Resource.prototype;
+         let cls = registry.resourceTypes["Resource"];
+         console.log(cls);
+         resource.__proto__ = cls.prototype;
          return resource;
      }
     } else {
