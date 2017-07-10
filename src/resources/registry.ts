@@ -1,3 +1,5 @@
+import {Resource} from "./Resource";
+
 const registry: any = {
     codes: <any>[],
     resourceTypes: <any>[]
@@ -70,9 +72,12 @@ export function fromFhir(fhirObject: any) {
          resource.__proto__ = cls.prototype;
          return resource;
      } else {
-          // TODO: Alternativ: Mapping zu 'Resource'
-         // Resource type not in registry, throw an error!
-         throw new Error(`Mapping error: Unknown resourceType`);
+         // Resource type not in registry, map to base class 'resource'
+         let resource: any = {
+             _fhir: fhirObject
+         };
+         resource.__proto__ = Resource.prototype;
+         return resource;
      }
     } else {
         // Property resourceType not available, throw an error...
