@@ -69,12 +69,14 @@ export function fromFhir(fhirObject: any) {
          console.log(cls);
          resource.__proto__ = cls.prototype;
          return resource;
-     } // TODO: Hier muss ein Error kommen, denn wenn die Resource nicht mind. als Resource existiert, dann Error!
-
+     } else {
+          // TODO: Alternativ: Mapping zu 'Resource'
+         // Resource type not in registry, throw an error!
+         throw new Error(`Mapping error: Unknown resourceType`);
+     }
     } else {
-        console.log("No mapping");
-        // No mapping exists, throw an error...
-        throw new Error(`Mapping Error!`)
+        // Property resourceType not available, throw an error...
+        throw new Error(`Mapping error: Invalid object structure!`);
     }
 }
 
