@@ -22,6 +22,11 @@ export function registerResource(type: mappingType, key: string) {
  * Create a resource with the type of the constructor
  * function `cls`.
  */
+
+
+// TODO: Registrierungsparameter stimmen nicht -> Check!
+
+
 export function fromFhir(fhirObject: any) {
     console.log(fhirObject);
     let tryToMap = fhirObject.code !== undefined
@@ -60,7 +65,7 @@ export function fromFhir(fhirObject: any) {
          console.log(cls);
          resource.__proto__ = cls.prototype;
          return resource;
-     }
+     } // TODO: Hier muss ein Error kommen, denn wenn die Resource nicht mind. als Resource existiert, dann Error!
 
     } else {
         console.log("No mapping");
