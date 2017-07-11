@@ -693,7 +693,7 @@ export class Midata {
 
         console.log("6");
 
-        //return new Promise<any>((resolve, reject) => {
+        return new Promise((resolve, reject) => {
 
             let getEncodedParams = () => {
 
@@ -713,7 +713,7 @@ export class Midata {
                 encodedParams: getEncodedParams()
             };
 
-            return apiCall({
+             apiCall({
                 url: this._tokenEndpoint,
                 method: 'POST',
                 headers: {
@@ -739,19 +739,19 @@ export class Midata {
 
                     }).then(_ => {
                     console.log("second Statement called");
-                    this.search("Patient", {_id: this._user.id}).then((msg : any) => {
-                        console.log("Patient search called");
+                    this.search("Patient", {_id: this._user.id}).then((msg: any) => {
+                    console.log("Patient search called");
                     console.log(msg);
                     console.log(msg[0].telecom[0].value)
                     this.setUserEmail(msg[0].telecom[0].value);
                     console.log("Login data set! resolve...");
-                    return(msg);
+                    resolve(msg);
                 });
             })
                 .catch((response: ApiCallResponse) => {
-                    return Promise.reject(response);
+                    reject(response);
                 });
-       // });
+        });
     }
 
 
