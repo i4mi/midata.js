@@ -587,6 +587,8 @@ export class Midata {
 
             this._authenticate().then(_ => this._exchangeTokenForCode())
                 .then((body) => {
+                    console.log("Good until here");
+                    console.log(body);
                     resolve(body);
                 })
                 .catch((error: any) => {
