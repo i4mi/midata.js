@@ -742,8 +742,7 @@ export class Midata {
                     this.search("Patient", {_id: this._user.id}).then((msg: any) => {
                     console.log("Patient search called");
                     console.log(msg);
-                    console.log(msg[0].telecom[0].value)
-                    this.setUserEmail(msg[0].telecom[0].value);
+                    console.log(msg[0].toJson());
                     console.log("Login data set! resolve...");
                     resolve(msg);
                 });
