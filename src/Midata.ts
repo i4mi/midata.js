@@ -169,7 +169,7 @@ export class Midata {
      */
     login(username: string, password: string, role?: UserRole): Promise<AuthResponse> {
 
-        return new Promise<AuthResponse>((resolve, reject) => {
+        return new Promise((resolve, reject) => {
 
             if (username === undefined || password === undefined) {
                 throw new Error('You need to supply a username and a password!');
@@ -206,13 +206,15 @@ export class Midata {
                         };
                     }
                     this._setLoginData(body.authToken, body.refreshToken, user);
-                   // this.search("Patient", {_id: body.owner}).then((msg: any) => {
-                        //console.log(msg);
-                        //console.log(msg[0].telecom[0].value)
-                        // this.setUserEmail(msg[0].telecom[0].value);
-                        console.log("Login data set! resolve...");
-                        resolve(body);
-                    //});
+                }).then(_ => {
+                // TODO: Authenticate i.O. -> Hier Anpassen. Registry Values überprüfen!
+                this.search("Patient", {_id: this.user.id}).then((msg: any) => {
+                    console.log(msg);
+                    console.log(msg[0].toJson())
+                    this.setUserEmail(msg[0].getProperty("telecom")[0].value);
+                    console.log("Login data set! resolve...");
+                    resolve(msg);
+                });
                 })
                 .catch(error => {
                     reject(error);
@@ -642,7 +644,13 @@ export class Midata {
 
                 console.log("5");
 
-                var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
+                var endpoint = `${this._authEndpoint}?response_type=code
+                &client_id=${this._appName}&redirect_uri=http://localhost/callback
+                &aud=${this._host}%2Ffhir
+                &scope=user%2F*.*
+                &state=${this._state}
+                &code_challenge=${this._codeChallenge}
+                &code_challenge_method=S256`;
 
                 if (typeof this._user != "undefined" && typeof this._user.email != "undefined") {
                     endpoint = `${endpoint}&email=${this._user.email}`
@@ -734,12 +742,10 @@ export class Midata {
                                 id: body.patient,
                             };
                         }
-
                         this._setLoginData(body.access_token, body.refresh_token, user);
-
                     }).then(_ => {
                     console.log("second Statement called");
-                    this.search("Patient", {_id: this._user.id}).then((msg: any) => {
+                    this.search("Patient", {_id: this.user.id}).then((msg: any) => {
                     console.log("Patient search called");
                     console.log(msg);
                     console.log(msg[0].toJson());
