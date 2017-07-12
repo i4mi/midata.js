@@ -388,7 +388,7 @@ export class Midata {
 
     private _refresh = (withRefreshToken?: string) => {
 
-        return new Promise<TokenRefreshResponse>((resolve, reject) => {
+        return new Promise((resolve, reject) => {
 
             let getEncodedParams = () => {
 
@@ -420,23 +420,29 @@ export class Midata {
             })
                 .then(response => {
                     let body: TokenRefreshResponse = response.body;
-                    let user : User
+                    let user: User
                     if (this._user) {
                         this._user.id = body.patient;
                     } else {
-                    user = {
-                        id: body.patient,
-                    };
+                        user = {
+                            id: body.patient,
+                        };
                     }
                     this._setLoginData(body.access_token, body.refresh_token, user);
-                    this.search("Patient", {_id: body.patient}).then((msg: any) => {
+                }).then(_ => {
+
+
+
+                    // TODO: Authenticate i.O. -> Hier Anpassen. Registry Values überprüfen!
+                    this.search("Patient", {_id: this.user.id}).then((msg: any) => {
                         console.log(msg);
-                        console.log(msg[0].telecom[0].value)
-                        this.setUserEmail(msg[0].telecom[0].value);
-                        console.log("Login data refreshed! resolve...");
-                        resolve(body);
+                        console.log(msg[0].toJson())
+                        this.setUserEmail(msg[0].getProperty("telecom")[0].value);
+                        console.log("Data refreshed! resolve...");
+                        resolve(msg);
                     });
-                })
+
+            })
                 .catch((response: ApiCallResponse) => {
                     reject(response);
                 });
@@ -644,13 +650,7 @@ export class Midata {
 
                 console.log("5");
 
-                var endpoint = `${this._authEndpoint}?response_type=code
-                &client_id=${this._appName}&redirect_uri=http://localhost/callback
-                &aud=${this._host}%2Ffhir
-                &scope=user%2F*.*
-                &state=${this._state}
-                &code_challenge=${this._codeChallenge}
-                &code_challenge_method=S256`;
+                var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
 
                 if (typeof this._user != "undefined" && typeof this._user.email != "undefined") {
                     endpoint = `${endpoint}&email=${this._user.email}`
@@ -744,15 +744,15 @@ export class Midata {
                         }
                         this._setLoginData(body.access_token, body.refresh_token, user);
                     }).then(_ => {
-                    console.log("second Statement called");
-                    this.search("Patient", {_id: this.user.id}).then((msg: any) => {
-                    console.log("Patient search called");
-                    console.log(msg);
-                    console.log(msg[0].toJson());
-                    console.log("Login data set! resolve...");
-                    resolve(msg);
-                });
-            })
+                 // TODO: Registry Values überprüfen!
+                 this.search("Patient", {_id: this.user.id}).then((msg: any) => {
+                     console.log(msg);
+                     console.log(msg[0].toJson())
+                     this.setUserEmail(msg[0].getProperty("telecom")[0].value);
+                     console.log("Login data set! resolve...");
+                     resolve(msg);
+                 });
+             })
                 .catch((response: ApiCallResponse) => {
                     reject(response);
                 });
