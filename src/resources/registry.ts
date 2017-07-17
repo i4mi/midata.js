@@ -22,10 +22,6 @@ export function registerResource(type: mappingType, key: string) {
  * Create a resource with the type of the constructor
  * function `cls`.
  */
-
-
-// TODO: Registrierungsparameter stimmen nicht -> Check!
-
 export function fromFhir(fhirObject: any) {
     let tryToMap = fhirObject.code !== undefined
                 && fhirObject.code.coding !== undefined

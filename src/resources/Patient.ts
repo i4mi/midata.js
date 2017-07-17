@@ -7,7 +7,7 @@ export type gender = 'male' |
         'other' |
         'unknown';
 
-// @registerResource("resourceType", "Patient")
+@registerResource("resourceType", "Patient")
 export class Patient extends Resource {
     constructor(address : fhir.Address,
                 birthdate: string,

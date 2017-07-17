@@ -19,7 +19,7 @@ export interface QuestionGroup {
     questions: Question[];
 }
 
-@registerResource('resourceType', 'questionnaire')
+@registerResource('resourceType', 'Questionnaire')
 export class Questionnaire extends Resource {
     constructor(questionGroup: QuestionGroup[] | QuestionGroup) {
         super('Questionnaire');

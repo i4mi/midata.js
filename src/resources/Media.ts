@@ -11,7 +11,7 @@ export type MediaType =
 
 export type Base64Str = string;
 
-@registerResource('resourceType', 'media')
+@registerResource('resourceType', 'Media')
 export class Media extends Resource {
     constructor(filename: string, mediaType: MediaType, mimetype: string, data: Base64Str) {
         super('Media');

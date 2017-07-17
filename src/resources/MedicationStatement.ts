@@ -19,7 +19,7 @@ export type medicationTaken =
     "unk" |
     "na";
 
-@registerResource('resourceType', 'medicationStatement')
+@registerResource('resourceType', 'MedicationStatement')
 export class MedicationStatement extends Resource {
 
     constructor(date: Date,

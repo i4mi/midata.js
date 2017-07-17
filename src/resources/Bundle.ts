@@ -24,7 +24,7 @@ export type httpVerb =
         'PUT' |
         'DELETE';
 
-@registerResource('resourceType', 'bundle')
+@registerResource('resourceType', 'Bundle')
 export class Bundle extends Resource {
 
     constructor(type: BundleType) {
