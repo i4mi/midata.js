@@ -26,9 +26,7 @@ export function registerResource(type: mappingType, key: string) {
 
 // TODO: Registrierungsparameter stimmen nicht -> Check!
 
-
 export function fromFhir(fhirObject: any) {
-    console.log(fhirObject);
     let tryToMap = fhirObject.code !== undefined
                 && fhirObject.code.coding !== undefined
                 && fhirObject.code.coding.length == 1
@@ -44,7 +42,6 @@ export function fromFhir(fhirObject: any) {
             _fhir: fhirObject
         };
         let cls = registry.codes[coding];
-        console.log(cls);
         resource.__proto__ = cls.prototype;
         return resource;
     } else if (fhirObject.resourceType !== undefined) {
@@ -55,18 +52,13 @@ export function fromFhir(fhirObject: any) {
      if (tryToMap) {
          let coding = fhirObject.resourceType;
          mappingExists = registry.resourceTypes[coding] !== undefined;
-         console.log("Existiert ein Mapping?");
-         console.log(mappingExists);
      }
      if (mappingExists) {
          let coding = fhirObject.resourceType;
-         console.log("Das Coding:");
-         console.log(coding);
          let resource: any = {
              _fhir: fhirObject
          };
          let cls = registry.resourceTypes[coding];
-         console.log(cls);
          resource.__proto__ = cls.prototype;
          return resource;
      } else {
@@ -75,12 +67,11 @@ export function fromFhir(fhirObject: any) {
              _fhir: fhirObject
          };
          let cls = registry.resourceTypes["Resource"];
-         console.log(cls);
          resource.__proto__ = cls.prototype;
          return resource;
      }
     } else {
-        // Property resourceType not available, throw an error...
+        // Property 'resourceType' not available, throw an error...
         throw new Error(`Mapping error: Invalid object structure!`);
     }
 }

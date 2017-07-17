@@ -207,10 +207,7 @@ export class Midata {
                     }
                     this._setLoginData(body.authToken, body.refreshToken, user);
                 }).then(_ => {
-                // TODO: Authenticate i.O. -> Hier Anpassen. Registry Values überprüfen!
                 this.search("Patient", {_id: this.user.id}).then((msg: any) => {
-                    console.log(msg);
-                    console.log(msg[0].toJson())
                     this.setUserEmail(msg[0].getProperty("telecom")[0].value);
                     console.log("Login data set! resolve...");
                     resolve(msg);
@@ -430,13 +427,7 @@ export class Midata {
                     }
                     this._setLoginData(body.access_token, body.refresh_token, user);
                 }).then(_ => {
-
-
-
-                    // TODO: Authenticate i.O. -> Hier Anpassen. Registry Values überprüfen!
                     this.search("Patient", {_id: this.user.id}).then((msg: any) => {
-                        console.log(msg);
-                        console.log(msg[0].toJson())
                         this.setUserEmail(msg[0].getProperty("telecom")[0].value);
                         console.log("Data refreshed! resolve...");
                         resolve(msg);
@@ -595,7 +586,6 @@ export class Midata {
 
             this._authenticate().then(_ => this._exchangeTokenForCode())
                 .then((body) => {
-                    console.log("7");
                     resolve(body);
                 })
                 .catch((error: any) => {
@@ -641,15 +631,8 @@ export class Midata {
      **/
 
     private _authenticate(): Promise<InAppBrowserEvent> {
-
-        console.log("1");
-
         return new Promise((resolve, reject) => {
-
             this._initSessionParams(128).then(() => {
-
-                console.log("5");
-
                 var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
 
                 if (typeof this._user != "undefined" && typeof this._user.email != "undefined") {
@@ -698,29 +681,20 @@ export class Midata {
      **/
 
     private _exchangeTokenForCode(): Promise<TokenResponse> {
-
-        console.log("6");
-
         return new Promise((resolve, reject) => {
-
             let getEncodedParams = () => {
-
                 // because of x-www-form-urlencoded
-
                 let urlSearchParams = new URLSearchParams();
                 urlSearchParams.append("grant_type", "authorization_code");
                 urlSearchParams.append("code", this._authCode);
                 urlSearchParams.append("redirect_uri", "http://localhost/callback");
                 urlSearchParams.append("client_id", this._appName);
                 urlSearchParams.append("code_verifier", this._codeVerifier);
-
                 return urlSearchParams;
             };
-
             let tokenRequest: TokenRequest = {
                 encodedParams: getEncodedParams()
             };
-
              apiCall({
                 url: this._tokenEndpoint,
                 method: 'POST',
@@ -732,7 +706,6 @@ export class Midata {
                 jsonEncoded: false
             })
                 .then(response => {
-                    console.log("apiCall called");
                     let body: TokenResponse = response.body;
                         let user: User
                         if (this._user) {
@@ -744,10 +717,7 @@ export class Midata {
                         }
                         this._setLoginData(body.access_token, body.refresh_token, user);
                     }).then(_ => {
-                 // TODO: Registry Values überprüfen!
                  this.search("Patient", {_id: this.user.id}).then((msg: any) => {
-                     console.log(msg);
-                     console.log(msg[0].toJson())
                      this.setUserEmail(msg[0].getProperty("telecom")[0].value);
                      console.log("Login data set! resolve...");
                      resolve(msg);
@@ -761,10 +731,8 @@ export class Midata {
 
 
     private _initSessionParams(length: number): Promise<string> {
-        console.log("2");
         return new Promise<string>((resolve, reject) => {
             this._initRndString(length).then((stateString) => {
-                console.log("4");
                 this._state = stateString;
                 this._initRndString(length).then((codeVerifier) => {
                     this._codeVerifier = codeVerifier;
@@ -782,7 +750,6 @@ export class Midata {
     }
 
     private _initRndString(length: number): Promise<string> {
-        console.log("3");
         return new Promise<string>((resolve, reject) => {
             if (length && length >= 0) {
                 var _state = "";
