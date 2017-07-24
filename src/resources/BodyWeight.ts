@@ -16,8 +16,8 @@ export class BodyWeight extends Observation {
         super(date, {
             coding: [{
                 system: 'http://loinc.org',
-                code: '3141-9',
-                display: 'Weight Measured'
+                code: '29463-7',
+                display: 'Body weight'
             }]
         }, VitalSigns, quantity);
     }
