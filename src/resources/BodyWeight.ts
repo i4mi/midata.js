@@ -2,7 +2,7 @@ import {VitalSigns} from './categories';
 import {registerResource} from './registry';
 import {Observation, Quantity} from "./Observation";
 
-@registerResource('code', '3141-9')
+@registerResource('code', '29463-7')
 export class BodyWeight extends Observation {
     constructor(weightKg: number, date: Date) {
         let quantity: Quantity = {
@@ -16,8 +16,8 @@ export class BodyWeight extends Observation {
         super(date, {
             coding: [{
                 system: 'http://loinc.org',
-                code: '3141-9',
-                display: 'Weight Measured'
+                code: '29463-7',
+                display: 'Body weight'
             }]
         }, VitalSigns, quantity);
     }
