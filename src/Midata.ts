@@ -211,11 +211,13 @@ export class Midata {
                     this.setUserEmail(msg[0].getProperty("telecom")[0].value);
                     console.log("Login data set! resolve...");
                     resolve(msg);
-                });
-                })
-                .catch(error => {
+                }).catch((error) => {
+                    console.log("Error setting user email address");
                     reject(error);
                 });
+            }).catch((error) => {
+                    reject(error);
+            });
         });
     }
 
@@ -586,17 +588,13 @@ export class Midata {
 
             this._authenticate().then(_ => this._exchangeTokenForCode())
                 .then((body) => {
-                    resolve(body),
-                    ((onerror: any) => {
-                    reject(onerror);
-                    });
+                    resolve(body)
                 })
                 .catch((error: any) => {
                     reject(error);
                 })
         });
     }
-
 
     /**
      Helper method to refresh the authentication token by authorizing
@@ -728,8 +726,7 @@ export class Midata {
                      console.log("Error setting user email address");
                      reject(error);
                  })
-             })
-                .catch((response: ApiCallResponse) => {
+             }).catch((response: ApiCallResponse) => {
                     reject(response);
                 });
         });
