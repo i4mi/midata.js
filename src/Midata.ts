@@ -724,11 +724,10 @@ export class Midata {
                      this.setUserEmail(msg[0].getProperty("telecom")[0].value);
                      console.log("Login data set! resolve...");
                      resolve(msg);
-                 },
-                     (error) => {
+                 }).catch((error) => {
                      console.log("Error setting user email address");
                      reject(error);
-                     });
+                 })
              })
                 .catch((response: ApiCallResponse) => {
                     reject(response);
