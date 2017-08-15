@@ -586,7 +586,10 @@ export class Midata {
 
             this._authenticate().then(_ => this._exchangeTokenForCode())
                 .then((body) => {
-                    resolve(body);
+                    resolve(body),
+                    ((onerror: any) => {
+                    reject(onerror);
+                    });
                 })
                 .catch((error: any) => {
                     reject(error);
