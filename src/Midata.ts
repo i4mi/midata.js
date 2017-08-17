@@ -130,6 +130,20 @@ export class Midata {
     }
 
     /*
+     Update the host and if needed the conformanceStatementEndpoint if the target server changes.
+     Changing the target server will force a logout since this should only be done if no connection exists.
+     */
+    changePlatform(host: string, conformanceStatementEndpoint?: string){
+        this._host = host;
+        if(conformanceStatementEndpoint){
+            this._conformanceStatementEndpoint = conformanceStatementEndpoint;
+        } else {
+            this._conformanceStatementEndpoint = `${this._host}/fhir/metadata`;
+        }
+        this.logout();
+    }
+
+    /*
      Destroy all authenication information.
      */
 
