@@ -37,6 +37,7 @@ export declare class Midata {
     readonly user: User;
     setUserEmail(email: string): void;
     setUserLanguage(language: language): void;
+    changePlatform(host: string, conformanceStatementEndpoint?: string): void;
     logout(): void;
     private _setLoginData(authToken, refreshToken, user?);
     /**
