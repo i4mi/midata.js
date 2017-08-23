@@ -225,13 +225,23 @@ export class Midata {
                     var searchPromise = this.search("Patient", {_id: this.user.id}).then((msg: any) => {
                         this.setUserEmail(msg[0].getProperty("telecom")[0].value);
                         arrPromises.push(searchPromise);
+
+
+                        console.log("Search vor resolve");
+                        console.log(searchPromise);
+
                         Promise.resolve();
-                        console.log(arrPromises);
+
+                        console.log("Nach resolve");
+                        console.log(apiCallPromise);
+                        console.log(searchPromise);
                     })
                 });
 
         arrPromises.push(apiCallPromise);
-        console.log(arrPromises);
+
+        console.log("Vor resolve");
+        console.log(apiCallPromise);
 
         // wait for all Promises to fullfill before returning anything to the caller
         return Promise.all(arrPromises).then(()=>{
