@@ -253,16 +253,6 @@ export class Midata {
     // TODO: Try to map response objects back to their class (e.g. BodyWeight)
 
     save(resource: Resource | any) : Promise<fhir.Resource> {
-
-
-        var mappedResponse = (resource: any) => {
-            return new Promise<fhir.Resource>(() => {
-                return fromFhir(resource); // equal to Promise.resolve(resource);
-            }).catch((error) => {
-               return Promise.reject(error);
-            });
-        }
-
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
@@ -291,16 +281,14 @@ export class Midata {
                 if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
                     console.log("Try to map the object back - at least a resource it should be...");
                     console.log(response.body);
-                    mappedResponse(response.body).then((msg) => {
-                        return Promise.resolve(msg);
-                    }, (error) => {
-                        return Promise.reject(error);
-                    })
-                }
-                else {
-                    throw new Error(`Unexpected response status code: ${response.status}`);
-                }
-            })
+                    var mappedResponse = (fromFhir(JSON.parse(response.body)));
+                    console.log("Nach dem Mappen");
+                    console.log(response.body);
+                    return Promise.resolve(mappedResponse.toJson());
+                    } else {
+                        throw new Error(`Unexpected response status code: ${response.status}`);
+                    }
+                })
             .catch((response: any) => {
                 // convenience variable
                 let logMsg = `Please login again using method authenticate()`;
