@@ -182,6 +182,66 @@ export class Midata {
      */
     login(username: string, password: string, role?: UserRole): Promise<AuthResponse> {
 
+        if (username === undefined || password === undefined) {
+            throw new Error('You need to supply a username and a password!');
+        }
+        let authRequest: AuthRequest = {
+            username: username,
+            password: password,
+            appname: this._appName,
+            secret: this._secret
+        };
+        if (role !== undefined) {
+            authRequest.role = role;
+        }
+
+        let authResponse: AuthResponse;
+        let arrPromises: Promise<void>[] = [];
+
+        var apiCallPromise = apiCall({
+            url: this._host + '/v1/auth',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            jsonBody: true,
+            payload: authRequest
+        })
+            .then(response => {
+                authResponse = response.body;
+                let user: User
+                if (this._user) {
+                    this._user.id = authResponse.owner;
+                    this._user.name = username;
+                } else {
+                    user = {
+                        id: authResponse.owner,
+                        name: username
+                    };
+                }
+                this._setLoginData(authResponse.authToken, authResponse.refreshToken, user);
+            })
+                .then(() => {
+                    var searchPromise = this.search("Patient", {_id: this.user.id}).then((msg: any) => {
+                        this.setUserEmail(msg[0].getProperty("telecom")[0].value);
+                        arrPromises.push(searchPromise);
+                        Promise.resolve();
+                        console.log(arrPromises);
+                    })
+                });
+
+        arrPromises.push(apiCallPromise);
+        console.log(arrPromises);
+
+        // wait for all Promises to fullfill before returning anything to the caller
+        return Promise.all(arrPromises).then(()=>{
+          return authResponse; // Promise.resolve(authResponse);
+        });
+    }
+
+        /**/
+
+        /* * /
         return new Promise((resolve, reject) => {
 
             if (username === undefined || password === undefined) {
@@ -197,7 +257,7 @@ export class Midata {
                 authRequest.role = role;
             }
 
-            apiCall({
+            let call = apiCall({
                 url: this._host + '/v1/auth',
                 method: 'POST',
                 headers: {
@@ -231,9 +291,14 @@ export class Midata {
             }).catch((error) => {
                     reject(error);
             });
-        });
-    }
+        });/**/
 
+/*
+* login().then(_ => {
+* * console.log('asdf');
+* });
+
+* */
 
     /**
      *
