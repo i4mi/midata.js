@@ -249,9 +249,6 @@ export class Midata {
      * @return The promise returns the created object. In case of failure, an error of type
      *         ApiCallResponse will be returned.
      */
-
-    // TODO: Try to map response objects back to their class (e.g. BodyWeight)
-
     save(resource: Resource | any) : Promise<fhir.Resource> {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
@@ -279,12 +276,9 @@ export class Midata {
                 // be returned (populated with an id field in the case
                 // it was newly created).
                 if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
-                    console.log("Try to map the object back - at least a resource it should be...");
                     console.log(response.body);
                     var mappedResponse = (fromFhir(JSON.parse(response.body)));
-                    console.log("Nach dem Mappen");
-                    console.log(response.body);
-                    return Promise.resolve(mappedResponse.toJson());
+                    return Promise.resolve(mappedResponse);
                     } else {
                         throw new Error(`Unexpected response status code: ${response.status}`);
                     }
