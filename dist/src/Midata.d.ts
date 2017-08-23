@@ -91,7 +91,7 @@ export declare class Midata {
      * @return The promise returns an array of objects matching the search param(s). In case of failure, an error of type
      *         ApiCallResponse will be returned.
      */
-    search(resourceType: string, params?: any): Promise<{}>;
+    search(resourceType: string, params?: any): Promise<ApiCallResponse>;
     private _search(baseUrl, params?);
     /**
      Login to the MIDATA platform. This method has to be called prior to

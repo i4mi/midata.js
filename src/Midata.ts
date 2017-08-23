@@ -196,9 +196,12 @@ export class Midata {
         }
 
         let authResponse: AuthResponse;
-        let arrPromises: Promise<void>[] = [];
+        //let arrPromises: Promise<void>[] = [];
 
-        var apiCallPromise = apiCall({
+
+        var apiCallPromise = function()  {
+
+            return apiCall({
             url: this._host + '/v1/auth',
             method: 'POST',
             headers: {
@@ -206,48 +209,43 @@ export class Midata {
             },
             jsonBody: true,
             payload: authRequest
+        }).then(response => {
+            authResponse = response.body;
+            let user: User
+            if (this._user) {
+                this._user.id = authResponse.owner;
+                this._user.name = username;
+            } else {
+                user = {
+                    id: authResponse.owner,
+                    name: username
+                };
+            }
+            this._setLoginData(authResponse.authToken, authResponse.refreshToken, user);
+            return Promise.resolve();
         })
-            .then(response => {
-                authResponse = response.body;
-                let user: User
-                if (this._user) {
-                    this._user.id = authResponse.owner;
-                    this._user.name = username;
-                } else {
-                    user = {
-                        id: authResponse.owner,
-                        name: username
-                    };
-                }
-                this._setLoginData(authResponse.authToken, authResponse.refreshToken, user);
-            })
-                .then(() => {
-                    var searchPromise = this.search("Patient", {_id: this.user.id}).then((msg: any) => {
-                        this.setUserEmail(msg[0].getProperty("telecom")[0].value);
-                        arrPromises.push(searchPromise);
+            .catch((error) => {
+                throw new Error("Error during login process: " + error);
+            });
+
+        };
 
 
-                        console.log("Search vor resolve");
-                        console.log(searchPromise);
+        var fetchUserInfo = function(){
 
-                        Promise.resolve();
+            return this.search("Patient", {_id: this.user.id}).then((msg: any) => {
+                this.setUserEmail(msg[0].getProperty("telecom")[0].value);
+                return Promise.resolve();
 
-                        console.log("Nach resolve");
-                        console.log(apiCallPromise);
-                        console.log(searchPromise);
-                    })
-                });
+            }).catch((error: any) => {
+                throw new Error("Error getting Patient email address" + error);
+            });;
+        };
 
-        arrPromises.push(apiCallPromise);
 
-        console.log("Vor resolve");
-        console.log(apiCallPromise);
-
-        // wait for all Promises to fullfill before returning anything to the caller
-        return Promise.all(arrPromises).then(()=>{
-            console.log("Die Promises müssen beide resolved sein!");
-            console.log(arrPromises);
-            return authResponse; // Promise.resolve(authResponse);
+        return apiCallPromise().then((fetchUserInfo)).then(() => {
+            console.log("Jetzt wird zurückgegeben");
+            return authResponse;
         });
     }
 
@@ -541,7 +539,7 @@ export class Midata {
      *         ApiCallResponse will be returned.
      */
 
-    search(resourceType: string, params: any = {}) {
+    search(resourceType: string, params: any = {}) : Promise<ApiCallResponse> {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
@@ -552,7 +550,7 @@ export class Midata {
         return this._search(baseUrl, params);
     }
 
-    private _search(baseUrl: string, params: any = {}) {
+    private _search(baseUrl: string, params: any = {}) : Promise<ApiCallResponse> {
         let queryParts = Object.keys(params).map(key => {
             return key + '=' + params[key]
         });
@@ -574,9 +572,9 @@ export class Midata {
                     let resources = entries.map((e: any) => {
                         return fromFhir(e.resource);
                     });
-                    return resources;
+                    return Promise.resolve(resources); // gleich wie return
                 } else {
-                    return [];
+                    return Promise.resolve([]); // gleich wie return
                 }
             })
 
