@@ -281,7 +281,10 @@ export class Midata {
                 if(response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
                     console.log("Try to map the object back - at least a resource it should be...");
                     console.log(response.body);
-                    return Promise.resolve(fromFhir(response.body).toJson());
+                    var mappedResponse = fromFhir(response.body);
+                    console.log("Nach dem Mappen");
+                    console.log(response.body);
+                    return Promise.resolve(mappedResponse.toJson());
                 } else {
                     throw new Error(`Unexpected response status code: ${response.status}`);
                 }
