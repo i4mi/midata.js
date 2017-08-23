@@ -23,6 +23,8 @@ export function registerResource(type: mappingType, key: string) {
  * function `cls`.
  */
 export function fromFhir(fhirObject: any) {
+    console.log("In der Registry");
+    console.log(fhirObject.resourceType);
     let tryToMap = fhirObject.code !== undefined
                 && fhirObject.code.coding !== undefined
                 && fhirObject.code.coding.length == 1
