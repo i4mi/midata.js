@@ -199,12 +199,13 @@ export class Midata {
         //let arrPromises: Promise<void>[] = [];
 
 
-        var apiCallPromise = function() {
+        var apiCallPromise = () => {
 
-            var that = this;
+            console.log("Logging this");
+            console.log(this);
 
             return apiCall({
-            url: that._host + '/v1/auth',
+            url: this._host + '/v1/auth',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -214,9 +215,9 @@ export class Midata {
         }).then(response => {
             authResponse = response.body;
             let user: User
-            if (that._user) {
-                that._user.id = authResponse.owner;
-                that._user.name = username;
+            if (this._user) {
+                this._user.id = authResponse.owner;
+                this._user.name = username;
             } else {
                 user = {
                     id: authResponse.owner,
@@ -233,11 +234,9 @@ export class Midata {
         };
 
 
-        var fetchUserInfo = function(){
+        var fetchUserInfo = () => {
 
-            var that = this
-
-            return this.search("Patient", {_id: that.user.id}).then((msg: any) => {
+            return this.search("Patient", {_id: this.user.id}).then((msg: any) => {
                 this.setUserEmail(msg[0].getProperty("telecom")[0].value);
                 return Promise.resolve();
 
