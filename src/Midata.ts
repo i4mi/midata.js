@@ -245,7 +245,9 @@ export class Midata {
 
         // wait for all Promises to fullfill before returning anything to the caller
         return Promise.all(arrPromises).then(()=>{
-          return authResponse; // Promise.resolve(authResponse);
+            console.log("Die Promises müssen beide resolved sein!");
+            console.log(arrPromises);
+            return authResponse; // Promise.resolve(authResponse);
         });
     }
 
