@@ -253,6 +253,16 @@ export class Midata {
     // TODO: Try to map response objects back to their class (e.g. BodyWeight)
 
     save(resource: Resource | any) : Promise<fhir.Resource> {
+
+
+        var mappedResponse = (resource: any) => {
+            return new Promise<fhir.Resource>(() => {
+                return fromFhir(resource); // equal to Promise.resolve(resource);
+            }).catch((error) => {
+               return Promise.reject(error);
+            });
+        }
+
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
@@ -274,18 +284,20 @@ export class Midata {
         let apiMethod = shouldCreate ? this._create : this._update;
 
         return apiMethod(fhirObject)
-            .then(response => {
+            .then((response: any) => {
                 // When the resource is created, the same resource will
                 // be returned (populated with an id field in the case
                 // it was newly created).
-                if(response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
+                if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
                     console.log("Try to map the object back - at least a resource it should be...");
                     console.log(response.body);
-                    var mappedResponse = fromFhir(response.body);
-                    console.log("Nach dem Mappen");
-                    console.log(response.body);
-                    return Promise.resolve(mappedResponse.toJson());
-                } else {
+                    mappedResponse(response.body).then((msg) => {
+                        return Promise.resolve(msg);
+                    }, (error) => {
+                        return Promise.reject(error);
+                    })
+                }
+                else {
                     throw new Error(`Unexpected response status code: ${response.status}`);
                 }
             })
