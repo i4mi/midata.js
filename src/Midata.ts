@@ -197,7 +197,7 @@ export class Midata {
 
         let authResponse: AuthResponse;
 
-        var apiCallPromise = () => {
+        var loginMidata = () => {
             return apiCall({
             url: this._host + '/v1/auth',
             method: 'POST',
@@ -237,7 +237,7 @@ export class Midata {
             });
         };
 
-        return apiCallPromise().then((fetchUserInfo)).then(() => {
+        return loginMidata().then((fetchUserInfo)).then(() => {
             return authResponse;
         }, error => {
             return error;
