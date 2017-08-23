@@ -10,7 +10,6 @@ import {URLSearchParams} from "@angular/http";
 import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
 
-
 let jsSHA = require("jssha");
 
 declare var window: any;
@@ -242,67 +241,6 @@ export class Midata {
         });
     }
 
-        /**/
-
-        /* * /
-        return new Promise((resolve, reject) => {
-
-            if (username === undefined || password === undefined) {
-                throw new Error('You need to supply a username and a password!');
-            }
-            let authRequest: AuthRequest = {
-                username: username,
-                password: password,
-                appname: this._appName,
-                secret: this._secret
-            };
-            if (role !== undefined) {
-                authRequest.role = role;
-            }
-
-            let call = apiCall({
-                url: this._host + '/v1/auth',
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                jsonBody: true,
-                payload: authRequest
-            })
-                .then(response => {
-                    let body: AuthResponse = response.body;
-                    let user: User
-                    if (this._user) {
-                        this._user.id = body.owner;
-                        this._user.name = username;
-                    } else {
-                        user = {
-                            id: body.owner,
-                            name: username
-                        };
-                    }
-                    this._setLoginData(body.authToken, body.refreshToken, user);
-                }).then(_ => {
-                this.search("Patient", {_id: this.user.id}).then((msg: any) => {
-                    this.setUserEmail(msg[0].getProperty("telecom")[0].value);
-                    console.log("Login data set! resolve...");
-                    resolve(msg);
-                }).catch((error) => {
-                    console.log("Error setting user email address");
-                    reject(error);
-                });
-            }).catch((error) => {
-                    reject(error);
-            });
-        });/**/
-
-/*
-* login().then(_ => {
-* * console.log('asdf');
-* });
-
-* */
-
     /**
      *
      * This method stores a resource onto midata.
@@ -314,7 +252,7 @@ export class Midata {
 
     // TODO: Try to map response objects back to their class (e.g. BodyWeight)
 
-    save(resource: Resource | any) {
+    save(resource: Resource | any) : Promise<fhir.Resource> {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
@@ -340,17 +278,14 @@ export class Midata {
                 // When the resource is created, the same resource will
                 // be returned (populated with an id field in the case
                 // it was newly created).
-                if (response.status === 201) {          // created
-                    return JSON.parse(response.body);
-                } else if (response.status === 200) {  // updated
-                    return JSON.parse(response.body);
+                if(response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
+                    console.log("Try to map the object back - at least a resource it should be...");
+                    return Promise.resolve(fromFhir(response.body).toJson());
                 } else {
-                    console.log(`Unexpected response status code: ${response.status}`);
-                    return Promise.reject(response);
+                    throw new Error(`Unexpected response status code: ${response.status}`);
                 }
             })
             .catch((response: any) => {
-
                 // convenience variable
                 let logMsg = `Please login again using method authenticate()`;
 
@@ -401,7 +336,6 @@ export class Midata {
                         }
 
                     });
-
                 }
                 // No 401 error. Therefore, no retry. Return response from
                 // first apiMethod call
@@ -413,7 +347,7 @@ export class Midata {
     /**
      Helper method to create FHIR resources via a HTTP POST call.
      */
-    private _create = (fhirObject: any) => {
+    private _create = (fhirObject: any) : Promise<ApiCallResponse> => {
 
         let url: string; // for convenience
 
@@ -439,7 +373,7 @@ export class Midata {
     /**
      Helper method to create FHIR resources via a HTTP PUT call.
      */
-    private _update = (fhirObject: any) => {
+    private _update = (fhirObject: any) : Promise<ApiCallResponse> => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}/${fhirObject.id}`;
         return apiCall({
             jsonBody: false,
@@ -887,7 +821,7 @@ export class Midata {
      *         ApiCallResponse will be returned.
      */
 
-    delete(resourceType: string, id: number | string) {
+    delete(resourceType: string, id: number | string) : Promise<ApiCallResponse> {
         let url = `${this._host}/fhir/${resourceType}/${id}`;
         return apiCall({
             url: url,
@@ -895,9 +829,10 @@ export class Midata {
             headers: {
                 'Authorization': 'Bearer ' + this._authToken
             }
-        })
-            .then((response: any) => {
-                console.log(response);
-            });
+        }).then((response: any) => {
+                return Promise.resolve(response);
+            }).catch((error) => {
+                return Promise.reject(error);
+        });
     }
 }

@@ -1,3 +1,4 @@
+/// <reference types="fhir" />
 import { TokenRefreshResponse, TokenResponse, UserRole, AuthResponse } from './api';
 import { Promise } from 'es6-promise';
 import { ApiCallResponse } from './util';
@@ -62,7 +63,7 @@ export declare class Midata {
      * @return The promise returns the created object. In case of failure, an error of type
      *         ApiCallResponse will be returned.
      */
-    save(resource: Resource | any): Promise<ApiCallResponse>;
+    save(resource: Resource | any): Promise<fhir.Resource>;
     /**
      Helper method to create FHIR resources via a HTTP POST call.
      */
@@ -153,5 +154,5 @@ export declare class Midata {
      * @return The promise returns the response body. In case of failure, an error of type
      *         ApiCallResponse will be returned.
      */
-    delete(resourceType: string, id: number | string): Promise<void>;
+    delete(resourceType: string, id: number | string): Promise<ApiCallResponse>;
 }
