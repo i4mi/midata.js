@@ -221,8 +221,7 @@ export class Midata {
             this._setLoginData(authResponse.authToken, authResponse.refreshToken, user);
             return Promise.resolve();
         }).catch((error) => {
-                console.log(error);
-                throw new Error("Error during login process: " + error);
+                return Promise.reject(error);
             });
         };
 
@@ -232,8 +231,7 @@ export class Midata {
                 return Promise.resolve();
 
             }).catch((error: any) => {
-                console.log(error);
-                throw new Error("Error getting Patient email address" + error);
+                return Promise.reject(error);
             });
         };
 
