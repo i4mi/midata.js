@@ -196,14 +196,8 @@ export class Midata {
         }
 
         let authResponse: AuthResponse;
-        //let arrPromises: Promise<void>[] = [];
-
 
         var apiCallPromise = () => {
-
-            console.log("Logging this");
-            console.log(this);
-
             return apiCall({
             url: this._host + '/v1/auth',
             method: 'POST',
@@ -226,29 +220,27 @@ export class Midata {
             }
             this._setLoginData(authResponse.authToken, authResponse.refreshToken, user);
             return Promise.resolve();
-        })
-            .catch((error) => {
+        }).catch((error) => {
+                console.log(error);
                 throw new Error("Error during login process: " + error);
             });
-
         };
 
-
         var fetchUserInfo = () => {
-
             return this.search("Patient", {_id: this.user.id}).then((msg: any) => {
                 this.setUserEmail(msg[0].getProperty("telecom")[0].value);
                 return Promise.resolve();
 
             }).catch((error: any) => {
+                console.log(error);
                 throw new Error("Error getting Patient email address" + error);
             });
         };
 
-
         return apiCallPromise().then((fetchUserInfo)).then(() => {
-            console.log("Jetzt wird zurückgegeben");
             return authResponse;
+        }, error => {
+            return error;
         });
     }
 
