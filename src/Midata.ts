@@ -294,7 +294,7 @@ export class Midata {
                         this._refresh().then(() => {
                             console.log("tokens successfully refreshed!");
                             console.log("retry method");
-                            return this.retry(3, apiMethod(fhirObject)).then((response) => {
+                            this.retry(3, apiMethod(fhirObject)).then((response) => {
                                 console.log("it worked then!");
                                 return Promise.resolve(response);
                             }).catch((error) => {
