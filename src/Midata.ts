@@ -272,6 +272,8 @@ export class Midata {
         let apiMethod = shouldCreate ? this._create : this._update;
         return apiMethod(fhirObject)
             .then((response: ApiCallResponse) => {
+                console.log("die response ausgeben");
+                console.log(response);
                 // When the resource is created, the same resource will
                 // be returned (populated with an id field in the case
                 // it was newly created).
@@ -280,6 +282,7 @@ export class Midata {
                     try {
                         response.body = (fromFhir(JSON.parse(response.body)));
                     } catch (mappingError) {
+                        console.log("mapping Error");
                         throw new Error(mappingError);
                     }
                     return Promise.resolve(response);
@@ -291,10 +294,10 @@ export class Midata {
                     // Check if the authToken is expired and a refreshToken is available
                     if(error.status === 400 && this.refreshToken) { // change again to 401
                         console.log("trying to refresh the tokens...");
-                        this._refresh().then(() => {
+                        return this._refresh().then(() => {
                             console.log("tokens successfully refreshed!");
                             console.log("retry method");
-                            this.retry(3, apiMethod(fhirObject)).then((response) => {
+                            return this.retry(3, apiMethod(fhirObject)).then((response) => {
                                 console.log("it worked then!");
                                 return Promise.resolve(response);
                             }).catch((error) => {
