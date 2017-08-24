@@ -278,9 +278,11 @@ export class Midata {
                 if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
                     console.log(response.body);
                     try{
-                        let mappedResponse = (fromFhir(JSON.parse(response.body)));
+                        //let mappedResponse = (fromFhir(JSON.parse(response.body)));
+                        let mappedResponse = (fromFhir(response.body));
                         response.body = mappedResponse;
                     } catch (mappingError) {
+                        console.log("catched!");
                         throw new Error(mappingError);
                     }
                     return Promise.resolve(response);
