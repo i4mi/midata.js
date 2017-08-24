@@ -313,6 +313,7 @@ export class Midata {
     }
 
     retry(maxRetries: number, fn: any) : Promise<ApiCallResponse> {
+            console.log("within retry method");
             return fn().catch((error: any) => {
                 console.log(maxRetries + " left");
                 console.log(error);
