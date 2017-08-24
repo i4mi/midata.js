@@ -256,20 +256,20 @@ export class Midata {
             throw new Error(`Can\'t create records when no user logged in first. Call authenticate() before trying to create records.`
             );
         }
+
+        this._authToken = "zSShnNTfCHmc75llSEV4ta17EOtztDeBdNN5qQeB7OdaWNg";
+
         // Convert the resource to a FHIR-structured simple js object.
         var fhirObject: any;
         if (resource instanceof Resource) {
             fhirObject = resource.toJson();
         } else {
             fhirObject = resource;
-        }
-
-        // If the resource didn't have an id, then the resource has to be
+        }// If the resource didn't have an id, then the resource has to be
         // created on the server.
         let shouldCreate = fhirObject.id === undefined || fhirObject.resourceType === "Bundle"; // By default
         // a bundle holds an id upon creation. Therefore, additionally check for resource type
         let apiMethod = shouldCreate ? this._create : this._update;
-
         return apiMethod(fhirObject)
             .then((response: ApiCallResponse) => {
                 // When the resource is created, the same resource will
@@ -277,7 +277,7 @@ export class Midata {
                 // it was newly created).
                 if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
                     console.log(response.body);
-                    try{
+                    try {
                         response.body = (fromFhir(JSON.parse(response.body)));
                     } catch (mappingError) {
                         throw new Error(mappingError);
@@ -286,15 +286,50 @@ export class Midata {
                     } else {
                         throw new Error(`Unexpected response status code: ${response.status}`);
                     }
+                }, (error: ApiCallResponse) => {
+                    console.log("Promise.reject from APICall()");
+                    // Check if the authToken is expired and a refreshToken is available
+                    if(error.status === 400 && this.refreshToken) { // change again to 401
+                        console.log("trying to refresh the tokens...");
+                        this._refresh().then(() => {
+                            console.log("tokens successfully refreshed!");
+                            console.log("retry method");
+                            return this.retry(3, apiMethod(fhirObject)).then((response) => {
+                                console.log("it worked then!");
+                                return Promise.resolve(response);
+                            }).catch((error) => {
+                                console.log("max retries used... abort");
+                                console.log(error);
+                                return Promise.reject(error);
+                            })
+                        }, (error) => {
+                        throw new Error(error);
+                        })
+                    } else {
+                        // No 401 error
+                        return Promise.reject(error);
+                    }
                 })
+    }
+
+    retry(maxRetries: number, fn: any) : Promise<ApiCallResponse> {
+            return fn().catch((error: any) => {
+                console.log(maxRetries + " left");
+                console.log(error);
+                if(maxRetries <= 0){
+                    throw new Error("Max retries used, abort!");
+                }
+                return this.retry(maxRetries - 1, fn);
+            })
+         }
+
+
             /*
             .catch((response: any) => {
                 // convenience variable
                 let logMsg = `Please login again using method authenticate()`;
 
                 if (response.status === 401) { // if token has expired
-
-                    return new Promise<ApiCallResponse>((resolve, reject) => {
 
                         console.log(`Error, ${response.message} => Trying to refresh your tokens and save again...`);
 
@@ -337,8 +372,6 @@ export class Midata {
                             console.log(`Refresh token not available!  ${logMsg}`);
                             reject(response);
                         }
-
-                    });
                 }
                 // No 401 error. Therefore, no retry. Return response from
                 // first apiMethod call
@@ -346,7 +379,14 @@ export class Midata {
 
             });
         */
-    }
+
+
+
+
+
+
+
+
 
     /**
      Helper method to create FHIR resources via a HTTP POST call.

@@ -63,6 +63,7 @@ export declare class Midata {
      *         ApiCallResponse will be returned.
      */
     save(resource: Resource | any): Promise<ApiCallResponse>;
+    retry(maxRetries: number, fn: any): Promise<ApiCallResponse>;
     /**
      Helper method to create FHIR resources via a HTTP POST call.
      */
