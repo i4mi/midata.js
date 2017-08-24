@@ -249,7 +249,7 @@ export class Midata {
      * @return The promise returns the created object. In case of failure, an error of type
      *         ApiCallResponse will be returned.
      */
-    save(resource: Resource | any) : Promise<fhir.Resource> {
+    save(resource: Resource | any) : Promise<ApiCallResponse> {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
@@ -271,18 +271,24 @@ export class Midata {
         let apiMethod = shouldCreate ? this._create : this._update;
 
         return apiMethod(fhirObject)
-            .then((response: any) => {
+            .then((response: ApiCallResponse) => {
                 // When the resource is created, the same resource will
                 // be returned (populated with an id field in the case
                 // it was newly created).
                 if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
                     console.log(response.body);
-                    var mappedResponse = (fromFhir(JSON.parse(response.body)));
-                    return Promise.resolve(mappedResponse);
+                    try{
+                        let mappedResponse = (fromFhir(JSON.parse(response.body)));
+                        response.body = mappedResponse;
+                    } catch (mappingError) {
+                        throw new Error(mappingError);
+                    }
+                    return Promise.resolve(response);
                     } else {
                         throw new Error(`Unexpected response status code: ${response.status}`);
                     }
                 })
+            /*
             .catch((response: any) => {
                 // convenience variable
                 let logMsg = `Please login again using method authenticate()`;
@@ -340,6 +346,7 @@ export class Midata {
                 return Promise.reject(response);
 
             });
+        */
     }
 
     /**

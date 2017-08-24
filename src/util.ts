@@ -51,7 +51,7 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
     let jsonBody = args.jsonBody || false;
     let jsonEncoded = args.jsonEncoded; // flag indicating json-encoding
 
-    return new Promise(function(resolve, reject) {
+    return new Promise<ApiCallResponse>((resolve, reject) => {
         let xhr = new XMLHttpRequest();
 
         xhr.open(method, url, true);
