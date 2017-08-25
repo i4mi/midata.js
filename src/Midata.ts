@@ -299,7 +299,7 @@ export class Midata {
                 }, (error: ApiCallResponse) => {
                     // Check if the authToken is expired and a refreshToken is available
                     if(error.status === 400 && this.refreshToken) { // TODO: Change to 401 again!
-                        return this.refresh().then(() => {
+                        return this.refresh("aaaabababbababa").then(() => { // TODO: Remove again!
                             // If the refresh operation succeeded,
                             // retry the operation 3 times
                             return this._retry(3, apiMethod, fhirObject).then((response : ApiCallResponse) => {
@@ -437,7 +437,6 @@ export class Midata {
 
 
             var refreshToken = (fn: any, withRefreshToken?: string) : Promise<ApiCallResponse> => {
-                withRefreshToken = "aaaababababababababababab" // TODO: Remove again, Test 1
                 return apiCall({
                     url: this._tokenEndpoint,
                     method: 'POST',
@@ -468,7 +467,6 @@ export class Midata {
             };
 
             var fetchUserInfo = () : Promise<ApiCallResponse>  => {
-                this.user.id = "34934u89488" // TODO: Remove again, Test 2
             return this.search("Patient", {_id: this.user.id}).then((msg: any) => {
                 this.setUserEmail(msg[0].getProperty("telecom")[0].value);
                 console.log("Data refreshed! resolve...");
@@ -477,7 +475,6 @@ export class Midata {
                 return Promise.reject(error);
             })
             };
-
 
             return refreshToken(getPayload, withRefreshToken).then(fetchUserInfo).then((response) => {
                 return Promise.resolve(response);
