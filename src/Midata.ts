@@ -256,6 +256,9 @@ export class Midata {
             throw new Error(`Can\'t create records when no user logged in first. Call authenticate() before trying to create records.`
             );
         }
+
+        this._authToken = "aaaaabababababababababaabababababb"; // TODO: remove again
+
         // Convert the resource to a FHIR-structured simple js object.
         var fhirObject: any;
         if (resource instanceof Resource) {
@@ -297,7 +300,7 @@ export class Midata {
                 }, (error: ApiCallResponse) => {
                     // Check if the authToken is expired and a refreshToken is available
                     if(error.status === 401 && this.refreshToken) {
-                        return this._refresh().then(() => {
+                        return this.refresh().then(() => {
                             // If the refresh operation succeeded,
                             // retry the operation 3 times
                             return this._retry(3, apiMethod, fhirObject).then((response : ApiCallResponse) => {
@@ -395,7 +398,7 @@ export class Midata {
      of type ApiCallResponse.
      */
 
-    private _refresh = (withRefreshToken?: string) : Promise<ApiCallResponse> => {
+     refresh = (withRefreshToken?: string) : Promise<ApiCallResponse> => {
 
             let getPayload = () : TokenRequest => {
                 let urlParams = new URLSearchParams();
@@ -681,7 +684,7 @@ export class Midata {
         // wrapper method, call subsequent actions from here
 
         return new Promise((resolve, reject) => {
-            this._refresh(withRefreshToken).then((body) => {
+            this.refresh(withRefreshToken).then((body) => {
                 resolve(body);
 
             })

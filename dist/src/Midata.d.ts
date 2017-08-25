@@ -91,7 +91,7 @@ export declare class Midata {
      @return a Promise of type TokenRefreshResponse. On failure the catch clause will forward an error
      of type ApiCallResponse.
      */
-    private _refresh;
+    refresh: (withRefreshToken?: string) => Promise<ApiCallResponse>;
     /**
      * Query the midata API using FHIR resource types and optional params.
      *
