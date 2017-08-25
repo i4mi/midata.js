@@ -196,7 +196,7 @@ export class Midata {
 
         let authResponse: AuthResponse;
 
-        var loginMidata = () => {
+        var loginMidata = () : Promise<AuthResponse> => {
             return apiCall({
             url: this._host + '/v1/auth',
             method: 'POST',
@@ -205,7 +205,7 @@ export class Midata {
             },
             jsonBody: true,
             payload: authRequest
-        }).then(response => {
+        }).then((response : ApiCallResponse) => {
             authResponse = response.body;
             let user: User
             if (this._user) {
@@ -217,17 +217,17 @@ export class Midata {
                     name: username
                 };
             }
-            this._setLoginData(authResponse.authToken, authResponse.refreshToken, user);
-            return Promise.resolve();
+            this._setLoginData(authResponse.authToken, authResponse.refreshToken, user); // TODO: try & catch
+            return Promise.resolve(authResponse);
         }).catch((error) => {
                 return Promise.reject(error);
             });
         };
-
-        var fetchUserInfo = () => {
+        // TODO: Return value Promise<APICallResponse>, after search method is refactored
+        var fetchUserInfo = () : Promise<ApiCallResponse> => {
             return this.search("Patient", {_id: this.user.id}).then((msg: any) => {
                 this.setUserEmail(msg[0].getProperty("telecom")[0].value);
-                return Promise.resolve();
+                return Promise.resolve(msg);
             }).catch((error: any) => {
                 return Promise.reject(error);
             });
@@ -255,9 +255,6 @@ export class Midata {
             throw new Error(`Can\'t create records when no user logged in first. Call authenticate() before trying to create records.`
             );
         }
-
-        this._authToken = "aaaaabababababababababaabababababb"; // TODO: remove again, Test refresh method
-
         // Convert the resource to a FHIR-structured simple js object.
         var fhirObject: any;
         if (resource instanceof Resource) {
@@ -298,8 +295,8 @@ export class Midata {
                 }
                 }, (error: ApiCallResponse) => {
                     // Check if the authToken is expired and a refreshToken is available
-                    if(error.status === 400 && this.refreshToken) { // TODO: Change to 401 again!
-                        return this.refresh("aaaabababbababa").then(() => { // TODO: Remove again!
+                    if(error.status === 401 && this.refreshToken) {
+                        return this.refresh().then(() => {
                             // If the refresh operation succeeded,
                             // retry the operation 3 times
                             return this._retry(3, apiMethod, fhirObject).then((response : ApiCallResponse) => {
@@ -414,28 +411,6 @@ export class Midata {
                 return refreshRequest;
             };
 
-
-            /*
-            let getEncodedParams = () => {
-
-                // because of x-www-form-urlencoded
-
-                let urlSearchParams = new URLSearchParams();
-                urlSearchParams.append("grant_type", "refresh_token");
-                if(withRefreshToken){
-                    urlSearchParams.append("refresh_token", withRefreshToken);
-                } else {
-                    urlSearchParams.append("refresh_token", this._refreshToken);
-                }
-                return urlSearchParams;
-            };
-
-            let refreshTokenRequest: TokenRequest = {
-                encodedParams: getEncodedParams()
-            };
-            */
-
-
             var refreshToken = (fn: any, withRefreshToken?: string) : Promise<ApiCallResponse> => {
                 return apiCall({
                     url: this._tokenEndpoint,
@@ -479,44 +454,6 @@ export class Midata {
             return refreshToken(getPayload, withRefreshToken).then(fetchUserInfo).then((response) => {
                 return Promise.resolve(response);
             });
-
-
-
-            /*
-            return apiCall({
-                url: this._tokenEndpoint,
-                method: 'POST',
-                payload: refreshTokenRequest.encodedParams.toString(),
-                jsonBody: true,
-                jsonEncoded: false,
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            })
-                .then((response: ApiCallResponse) => {
-                    let body: TokenRefreshResponse = response.body;
-                    let user: User
-                    if (this._user) {
-                        this._user.id = body.patient;
-                    } else {
-                        user = {
-                            id: body.patient,
-                        };
-                    }
-                    this._setLoginData(body.access_token, body.refresh_token, user);
-                }).then(_ => {
-                    this.search("Patient", {_id: this.user.id}).then((msg: any) => {
-                        this.setUserEmail(msg[0].getProperty("telecom")[0].value);
-                        console.log("Data refreshed! resolve...");
-                        return Promise.resolve(msg);
-                    });
-
-            })
-                .catch((response: ApiCallResponse) => {
-                    reject(response);
-                });
-            */
-       // })
     };
 
     /**
