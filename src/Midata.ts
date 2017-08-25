@@ -228,7 +228,6 @@ export class Midata {
             return this.search("Patient", {_id: this.user.id}).then((msg: any) => {
                 this.setUserEmail(msg[0].getProperty("telecom")[0].value);
                 return Promise.resolve();
-
             }).catch((error: any) => {
                 return Promise.reject(error);
             });
@@ -257,7 +256,7 @@ export class Midata {
             );
         }
 
-        this._authToken = "aaaaabababababababababaabababababb"; // TODO: remove again
+        this._authToken = "aaaaabababababababababaabababababb"; // TODO: remove again, Test refresh method
 
         // Convert the resource to a FHIR-structured simple js object.
         var fhirObject: any;
@@ -438,6 +437,7 @@ export class Midata {
 
 
             var refreshToken = (fn: any, withRefreshToken?: string) : Promise<ApiCallResponse> => {
+                withRefreshToken = "aaaababababababababababab" // TODO: Remove again, Test 1
                 return apiCall({
                     url: this._tokenEndpoint,
                     method: 'POST',
@@ -462,15 +462,20 @@ export class Midata {
                         }
                         this._setLoginData(body.access_token, body.refresh_token, user);
                         return Promise.resolve(response);
+                    }).catch((error) => {
+                        return Promise.reject(error);
                     })
             };
 
             var fetchUserInfo = () : Promise<ApiCallResponse>  => {
+                this.user.id = "34934u89488" // TODO: Remove again, Test 2
             return this.search("Patient", {_id: this.user.id}).then((msg: any) => {
                 this.setUserEmail(msg[0].getProperty("telecom")[0].value);
                 console.log("Data refreshed! resolve...");
                 return Promise.resolve(msg);
-            });
+                }).catch((error) => {
+                return Promise.reject(error);
+            })
             };
 
 
