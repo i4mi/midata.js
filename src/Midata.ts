@@ -256,9 +256,6 @@ export class Midata {
             throw new Error(`Can\'t create records when no user logged in first. Call authenticate() before trying to create records.`
             );
         }
-
-        this._authToken = "zSShnNTfCHmc75llSEV4ta17EOtztDeBdNN5qQeB7OdaWNg"; // TODO: Remove again
-
         // Convert the resource to a FHIR-structured simple js object.
         var fhirObject: any;
         if (resource instanceof Resource) {
@@ -272,25 +269,20 @@ export class Midata {
         let apiMethod = shouldCreate ? this._create : this._update;
 
         let tryToMapResponse = (response: ApiCallResponse) : ApiCallResponse => {
-            console.log("Die Response ausgeben");
-            console.log(response)
             // When the resource is created, the same resource will
             // be returned (populated with an id field in the case
             // it was newly created).
             if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
-                console.log(response.body);
                 try {
                     response.body = fromFhir(JSON.parse(response.body));
-                    console.log("Mapping success");
                     return response
                 } catch (mappingError) {
-                    console.log("Mapping Error");
                     throw new Error(mappingError);
                 }
             } else {
                 throw new Error(`Unexpected response status code: ${response.status}`);
             }
-        }
+        };
 
         return apiMethod(fhirObject)
             .then((response: ApiCallResponse) => {
@@ -300,18 +292,17 @@ export class Midata {
                     return Promise.reject(error);
                 }
                 }, (error: ApiCallResponse) => {
-                    console.log("Promise.reject from APICall()");
                     // Check if the authToken is expired and a refreshToken is available
-                    if(error.status === 400 && this.refreshToken) { // TODO: change again to 401
-                        console.log("trying to refresh the tokens...");
+                    if(error.status === 401 && this.refreshToken) {
                         return this._refresh().then(() => {
                             // If the refresh operation succeeded,
-                            // retry the operation for n times (n = maxRetries param)
+                            // retry the operation 3 times
                             return this.retry(3, apiMethod, fhirObject).then((response : ApiCallResponse) => {
                                 try {
                                     return Promise.resolve(tryToMapResponse(response));
-                                } catch(error) {
-                                    return Promise.reject(error);
+                                } catch(mappingError) {
+                                    // catch and re-throw the mapping error
+                                    return Promise.reject(mappingError);
                                 }
                             }).catch((error) => {
                                 // Reject promise with error thrown within retry function
@@ -325,7 +316,7 @@ export class Midata {
                         // No 401 error. Reject and let the client handle...
                         return Promise.reject(error);
                     }
-                })
+                });
     }
 
     /**
@@ -337,15 +328,10 @@ export class Midata {
      * @return Promise<ApiCallResponse>
      */
     private retry(maxRetries: number, fn: any, args?: any) : Promise<ApiCallResponse> {
-            console.log("within retry method");
-            console.log(fn);
-            console.log(args);
             return fn(args).catch((error: any) => {
-                console.log(maxRetries + " left");
-                console.log(error);
                 if(maxRetries <= 1){
                     // TODO: Create custom API error
-                    throw new Error("max retries exceeded... abort!");
+                    throw new Error("Maximum retries exceeded, abort!");
                 }
                 return this.retry(maxRetries - 1, fn, args);
             })
