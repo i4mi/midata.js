@@ -437,6 +437,9 @@ export class Midata {
 
 
             var refreshToken = (fn: any, withRefreshToken?: string) : Promise<ApiCallResponse> => {
+                console.log(fn().toString());
+                console.log(fn(withRefreshToken).toString());
+
                 return apiCall({
                     url: this._tokenEndpoint,
                     method: 'POST',
