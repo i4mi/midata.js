@@ -299,7 +299,7 @@ export class Midata {
                 }
                 }, (error: ApiCallResponse) => {
                     // Check if the authToken is expired and a refreshToken is available
-                    if(error.status === 401 && this.refreshToken) {
+                    if(error.status === 400 && this.refreshToken) { // TODO: Change to 401 again!
                         return this.refresh().then(() => {
                             // If the refresh operation succeeded,
                             // retry the operation 3 times
