@@ -270,25 +270,35 @@ export class Midata {
         let shouldCreate = fhirObject.id === undefined || fhirObject.resourceType === "Bundle"; // By default
         // a bundle holds an id upon creation. Therefore, additionally check for resource type
         let apiMethod = shouldCreate ? this._create : this._update;
+
+        let tryToMapResponse = (response: ApiCallResponse) : ApiCallResponse => {
+            console.log("Die Response ausgeben");
+            console.log(response)
+            // When the resource is created, the same resource will
+            // be returned (populated with an id field in the case
+            // it was newly created).
+            if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
+                console.log(response.body);
+                try {
+                    response.body = fromFhir(JSON.parse(response.body));
+                    console.log("Mapping success");
+                    return response
+                } catch (mappingError) {
+                    console.log("Mapping Error");
+                    throw new Error(mappingError);
+                }
+            } else {
+                throw new Error(`Unexpected response status code: ${response.status}`);
+            }
+        }
+
         return apiMethod(fhirObject)
             .then((response: ApiCallResponse) => {
-                console.log("die response ausgeben");
-                console.log(response);
-                // When the resource is created, the same resource will
-                // be returned (populated with an id field in the case
-                // it was newly created).
-                if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
-                    console.log(response.body);
-                    try {
-                        response.body = (fromFhir(JSON.parse(response.body)));
-                    } catch (mappingError) {
-                        console.log("Mapping Error");
-                        throw new Error(mappingError);
-                    }
-                    return Promise.resolve(response);
-                    } else {
-                        throw new Error(`Unexpected response status code: ${response.status}`);
-                    }
+                try {
+                    return Promise.resolve(tryToMapResponse(response));
+                } catch(error) {
+                    return Promise.reject(error);
+                }
                 }, (error: ApiCallResponse) => {
                     console.log("Promise.reject from APICall()");
                     // Check if the authToken is expired and a refreshToken is available
@@ -297,8 +307,12 @@ export class Midata {
                         return this._refresh().then(() => {
                             // If the refresh operation succeeded,
                             // retry the operation for n times (n = maxRetries param)
-                            return this.retry(3, apiMethod, fhirObject).then((response) => {
-                                return Promise.resolve(response);
+                            return this.retry(3, apiMethod, fhirObject).then((response : ApiCallResponse) => {
+                                try {
+                                    return Promise.resolve(tryToMapResponse(response));
+                                } catch(error) {
+                                    return Promise.reject(error);
+                                }
                             }).catch((error) => {
                                 // Reject promise with error thrown within retry function
                                 return Promise.reject(error);
@@ -323,6 +337,7 @@ export class Midata {
                 console.log(maxRetries + " left");
                 console.log(error);
                 if(maxRetries <= 1){
+                    // TODO: Create custom API error
                     throw new Error("max retries exceeded... abort!");
                 }
                 return this.retry(maxRetries - 1, fn, args);
