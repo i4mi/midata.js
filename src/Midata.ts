@@ -257,7 +257,7 @@ export class Midata {
             );
         }
 
-        this._authToken = "zSShnNTfCHmc75llSEV4ta17EOtztDeBdNN5qQeB7OdaWNg";
+        this._authToken = "zSShnNTfCHmc75llSEV4ta17EOtztDeBdNN5qQeB7OdaWNg"; // TODO: Remove again
 
         // Convert the resource to a FHIR-structured simple js object.
         var fhirObject: any;
@@ -282,7 +282,7 @@ export class Midata {
                     try {
                         response.body = (fromFhir(JSON.parse(response.body)));
                     } catch (mappingError) {
-                        console.log("mapping Error");
+                        console.log("Mapping Error");
                         throw new Error(mappingError);
                     }
                     return Promise.resolve(response);
@@ -292,31 +292,30 @@ export class Midata {
                 }, (error: ApiCallResponse) => {
                     console.log("Promise.reject from APICall()");
                     // Check if the authToken is expired and a refreshToken is available
-                    if(error.status === 400 && this.refreshToken) { // change again to 401
+                    if(error.status === 400 && this.refreshToken) { // TODO: change again to 401
                         console.log("trying to refresh the tokens...");
                         return this._refresh().then(() => {
-                            console.log("tokens successfully refreshed!");
-                            console.log("retry method");
-                            //return apiMethod(fhirObject).then((response) => { // TODO: DEBUG -> Function call now ok
+                            // If the refresh operation succeeded,
+                            // retry the operation for n times (n = maxRetries param)
                             return this.retry(3, apiMethod, fhirObject).then((response) => {
-                                console.log("it worked then!");
                                 return Promise.resolve(response);
                             }).catch((error) => {
-                                console.log("max retries used... abort");
-                                console.log(error);
+                                // Reject promise with error thrown within retry function
                                 return Promise.reject(error);
                             })
                         }, (error) => {
-                        throw new Error(error);
+                        // If refreshing of token failed. Reject
+                        return Promise.reject(error);
                         })
                     } else {
-                        // No 401 error
+                        // No 401 error. Reject and let the client handle...
                         return Promise.reject(error);
                     }
                 })
     }
 
     private retry(maxRetries: number, fn: any, args: any) : Promise<ApiCallResponse> {
+            this._authToken = "zSShnNTfCHmc75llSEV4ta17EOtztDeBdNN5qQeB7OdaWNg"; // TODO: Remove again
             console.log("within retry method");
             console.log(fn);
             console.log(args);
@@ -324,7 +323,7 @@ export class Midata {
                 console.log(maxRetries + " left");
                 console.log(error);
                 if(maxRetries <= 0){
-                    throw new Error("Max retries used, abort!");
+                    throw new Error("max retries exceeded... abort!");
                 }
                 return this.retry(maxRetries - 1, fn, args);
             })
