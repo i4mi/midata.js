@@ -304,7 +304,7 @@ export class Midata {
                                 return Promise.reject(error);
                             })
                         }, (error) => {
-                        // If refreshing of token failed. Reject
+                        // Refreshing of token failed. Reject
                         return Promise.reject(error);
                         })
                     } else {
@@ -322,7 +322,7 @@ export class Midata {
             return fn(args).catch((error: any) => {
                 console.log(maxRetries + " left");
                 console.log(error);
-                if(maxRetries <= 0){
+                if(maxRetries <= 1){
                     throw new Error("max retries exceeded... abort!");
                 }
                 return this.retry(maxRetries - 1, fn, args);
