@@ -71,7 +71,7 @@ export declare class Midata {
      * @param args? Optional additional arguments that should be passed into the callback function
      * @return Promise<ApiCallResponse>
      */
-    private retry(maxRetries, fn, args?);
+    private _retry(maxRetries, fn, args?);
     /**
      Helper method to create FHIR resources via a HTTP POST call.
      */
@@ -113,7 +113,7 @@ export declare class Midata {
      refresh token. In case the login failed the return value
      will be a rejected promise containing the error message (type any).
      **/
-    authenticate(): Promise<TokenResponse>;
+    authenticateOBSOLETE(): Promise<TokenResponse>;
     /**
      Helper method to refresh the authentication token by authorizing
      with the help of the refresh token. This will generate a new authentication as well as
@@ -122,7 +122,7 @@ export declare class Midata {
      Previous access_tokens will remain valid until their expiration timestamp is exceeded. However, possibly
      older access_tokens are neglected due to overwrite logic.
      */
-    refresh(withRefreshToken?: string): Promise<TokenRefreshResponse>;
+    refreshOBSOLETE(withRefreshToken?: string): Promise<TokenRefreshResponse>;
     /**
      The user will be redirected to midata.coop in order to login / register and grant
      the application access to his data. If the event target is equal to the callback url
@@ -132,7 +132,7 @@ export declare class Midata {
 
      @return A Promise of type InAppBrowserEvent.
      **/
-    private _authenticate();
+    private authenticate();
     /**
      After successful authentication on midata this method is invoked. It exchanges the authCode
      obtained from midata with the access_token used to query the FHIR endpoint API.
