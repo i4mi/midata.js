@@ -411,6 +411,7 @@ export class Midata {
                 let refreshRequest: TokenRequest = {
                     encodedParams: urlParams
                 };
+
                 return refreshRequest;
             };
 
@@ -437,15 +438,12 @@ export class Midata {
 
 
             var refreshToken = (fn: any, withRefreshToken?: string) : Promise<ApiCallResponse> => {
-                console.log(fn().toString());
-                console.log(fn(withRefreshToken).toString());
-
                 return apiCall({
                     url: this._tokenEndpoint,
                     method: 'POST',
                     //let shouldCreate = fhirObject.id === undefined || fhirObject.resourceType === "Bundle"; // By default
                     //let apiMethod = shouldCreate ? this._create : this._update;
-                    payload: fn(withRefreshToken).toString(), // callbackFunction "getPayload()"
+                    payload: fn(withRefreshToken).encodedParams.toString(), // callbackFunction "getPayload()"
                     jsonBody: true,
                     jsonEncoded: false,
                     headers: {
