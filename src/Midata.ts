@@ -328,8 +328,15 @@ export class Midata {
                 })
     }
 
-    private retry(maxRetries: number, fn: any, args: any) : Promise<ApiCallResponse> {
-            this._authToken = "zSShnNTfCHmc75llSEV4ta17EOtztDeBdNN5qQeB7OdaWNg"; // TODO: Remove again
+    /**
+     Helper method in order to retry a specific operation (e.g. save or search) on the API.
+     *
+     * @param maxRetries How many times the method should retry the operation before aborting
+     * @param fn The callback function to be executed
+     * @param args? Optional additional arguments that should be passed into the callback function
+     * @return Promise<ApiCallResponse>
+     */
+    private retry(maxRetries: number, fn: any, args?: any) : Promise<ApiCallResponse> {
             console.log("within retry method");
             console.log(fn);
             console.log(args);
@@ -343,72 +350,6 @@ export class Midata {
                 return this.retry(maxRetries - 1, fn, args);
             })
          }
-
-
-            /*
-            .catch((response: any) => {
-                // convenience variable
-                let logMsg = `Please login again using method authenticate()`;
-
-                if (response.status === 401) { // if token has expired
-
-                        console.log(`Error, ${response.message} => Trying to refresh your tokens and save again...`);
-
-                        // retry to save resource. Proceed with logout if the operation somehow still fails.
-
-                        // premise: existing refresh token
-                        if (this.refreshToken) {
-
-                            // short logging of what's been going on during each case of the token recovery process.
-
-                            // try to refresh the access token using the refresh token
-                            this.refresh().then(_ => {
-                                console.log(`Success! Tokens restored. Retry action...`); // recovery successful
-                                apiMethod(fhirObject).then((response) => { // retry apiCall with new tokens
-                                    console.log("Success! Proceed..."); // operation successful
-                                    resolve(JSON.parse(response.body)); // return created object 
-                                }, (error) => {
-                                    // retry method call not successful, logout and force authentication
-                                    this.logout();
-                                    console.log(`Still receiving error, abort. ${logMsg}`);
-                                    reject(error);
-                                })
-                            }, (error: any) => {
-                                // token recovery not successful, logout and force authentication
-                                this.logout();
-                                console.log(`Error during refresh process. ${logMsg}`);
-                                reject(error);
-                                // rather unlikely, but still...
-                                // catch other errors during callback..
-                            }).catch(error => {
-                                // .. and force new authentication as well in case of such happenings
-                                this.logout();
-                                console.log(`Internal Error, abort. ${logMsg}`);
-                                reject(error);
-                            });
-
-                        } else {
-                            // refresh token not existing. Force authentication by logging out.
-                            this.logout();
-                            console.log(`Refresh token not available!  ${logMsg}`);
-                            reject(response);
-                        }
-                }
-                // No 401 error. Therefore, no retry. Return response from
-                // first apiMethod call
-                return Promise.reject(response);
-
-            });
-        */
-
-
-
-
-
-
-
-
-
     /**
      Helper method to create FHIR resources via a HTTP POST call.
      */

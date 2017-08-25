@@ -63,7 +63,15 @@ export declare class Midata {
      *         ApiCallResponse will be returned.
      */
     save(resource: Resource | any): Promise<ApiCallResponse>;
-    private retry(maxRetries, fn, args);
+    /**
+     Helper method in order to retry a specific operation (e.g. save or search) on the API.
+     *
+     * @param maxRetries How many times the method should retry the operation before aborting
+     * @param fn The callback function to be executed
+     * @param args? Optional additional arguments that should be passed into the callback function
+     * @return Promise<ApiCallResponse>
+     */
+    private retry(maxRetries, fn, args?);
     /**
      Helper method to create FHIR resources via a HTTP POST call.
      */
