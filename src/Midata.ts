@@ -297,8 +297,8 @@ export class Midata {
                         return this._refresh().then(() => {
                             console.log("tokens successfully refreshed!");
                             console.log("retry method");
-                            return apiMethod(fhirObject).then((response) => { // TODO: DEBUG
-                            //return this.retry(3, apiMethod(fhirObject)).then((response) => {
+                            //return apiMethod(fhirObject).then((response) => { // TODO: DEBUG -> Function call now ok
+                            return this.retry(3, apiMethod, fhirObject).then((response) => {
                                 console.log("it worked then!");
                                 return Promise.resolve(response);
                             }).catch((error) => {
@@ -316,15 +316,17 @@ export class Midata {
                 })
     }
 
-    retry(maxRetries: number, fn: any) : Promise<ApiCallResponse> {
+    private retry(maxRetries: number, fn: any, args: any) : Promise<ApiCallResponse> {
             console.log("within retry method");
-            return fn().catch((error: any) => {
+            console.log(fn);
+            console.log(args);
+            return fn(args).catch((error: any) => {
                 console.log(maxRetries + " left");
                 console.log(error);
                 if(maxRetries <= 0){
                     throw new Error("Max retries used, abort!");
                 }
-                return this.retry(maxRetries - 1, fn);
+                return this.retry(maxRetries - 1, fn, args);
             })
          }
 
