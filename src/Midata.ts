@@ -291,6 +291,7 @@ export class Midata {
                 try {
                     return Promise.resolve(tryToMapResponse(response));
                 } catch(error) {
+                    // Catch and re-throw the error
                     return Promise.reject(error);
                 }
                 }, (error: ApiCallResponse) => {
@@ -315,7 +316,7 @@ export class Midata {
                         return Promise.reject(error);
                         })
                     } else {
-                        // No 401 error. Reject and let the client handle...
+                        // No 401 error or refreshToken not available. Reject and let the client handle...
                         return Promise.reject(error);
                     }
                 });
@@ -329,8 +330,12 @@ export class Midata {
      * @param args? Optional additional arguments that should be passed into the callback function
      * @return Promise<ApiCallResponse>
      */
-    private _retry(maxRetries: number, fn: any, args?: any) : Promise<ApiCallResponse> {
-            return fn(args).catch((error: any) => {
+    private _retry(maxRetries: number, fn: any, ...args: any[]) : Promise<ApiCallResponse> {
+            // Apply is very similar to call(), except for the type of arguments it supports.
+            // You use an arguments array instead of a list of arguments (p1,p2,p3,...).
+            // Thus, you do not have to know the arguments of the called object when you use
+            // the apply method. The called object is then responsible for handling the arguments.
+            return fn.apply(this, args).catch((error: any) => {
                 if(maxRetries <= 1){
                     throw new Error("Maximum retries exceeded, abort!");
                 }
@@ -386,12 +391,11 @@ export class Midata {
      Helper method to refresh the authentication token by authorizing
      with the help of the refresh token. This will generate a new authentication as well as
      a new refresh token. On successful refresh, the old refresh_token will be invalid and
-     both the access_token and the refresh_token stored in the local storage will be overwritten.
-     Previous access_tokens will remain valid until their expiration timestamp is exceeded. However, possibly
-     older access_tokens are neglected due to overwrite logic.
+     both the access_token and the refresh_token will be overwritten. Previous access_tokens
+     will remain valid until their expiration timestamp is exceeded.
 
-     @return a Promise of type TokenRefreshResponse. On failure the catch clause will forward an error
-     of type ApiCallResponse.
+     @param withRefreshToken? Optional refresh token coming from an external source e.g. the phone's secure storage
+     @return Promise<ApiCallResponse>
      */
 
      refresh = (withRefreshToken?: string) : Promise<ApiCallResponse> => {
@@ -415,9 +419,7 @@ export class Midata {
                 return apiCall({
                     url: this._tokenEndpoint,
                     method: 'POST',
-                    //let shouldCreate = fhirObject.id === undefined || fhirObject.resourceType === "Bundle"; // By default
-                    //let apiMethod = shouldCreate ? this._create : this._update;
-                    payload: fn(withRefreshToken).encodedParams.toString(), // callbackFunction "getPayload()"
+                    payload: fn(withRefreshToken).encodedParams.toString(),
                     jsonBody: true,
                     jsonEncoded: false,
                     headers: {
@@ -472,17 +474,85 @@ export class Midata {
             throw new Error(`Can\'t search for records when no user logged in first. Call authenticate() before trying to query the API.`
             );
         }
+
         let baseUrl = `${this._host}/fhir/${resourceType}`;
-        return this._search(baseUrl, params);
+
+        let tryToMapResponse = (response: ApiCallResponse) : Promise<ApiCallResponse> => {
+            if (response.status === 200) { // GET == 200
+                if (response.body.entry != undefined){
+                try {
+                    let mappedResponse: string[] = response.body.entry.map((e: any) => {
+                        return fromFhir(JSON.parse(e.resource));
+                    });
+                    response.body.entry = mappedResponse;
+                    return Promise.resolve(response)
+                } catch (mappingError){
+                    // FHIR's Resource record structure's been violated, throw error
+                    // TODO: Custom mapping error so that the client can distinguish the error cause and act appropriately
+                    throw new Error(mappingError);
+                }
+                } else {
+                    // No entries found...
+                    return Promise.resolve(response);
+                }
+            } else {
+                throw new Error(`Unexpected response status code: ${response.status}`);
+            }
+        };
+
+        return this._search(baseUrl, params).then((response: ApiCallResponse) => {
+            try {
+            return Promise.resolve(tryToMapResponse(response));
+            } catch (error) {
+            // Catch and re-throw the error
+            return Promise.reject(error);
+            }
+        }, (error: ApiCallResponse) => {
+            // Check if the authToken is expired and a refreshToken is available
+            if(error.status === 401 && this.refreshToken) {
+                return this.refresh().then(() => {
+                    // If the refresh operation succeeded,
+                    // retry the operation 3 times
+                    return this._retry(3, this._search, baseUrl, params).then((response : ApiCallResponse) => {
+                        try {
+                            return Promise.resolve(tryToMapResponse(response));
+                        } catch(mappingError) {
+                            // Catch and re-throw the mapping error.
+                            return Promise.reject(mappingError);
+                        }
+                    }).catch((error) => {
+                        // Reject promise with error thrown within retry function
+                        return Promise.reject(error);
+                    })
+                }, (error) => {
+                    // Refreshing of token failed. Reject
+                    return Promise.reject(error);
+                })
+            } else {
+                // No 401 error or refreshToken not available. Reject and let the client handle...
+                return Promise.reject(error);
+            }
+        });
     }
+
+
+    /**
+     Helper method to query the FHIR API.
+     * @param baseUrl for target API Call (e.g. Observation)
+     * @param params e.g. {code: '29463-7'} for BodyWeight
+     * @return Promise<ApiCallResponse>
+     */
 
     private _search(baseUrl: string, params: any = {}) : Promise<ApiCallResponse> {
         let queryParts = Object.keys(params).map(key => {
             return key + '=' + params[key]
         });
         let query = queryParts.join('&');
+        // if 'query' is defined, preset a question mark,
+        // otherwise create an empty string...
         query = query && `?${query}` || '';
         let url = baseUrl + query;
+
         return apiCall({
             url: url,
             method: 'GET',
@@ -491,96 +561,8 @@ export class Midata {
                 'Authorization': 'Bearer ' + this._authToken,
                 'Content-Type': 'application/json+fhir;charset=utf-8'
             }
-        })
-            .then((response: any) => {
-                if (response.body.entry !== undefined) {
-                    let entries = response.body.entry;
-                    let resources = entries.map((e: any) => {
-                        return fromFhir(e.resource);
-                    });
-                    return Promise.resolve(resources); // gleich wie return
-                } else {
-                    return Promise.resolve([]); // gleich wie return
-                }
-            })
-
-            .catch((response: any) => {
-
-                // convenience variable
-                let logMsg = `Please login again using method authenticate()`;
-
-                if (response.status === 401) { // if token has expired
-
-                    return new Promise<any>((resolve, reject) => {
-
-                        console.log(`Error, ${response.message} => Trying to refresh your tokens and save again...`);
-
-                        // retry to save resource. Proceed with logout if the operation somehow still fails.
-
-                        // premise: existing refresh token
-                        if (this.refreshToken) {
-
-                            // short logging of what's been going on during each case of the token recovery process.
-
-                            // try to refresh the access token using the refresh token
-                            this.refreshOBSOLETE().then(_ => {
-                                console.log(`Success! Tokens restored. Retry action...`); // recovery successful
-                                apiCall({
-                                    url: url,
-                                    method: 'GET',
-                                    jsonBody: true,
-                                    headers: {
-                                        'Authorization': 'Bearer ' + this._authToken,
-                                        'Content-Type': 'application/json+fhir;charset=utf-8'
-                                    }
-                                }).then((response: any) => {
-                                    if (response.body.entry !== undefined) {
-                                        let entries = response.body.entry;
-                                        // we need Promise.all here since entries is iterable
-                                        let resources = Promise.all(entries.map((e: any) => {
-                                            return fromFhir(e.resource);
-                                        }));
-                                        resolve(resources); // return array containing results
-                                    } else {
-                                        resolve([]); // or return empty array if no results
-                                    }
-                                }, (error) => {
-                                    // retry method call not successful, logout and force authentication
-                                    this.logout();
-                                    console.log(`Still receiving error, abort. ${logMsg}`);
-                                    reject(error);
-                                })
-                            }, (error: any) => {
-                                // token recovery not successful, logout and force authentication
-                                this.logout();
-                                console.log(`Error during refresh process. ${logMsg}`);
-                                reject(error);
-                                // rather unlikely, but still...
-                                // catch other errors during callback..
-                            }).catch(error => {
-                                // .. and force new authentication as well in case of such happenings
-                                this.logout();
-                                console.log(`Internal Error, abort. ${logMsg}`);
-                                reject(error);
-                            });
-
-                        } else {
-                            // refresh token not existing. Force authentication by logging out.
-                            this.logout();
-                            console.log(`Refresh token not available!  ${logMsg}`);
-                            reject(response);
-                        }
-
-                    });
-
-                }
-                // No 401 error. Therefore, no retry. Return response from
-                // first apiCall
-                return Promise.reject(response);
-
-            });
+        });
     }
-
 
     /**
      Login to the MIDATA platform. This method has to be called prior to
@@ -609,31 +591,6 @@ export class Midata {
                 })
         });
     }
-
-    /**
-     Helper method to refresh the authentication token by authorizing
-     with the help of the refresh token. This will generate a new authentication as well as
-     a new refresh token. On successful refresh, the old refresh_token will be invalid and
-     both the access_token and the refresh_token stored in the local storage will be overwritten.
-     Previous access_tokens will remain valid until their expiration timestamp is exceeded. However, possibly
-     older access_tokens are neglected due to overwrite logic.
-     */
-
-    refreshOBSOLETE(withRefreshToken?: string): Promise<TokenRefreshResponse> {
-
-        // wrapper method, call subsequent actions from here
-
-        return new Promise((resolve, reject) => {
-            this.refresh(withRefreshToken).then((body) => {
-                resolve(body);
-
-            })
-                .catch((error: ApiCallResponse) => {
-                    reject(error)
-                })
-        });
-    }
-
 
     /**
      The user will be redirected to midata.coop in order to login / register and grant
