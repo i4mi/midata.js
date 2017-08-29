@@ -226,6 +226,7 @@ export class Midata {
         // TODO: Return value Promise<APICallResponse>, after search method is refactored
         var fetchUserInfo = () : Promise<ApiCallResponse> => {
             return this.search("Patient", {_id: this.user.id}).then((response: ApiCallResponse) => {
+                console.log(response);
                 this.setUserEmail(response.body.entry[0].getProperty("telecom")[0].value);
                 return Promise.resolve(response);
             }).catch((error: any) => {
