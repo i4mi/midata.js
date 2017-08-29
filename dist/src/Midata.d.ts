@@ -14,8 +14,8 @@ export declare class Midata {
     private _appName;
     private _secret;
     private _conformanceStatementEndpoint;
-    private _authToken;
-    private _refreshToken;
+    _authToken: string;
+    _refreshToken: string;
     private _authCode;
     private _tokenEndpoint;
     private _authEndpoint;

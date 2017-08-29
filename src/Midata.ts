@@ -34,8 +34,8 @@ export type language = 'en' |
 
 export class Midata {
 
-    private _authToken: string;
-    private _refreshToken: string;
+    public _authToken: string; // TODO: Change to private again
+    public _refreshToken: string; // TODO: Change to private again
     private _authCode: string;
     private _tokenEndpoint: string;
     private _authEndpoint: string;
@@ -339,7 +339,7 @@ export class Midata {
                 if(maxRetries <= 1){
                     throw new Error("Maximum retries exceeded, abort!");
                 }
-                return this._retry(maxRetries - 1, fn, ...args);
+                return this._retry(maxRetries - 1, fn, args);
             })
          };
 
@@ -445,7 +445,7 @@ export class Midata {
 
             var fetchUserInfo = () : Promise<ApiCallResponse>  => {
             return this.search("Patient", {_id: this.user.id}).then((response: ApiCallResponse) => {
-                this.setUserEmail(response.body.entry[0].getProperty("telecom")[0].value); // TODO: Possible error here
+                this.setUserEmail(response.body.entry[0].getProperty("telecom")[0].value);
                 console.log("Data refreshed! resolve...");
                 return Promise.resolve(response);
                 }).catch((error) => {
@@ -474,8 +474,6 @@ export class Midata {
             throw new Error(`Can\'t search for records when no user logged in first. Call authenticate() before trying to query the API.`
             );
         }
-
-        this._authToken = "aaaaabbbbbbbbbb"; // TODO: delete again
 
         let baseUrl = `${this._host}/fhir/${resourceType}`;
 
