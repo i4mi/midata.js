@@ -128,10 +128,6 @@ export class Midata {
         }
     }
 
-    setAuthToken(s : string){ // TODO: temp method
-        this._authToken = s;
-    }
-
     /*
     Update the host and if needed the conformanceStatementEndpoint if the target server changes.
     Changing the target server will force a logout since this should only be done if no connection exists.
@@ -513,7 +509,7 @@ export class Midata {
             }
         }, (error: ApiCallResponse) => {
             // Check if the authToken is expired and a refreshToken is available
-            if(error.status === 400 && this.refreshToken) { // TODO: Change to 401 again
+            if(error.status === 401 && this.refreshToken) {
                 return this.refresh().then(() => {
                     // If the refresh operation succeeded,
                     // retry the operation 3 times
@@ -694,7 +690,7 @@ export class Midata {
                         this._setLoginData(body.access_token, body.refresh_token, user);
                     }).then(_ => {
                  this.search("Patient", {_id: this.user.id}).then((msg: any) => {
-                     this.setUserEmail(msg[0].getProperty("telecom")[0].value);
+                     this.setUserEmail(msg[0].getProperty("telecom")[0].value); // TODO: change type to APICallResponse
                      console.log("Login data set! resolve...");
                      resolve(msg);
                  }).catch((error) => {
