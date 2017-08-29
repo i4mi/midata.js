@@ -444,10 +444,10 @@ export class Midata {
             };
 
             var fetchUserInfo = () : Promise<ApiCallResponse>  => {
-            return this.search("Patient", {_id: this.user.id}).then((msg: any) => {
-                this.setUserEmail(msg[0].getProperty("telecom")[0].value);
+            return this.search("Patient", {_id: this.user.id}).then((response: ApiCallResponse) => {
+                this.setUserEmail(response.body.entry[0].getProperty("telecom")[0].value); // TODO: Possible error here
                 console.log("Data refreshed! resolve...");
-                return Promise.resolve(msg);
+                return Promise.resolve(response);
                 }).catch((error) => {
                 return Promise.reject(error);
             })
