@@ -226,7 +226,6 @@ export class Midata {
         // TODO: Return value Promise<APICallResponse>, after search method is refactored
         var fetchUserInfo = () : Promise<ApiCallResponse> => {
             return this.search("Patient", {_id: this.user.id}).then((response: ApiCallResponse) => {
-                console.log(response);
                 this.setUserEmail(response.body.entry[0].getProperty("telecom")[0].value);
                 return Promise.resolve(response);
             }).catch((error: any) => {
@@ -476,6 +475,8 @@ export class Midata {
             );
         }
 
+        this._authToken = "aaaaabbbbbbbbbb"; // TODO: delete again
+
         let baseUrl = `${this._host}/fhir/${resourceType}`;
 
         let tryToMapResponse = (response: ApiCallResponse) : Promise<ApiCallResponse> => {
@@ -483,7 +484,7 @@ export class Midata {
                 if (response.body.entry != undefined){
                 try {
                     let mappedResponse: string[] = response.body.entry.map((e: any) => {
-                        return fromFhir(JSON.parse(e.resource));
+                        return fromFhir(e.resource);
                     });
                     response.body.entry = mappedResponse;
                     return Promise.resolve(response)
@@ -510,7 +511,7 @@ export class Midata {
             }
         }, (error: ApiCallResponse) => {
             // Check if the authToken is expired and a refreshToken is available
-            if(error.status === 401 && this.refreshToken) {
+            if(error.status === 400 && this.refreshToken) { // TODO: Change to 401 again
                 return this.refresh().then(() => {
                     // If the refresh operation succeeded,
                     // retry the operation 3 times
