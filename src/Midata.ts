@@ -132,10 +132,6 @@ export class Midata {
         this._authToken = s;
     }
 
-    setRefreshToken(s: string){
-        this._refreshToken = s;
-    }
-
     /*
     Update the host and if needed the conformanceStatementEndpoint if the target server changes.
     Changing the target server will force a logout since this should only be done if no connection exists.
@@ -347,7 +343,7 @@ export class Midata {
                 if(maxRetries <= 1){
                     throw new Error("Maximum retries exceeded, abort!");
                 }
-                return this._retry(maxRetries - 1, fn, args);
+                return this._retry(maxRetries - 1, fn, ...args);
             })
          };
 
