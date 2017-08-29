@@ -34,8 +34,8 @@ export type language = 'en' |
 
 export class Midata {
 
-    public _authToken: string; // TODO: Change to private again
-    public _refreshToken: string; // TODO: Change to private again
+    private _authToken: string;
+    private _refreshToken: string;
     private _authCode: string;
     private _tokenEndpoint: string;
     private _authEndpoint: string;
@@ -126,6 +126,14 @@ export class Midata {
             }
             this._user = user;
         }
+    }
+
+    setAuthToken(s : string){ // TODO: temp method
+        this._authToken = s;
+    }
+
+    setRefreshToken(s: string){
+        this._refreshToken = s;
     }
 
     /*

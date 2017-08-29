@@ -14,8 +14,8 @@ export declare class Midata {
     private _appName;
     private _secret;
     private _conformanceStatementEndpoint;
-    _authToken: string;
-    _refreshToken: string;
+    private _authToken;
+    private _refreshToken;
     private _authCode;
     private _tokenEndpoint;
     private _authEndpoint;
@@ -37,6 +37,7 @@ export declare class Midata {
     readonly user: User;
     setUserEmail(email: string): void;
     setUserLanguage(language: language): void;
+    setAuthToken(s: string): void;
     changePlatform(host: string, conformanceStatementEndpoint?: string): void;
     logout(): void;
     private _setLoginData(authToken, refreshToken, user?);
