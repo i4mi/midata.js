@@ -339,7 +339,7 @@ export class Midata {
                 if(maxRetries <= 1){
                     throw new Error("Maximum retries exceeded, abort!");
                 }
-                return this._retry(maxRetries - 1, fn, args);
+                return this._retry(maxRetries - 1, fn, ...args);
             })
          };
 
