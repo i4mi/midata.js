@@ -128,7 +128,7 @@ export declare class Midata {
 
      @return A Promise of type InAppBrowserEvent.
      **/
-    authenticate(): Promise<ApiCallResponse>;
+    authenticate(): Promise<TokenResponse>;
     /**
      After successful authentication on midata this method is invoked. It exchanges the authCode
      obtained from midata with the access_token used to query the FHIR endpoint API.

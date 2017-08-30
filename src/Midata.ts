@@ -602,7 +602,7 @@ export class Midata {
      @return A Promise of type InAppBrowserEvent.
      **/
 
-     authenticate(): Promise<ApiCallResponse> {
+     authenticate(): Promise<TokenResponse> {
 
          var loginMidata = (url: string) : Promise<void> => {
 
@@ -610,19 +610,13 @@ export class Midata {
 
              this._iab = new InAppBrowser(url, '_blank', 'location=yes');
              this._iab.on('loadstart').subscribe((event) => {
-
                      this._iab.show();
-
                      if ((event.url).indexOf("http://localhost/callback") === 0) {
-
                          let _state = event.url.split("&")[0].split("=")[1];
-
                          if (_state && _state === this._state) {
-
                              this._authCode = event.url.split("&")[1].split("=")[1];
                              this._iab.close();
                              resolve();
-
                          } else {
                              this._iab.close();
                              reject();
@@ -634,9 +628,7 @@ export class Midata {
                      reject();
              })
              });
-
          };
-
                 return this._initSessionParams(128).then(() => {
 
                 let url = `${this._authEndpoint}?response_type=code`+
@@ -657,7 +649,7 @@ export class Midata {
                     }
 
                     return loginMidata(url).then(() => {
-                        return this._exchangeTokenForCode().then((response: ApiCallResponse) => {
+                        return this._exchangeTokenForCode().then((response: TokenResponse) => {
                             return Promise.resolve(response);
                             }).catch((error) => {
                             return Promise.reject(error);
@@ -681,7 +673,7 @@ export class Midata {
      the api class. On failure the catch clause will forward an error of type ApiCallResponse.
      **/
 
-    private _exchangeTokenForCode(): Promise<ApiCallResponse> {
+    private _exchangeTokenForCode(): Promise<TokenResponse> {
 
             let getPayload = () : TokenRequest => {
                 // because of x-www-form-urlencoded
@@ -698,6 +690,8 @@ export class Midata {
                 return refreshRequest;
             };
 
+            let authResponse : TokenResponse;
+
              var exchangeToken = () : Promise<ApiCallResponse> => {
                  return apiCall({
                      url: this._tokenEndpoint,
@@ -710,23 +704,22 @@ export class Midata {
                      jsonEncoded: false
                  })
                      .then((response: ApiCallResponse) => {
-                         let body: TokenResponse = response.body;
+                         authResponse = response.body;
                          let user: User
                          if (this._user) {
-                             this._user.id = body.patient;
+                             this._user.id = authResponse.patient;
                          } else {
                              user = {
-                                 id: body.patient,
+                                 id: authResponse.patient,
                              };
                          }
-                         this._setLoginData(body.access_token, body.refresh_token, user);
+                         this._setLoginData(authResponse.access_token, authResponse.refresh_token, user);
                          return Promise.resolve(response);
                      }).catch((error) => {
                      return Promise.reject(error);
                  });
              };
 
-            // TODO: Return value Promise<APICallResponse>, after search method is refactored
             var fetchUserInfo = () : Promise<ApiCallResponse> => {
                 return this.search("Patient", {_id: this.user.id}).then((response: ApiCallResponse) => {
                     this.setUserEmail(response.body.entry[0].getProperty("telecom")[0].value);
@@ -736,8 +729,8 @@ export class Midata {
                 });
             };
 
-            return exchangeToken().then(fetchUserInfo).then((response: ApiCallResponse) => {
-                return Promise.resolve(response);
+            return exchangeToken().then(fetchUserInfo).then(() => {
+                return Promise.resolve(authResponse);
             }, error => {
                 return Promise.reject(error);
             });
