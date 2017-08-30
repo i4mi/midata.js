@@ -603,44 +603,69 @@ export class Midata {
      **/
 
      authenticate(): Promise<ApiCallResponse> {
-        return new Promise((resolve, reject) => {
-            this._initSessionParams(128).then(() => {
-                var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
 
-                if (typeof this._user != "undefined" && typeof this._user.email != "undefined") {
-                    endpoint = `${endpoint}&email=${this._user.email}`
-                }
+         var loginMidata = (url: string) : Promise<void> => {
 
-                if (typeof this._user != "undefined" && typeof this._user.language != "undefined") {
-                    endpoint = `${endpoint}&language=${this._user.language}`
-                }
+             return new Promise<void>((resolve,reject) => {
 
-                this._iab = new InAppBrowser(endpoint, '_blank', 'location=yes');
-                this._iab.on('loadstart').subscribe((event) => {
+             this._iab = new InAppBrowser(url, '_blank', 'location=yes');
+             this._iab.on('loadstart').subscribe((event) => {
 
-                        this._iab.show();
-                        if ((event.url).indexOf("http://localhost/callback") === 0) {
+                     this._iab.show();
 
-                            let _state = event.url.split("&")[0].split("=")[1];
+                     if ((event.url).indexOf("http://localhost/callback") === 0) {
 
-                            if (_state && _state === this._state) {
+                         let _state = event.url.split("&")[0].split("=")[1];
 
-                                this._authCode = event.url.split("&")[1].split("=")[1];
-                                this._iab.close();
-                                resolve(event);
+                         if (_state && _state === this._state) {
 
-                            } else {
-                                this._iab.close();
-                                reject(event);
-                            }
-                        }
-                    },
-                    (error) => {
-                        console.log(`Error! ${error}`);
-                        reject(error);
-                    });
-            });
-        });
+                             this._authCode = event.url.split("&")[1].split("=")[1];
+                             this._iab.close();
+                             resolve();
+
+                         } else {
+                             this._iab.close();
+                             reject();
+                         }
+                     }
+                 },
+                 (error) => {
+                     console.log(`Error! ${error}`);
+                     reject();
+             })
+             });
+
+         };
+
+                return this._initSessionParams(128).then(() => {
+
+                let url = `${this._authEndpoint}?response_type=code`+
+                          `&client_id=${this._appName}`+
+                          `&redirect_uri=http://localhost/callback`+
+                          `&aud=${this._host}%2Ffhir`+
+                          `&scope=user%2F*.*`+
+                          `&state=${this._state}`+
+                          `&code_challenge=${this._codeChallenge}`+
+                          `&code_challenge_method=S256`;
+
+                    if (typeof this._user != "undefined" && typeof this._user.email != "undefined") {
+                    url = `${url}&email=${this._user.email}`
+                    }
+
+                    if (typeof this._user != "undefined" && typeof this._user.language != "undefined") {
+                    url = `${url}&language=${this._user.language}`
+                    }
+
+                    return loginMidata(url).then(this._exchangeTokenForCode).then((response: ApiCallResponse) => {
+                        return Promise.resolve(response);
+                    }).catch((error) => {
+                        // TODO: Error Message
+                        return Promise.reject(error);
+                    })
+                }).catch((error) => {
+                    // TODO: Error Message
+                    return Promise.reject(error);
+                });
     }
 
 
@@ -652,73 +677,85 @@ export class Midata {
      the api class. On failure the catch clause will forward an error of type ApiCallResponse.
      **/
 
-    private _exchangeTokenForCode(): Promise<TokenResponse> {
-        return new Promise((resolve, reject) => {
-            let getEncodedParams = () => {
+    private _exchangeTokenForCode(): Promise<ApiCallResponse> {
+
+            let getPayload = () : TokenRequest => {
                 // because of x-www-form-urlencoded
-                let urlSearchParams = new URLSearchParams();
-                urlSearchParams.append("grant_type", "authorization_code");
-                urlSearchParams.append("code", this._authCode);
-                urlSearchParams.append("redirect_uri", "http://localhost/callback");
-                urlSearchParams.append("client_id", this._appName);
-                urlSearchParams.append("code_verifier", this._codeVerifier);
-                return urlSearchParams;
+                let urlParams = new URLSearchParams();
+                urlParams.append("grant_type", "authorization_code");
+                urlParams.append("code", this._authCode);
+                urlParams.append("redirect_uri", "http://localhost/callback");
+                urlParams.append("client_id", this._appName);
+                urlParams.append("code_verifier", this._codeVerifier);
+
+                let refreshRequest: TokenRequest = {
+                    encodedParams: urlParams
+                };
+                return refreshRequest;
             };
-            let tokenRequest: TokenRequest = {
-                encodedParams: getEncodedParams()
-            };
-             apiCall({
-                url: this._tokenEndpoint,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                jsonBody: true,
-                payload: tokenRequest.encodedParams.toString(),
-                jsonEncoded: false
-            })
-                .then(response => {
-                    let body: TokenResponse = response.body;
-                        let user: User
-                        if (this._user) {
-                            this._user.id = body.patient;
-                        } else {
-                            user = {
-                                id: body.patient,
-                            };
-                        }
-                        this._setLoginData(body.access_token, body.refresh_token, user);
-                    }).then(_ => {
-                 this.search("Patient", {_id: this.user.id}).then((msg: any) => {
-                     this.setUserEmail(msg[0].getProperty("telecom")[0].value); // TODO: change type to APICallResponse
-                     console.log("Login data set! resolve...");
-                     resolve(msg);
-                 }).catch((error) => {
-                     console.log("Error setting user email address");
-                     reject(error);
+
+             var exchangeToken = () : Promise<ApiCallResponse> => {
+                 return apiCall({
+                     url: this._tokenEndpoint,
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/x-www-form-urlencoded'
+                     },
+                     jsonBody: true,
+                     payload: getPayload().encodedParams.toString(),
+                     jsonEncoded: false
                  })
-             }).catch((response: ApiCallResponse) => {
-                    reject(response);
+                     .then((response: ApiCallResponse) => {
+                         let body: TokenResponse = response.body;
+                         let user: User
+                         if (this._user) {
+                             this._user.id = body.patient;
+                         } else {
+                             user = {
+                                 id: body.patient,
+                             };
+                         }
+                         this._setLoginData(body.access_token, body.refresh_token, user);
+                         return Promise.resolve(response);
+                     }).catch((error) => {
+                     return Promise.reject(error);
+                 });
+             };
+
+            // TODO: Return value Promise<APICallResponse>, after search method is refactored
+            var fetchUserInfo = () : Promise<ApiCallResponse> => {
+                return this.search("Patient", {_id: this.user.id}).then((response: ApiCallResponse) => {
+                    this.setUserEmail(response.body.entry[0].getProperty("telecom")[0].value);
+                    return Promise.resolve(response);
+                }).catch((error: any) => {
+                    return Promise.reject(error);
                 });
-        });
+            };
+
+            return exchangeToken().then(fetchUserInfo).then((response: ApiCallResponse) => {
+                return Promise.resolve(response);
+            }, error => {
+                return Promise.reject(error);
+            });
     }
 
 
-    private _initSessionParams(length: number): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
+    private _initSessionParams(length: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             this._initRndString(length).then((stateString) => {
                 this._state = stateString;
                 this._initRndString(length).then((codeVerifier) => {
                     this._codeVerifier = codeVerifier;
                     // this._codeChallenge = BASE64URL-ENCODE(SHA256(ASCII(this._codeVerifier)))
-                    var shaObj = new jsSHA("SHA-256", "TEXT"); // create a SHA-256 Base64 hash out of the
+                    let shaObj = new jsSHA("SHA-256", "TEXT"); // create a SHA-256 Base64 hash out of the
                     shaObj.update(this._codeVerifier); // generated code_verifier
-                    var hash = shaObj.getHash("B64");  // transform the hash value into the Base64URL encoded
+                    let hash = shaObj.getHash("B64");  // transform the hash value into the Base64URL encoded
                     this._codeChallenge = base64EncodeURL(hash); // code_challenge
-                    resolve("OK");
+                    resolve();
                 })
             }).catch((error) => {
-                reject(error.toString());
+                // TODO: Error Message
+                reject(error);
             })
         })
     }
@@ -726,14 +763,15 @@ export class Midata {
     private _initRndString(length: number): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             if (length && length >= 0) {
-                var _state = "";
-                var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+                let _state = "";
+                let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
                 for (var i = 0; i < length; i++) {
                     _state += possible.charAt(Math.floor(Math.random() * possible.length));
                 }
                 resolve(_state);
             } else {
-                reject("Error");
+                // TODO: Error message
+                reject();
             }
         });
     }
