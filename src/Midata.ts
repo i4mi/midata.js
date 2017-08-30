@@ -5,8 +5,7 @@ import {
 } from './api';
 import {Promise} from 'es6-promise'
 import {apiCall, ApiCallResponse, base64EncodeURL} from './util';
-import {InAppBrowser, InAppBrowserEvent} from 'ionic-native';
-import {Platform} from 'ionic-angular';
+import {InAppBrowser} from 'ionic-native';
 import {URLSearchParams} from "@angular/http";
 import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
@@ -42,7 +41,6 @@ export class Midata {
     private _authEndpoint: string;
     private _user: User;
     private _iab: InAppBrowser;
-    private _platform: Platform;
 
 
     private _state: string;
@@ -605,7 +603,6 @@ export class Midata {
      **/
 
      authenticate(): Promise<ApiCallResponse> {
-        if(this._platform.is("ios")){
         return new Promise((resolve, reject) => {
             this._initSessionParams(128).then(() => {
                 var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
@@ -644,9 +641,6 @@ export class Midata {
                     });
             });
         });
-        } else {
-            console.log("Not working!");
-        }
     }
 
 

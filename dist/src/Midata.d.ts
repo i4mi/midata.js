@@ -21,7 +21,6 @@ export declare class Midata {
     private _authEndpoint;
     private _user;
     private _iab;
-    private _platform;
     private _state;
     private _codeVerifier;
     private _codeChallenge;
