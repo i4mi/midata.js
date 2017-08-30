@@ -25,7 +25,7 @@ export declare class Midata {
     private _codeVerifier;
     private _codeChallenge;
     /**
-     * @param _host The url of the midata server, e.g. "https://test.midata.coop:9000".
+     * @param _host The url of the midata server, e.g. "https://test.midata.coop:443".
      * @param _appName The internal application name accessing the platform (as defined on the midata platform).
      * @param _conformanceStatementEndpoint? The location of the endpoint identifying the OAuth authorize and token
      *        endpoints. Optional parameter.
@@ -48,10 +48,7 @@ export declare class Midata {
      * @param username The user's identifier, most likely an email address.
      * @param password The user's password.
      * @param role The user's role used during the login (optional).
-     * @return If the login was successful the return value will be a resolved
-     *         promise that contains the newly generated authentication and
-     *         refresh token. In case the login failed the return value
-     *         will be a rejected promise containing the error message.
+     * @return Promise<AuthResponse>
      */
     login(username: string, password: string, role?: UserRole): Promise<AuthResponse>;
     /**
@@ -110,34 +107,29 @@ export declare class Midata {
     /**
      Login to the MIDATA platform. This method has to be called prior to
      creating or updating resources. Calling authenticate will initiate the
-     oAuth2 authentication process. This method invokes the methods _authenticate &
-     _exchangeTokenForCode.
+     oAuth2 authentication process.
 
-     @return If the login process was successful the return value will be a resolved
-     promise that contains the newly generated authentication and
-     refresh token. In case the login failed the return value
-     will be a rejected promise containing the error message (type any).
-     **/
-    authenticateOBSOLETE(): Promise<TokenResponse>;
-    /**
-     The user will be redirected to midata.coop in order to login / register and grant
-     the application access to his data. If the event target is equal to the callback url
-     defined in the USERAUTH_ENDPOINT (and ,therefore, authentication on midata was successful)
-     the authentication code is extracted in stored locally. The authentication code will then be further
-     used by the method _exchangeTokenForCode().
-
-     @return A Promise of type InAppBrowserEvent.
+     @return Promise<TokenResponse>
      **/
     authenticate(): Promise<TokenResponse>;
     /**
      After successful authentication on midata this method is invoked. It exchanges the authCode
      obtained from midata with the access_token used to query the FHIR endpoint API.
 
-     @return On success the resolved promise will hold a body of type TokenResponse as defined in the interface within
-     the api class. On failure the catch clause will forward an error of type ApiCallResponse.
+     @return Promise<TokenResponse>
      **/
     private _exchangeTokenForCode();
+    /**
+     Helper method to initialize the params used during the oAuth2 authentication process.
+
+     @return Promise<void>
+     **/
     private _initSessionParams(length);
+    /**
+     Helper method to generate a random string with a given length.
+     @param length Length of the string to be generated
+     @return Promise<void>
+     **/
     private _initRndString(length);
     /**
      This method fetches the conformance statement identifying the OAuth authorize
@@ -145,8 +137,7 @@ export declare class Midata {
      This method is invoked whenever a new midata object is created. However, it can also
      exclusively be called in order to update existing endpoint information.
 
-     @return In both cases (on success & and failure) the method will return a resolved promise of type ApiCallResponse
-     conforming to the interface defined within the util class.
+     @return Promise<ApiCallResponse>
      **/
     fetchFHIRConformanceStatement(): Promise<ApiCallResponse>;
 }
