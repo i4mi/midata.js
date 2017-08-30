@@ -656,8 +656,12 @@ export class Midata {
                     url = `${url}&language=${this._user.language}`
                     }
 
-                    return loginMidata(url).then(this._exchangeTokenForCode).then((response: ApiCallResponse) => {
-                        return Promise.resolve(response);
+                    return loginMidata(url).then(() => {
+                        return this._exchangeTokenForCode().then((response: ApiCallResponse) => {
+                            return Promise.resolve(response);
+                            }).catch((error) => {
+                            return Promise.reject(error);
+                        })
                     }).catch((error) => {
                         // TODO: Error Message
                         return Promise.reject(error);
