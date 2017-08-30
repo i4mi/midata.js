@@ -1,7 +1,6 @@
 import { TokenResponse, UserRole, AuthResponse } from './api';
 import { Promise } from 'es6-promise';
 import { ApiCallResponse } from './util';
-import { InAppBrowserEvent } from 'ionic-native';
 import { Resource } from "./resources/Resource";
 export interface User {
     name?: string;
@@ -130,7 +129,7 @@ export declare class Midata {
 
      @return A Promise of type InAppBrowserEvent.
      **/
-    authenticate(): Promise<InAppBrowserEvent>;
+    authenticate(): Promise<ApiCallResponse>;
     /**
      After successful authentication on midata this method is invoked. It exchanges the authCode
      obtained from midata with the access_token used to query the FHIR endpoint API.

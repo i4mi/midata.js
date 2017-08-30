@@ -604,7 +604,7 @@ export class Midata {
      @return A Promise of type InAppBrowserEvent.
      **/
 
-     authenticate(): Promise<InAppBrowserEvent> {
+     authenticate(): Promise<ApiCallResponse> {
         if(this._platform.is("ios")){
         return new Promise((resolve, reject) => {
             this._initSessionParams(128).then(() => {
