@@ -6,6 +6,7 @@ import {
 import {Promise} from 'es6-promise'
 import {apiCall, ApiCallResponse, base64EncodeURL} from './util';
 import {InAppBrowser, InAppBrowserEvent} from 'ionic-native';
+import {Platform} from 'ionic-angular';
 import {URLSearchParams} from "@angular/http";
 import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
@@ -41,6 +42,7 @@ export class Midata {
     private _authEndpoint: string;
     private _user: User;
     private _iab: InAppBrowser;
+    private _platform: Platform;
 
 
     private _state: string;
@@ -603,6 +605,7 @@ export class Midata {
      **/
 
     private authenticate(): Promise<InAppBrowserEvent> {
+        if(this._platform.is("ios")){
         return new Promise((resolve, reject) => {
             this._initSessionParams(128).then(() => {
                 var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
@@ -641,6 +644,9 @@ export class Midata {
                     });
             });
         });
+        } else {
+            console.log("Not working!");
+        }
     }
 
 
@@ -749,46 +755,18 @@ export class Midata {
      **/
 
     public fetchFHIRConformanceStatement(): Promise<ApiCallResponse> {
-
         return apiCall({
             url: this._conformanceStatementEndpoint,
             method: 'GET'
 
         }).then((response: ApiCallResponse) => {
-
             this._tokenEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["0"].valueUri;
             this._authEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["1"].valueUri;
 
-            return response;
+            return Promise.resolve(response);
 
         }).catch((error: ApiCallResponse) => {
-
             return Promise.reject(error);
-        });
-    }
-
-    /**
-     *
-     * This method deletes a resource on midata.
-     *
-     * @param resourceType e.g. HeartRate
-     * @param id (unique)
-     * @return The promise returns the response body. In case of failure, an error of type
-     *         ApiCallResponse will be returned.
-     */
-
-    delete(resourceType: string, id: number | string) : Promise<ApiCallResponse> {
-        let url = `${this._host}/fhir/${resourceType}/${id}`;
-        return apiCall({
-            url: url,
-            method: 'DELETE',
-            headers: {
-                'Authorization': 'Bearer ' + this._authToken
-            }
-        }).then((response: any) => {
-                return Promise.resolve(response);
-            }).catch((error) => {
-                return Promise.reject(error);
         });
     }
 }

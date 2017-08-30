@@ -21,6 +21,7 @@ export declare class Midata {
     private _authEndpoint;
     private _user;
     private _iab;
+    private _platform;
     private _state;
     private _codeVerifier;
     private _codeChallenge;
@@ -149,14 +150,4 @@ export declare class Midata {
      conforming to the interface defined within the util class.
      **/
     fetchFHIRConformanceStatement(): Promise<ApiCallResponse>;
-    /**
-     *
-     * This method deletes a resource on midata.
-     *
-     * @param resourceType e.g. HeartRate
-     * @param id (unique)
-     * @return The promise returns the response body. In case of failure, an error of type
-     *         ApiCallResponse will be returned.
-     */
-    delete(resourceType: string, id: number | string): Promise<ApiCallResponse>;
 }
