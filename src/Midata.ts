@@ -12,8 +12,6 @@ import {Resource} from "./resources/Resource";
 
 let jsSHA = require("jssha");
 
-declare var window: any;
-
 /*
 The user
  */
@@ -27,7 +25,8 @@ export interface User {
 /*
 Languages currently supported by MIDATA
  */
-export type language = 'en' |
+export type language =
+    'en' |
     'de' |
     'it' |
     'fr';
@@ -59,13 +58,7 @@ export class Midata {
                 private _conformanceStatementEndpoint?: string) {
 
         this._conformanceStatementEndpoint = _conformanceStatementEndpoint || `${_host}/fhir/metadata`;
-        if (this._conformanceStatementEndpoint !== undefined) {
-            this.fetchFHIRConformanceStatement().then((response) => {
-                console.log(`Success! (${response.status}, ${response.message})`);
-            }, (error) => {
-                console.log(`Error! ${error}`);
-            });
-        }
+
     }
 
     /*
@@ -143,7 +136,7 @@ export class Midata {
     }
 
     /*
-     Destroy all authenication information.
+     Destroy all authentication information.
      */
     logout() {
         this._refreshToken = undefined;
@@ -193,35 +186,35 @@ export class Midata {
 
         let authResponse: AuthResponse;
 
-        var loginMidata = () : Promise<AuthResponse> => {
+        let loginMidata = (): Promise<AuthResponse> => {
             return apiCall({
-            url: this._host + '/v1/auth',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            jsonBody: true,
-            payload: authRequest
-        }).then((response : ApiCallResponse) => {
-            authResponse = response.body;
-            let user: User
-            if (this._user) {
-                this._user.id = authResponse.owner;
-                this._user.name = username;
-            } else {
-                user = {
-                    id: authResponse.owner,
-                    name: username
-                };
-            }
-            this._setLoginData(authResponse.authToken, authResponse.refreshToken, user);
-            return Promise.resolve(authResponse);
-        }).catch((error) => {
+                url: this._host + '/v1/auth',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                jsonBody: true,
+                payload: authRequest
+            }).then((response: ApiCallResponse) => {
+                authResponse = response.body;
+                let user: User
+                if (this._user) {
+                    this._user.id = authResponse.owner;
+                    this._user.name = username;
+                } else {
+                    user = {
+                        id: authResponse.owner,
+                        name: username
+                    };
+                }
+                this._setLoginData(authResponse.authToken, authResponse.refreshToken, user);
+                return Promise.resolve(authResponse);
+            }).catch((error) => {
                 return Promise.reject(error);
             });
         };
 
-        var fetchUserInfo = () : Promise<ApiCallResponse> => {
+        let fetchUserInfo = (): Promise<ApiCallResponse> => {
             return this.search("Patient", {_id: this.user.id}).then((response: ApiCallResponse) => {
                 this.setUserEmail(response.body.entry[0].getProperty("telecom")[0].value);
                 return Promise.resolve(response);
@@ -230,12 +223,16 @@ export class Midata {
             });
         };
 
-        return loginMidata().then((fetchUserInfo)).then(() => {
-            return authResponse;
-        }, error => {
-            return error;
-        });
-    }
+        return loginMidata()
+            .then(() => {
+            return fetchUserInfo()
+            .then(() => {
+            return Promise.resolve(authResponse);
+            });
+        }).catch((error) => {
+            return Promise.reject(error);
+            });
+    };
 
     /**
      *
@@ -468,8 +465,7 @@ export class Midata {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
-            throw new Error(`Can\'t search for records when no user logged in first. Call authenticate() before trying to query the API.`
-            );
+            throw new Error(`Can\'t search for records when no user logged in first. Call authenticate() before trying to query the API.`);
         }
 
         let baseUrl = `${this._host}/fhir/${resourceType}`;
@@ -569,9 +565,25 @@ export class Midata {
      @return Promise<TokenResponse>
      **/
 
+     // TODO: Test changes in authenticate() method
+
      authenticate(): Promise<TokenResponse> {
 
-         var loginMidata = (url: string) : Promise<void> => {
+        let fetchConformanceStatement = () : Promise<ApiCallResponse> =>  {
+            if (this._conformanceStatementEndpoint !== undefined && (this._authEndpoint == undefined || this._tokenEndpoint == undefined)) {
+                return this.fetchFHIRConformanceStatement().then((response) => {
+                    return Promise.resolve(response);
+                }, (error) => {
+                    return Promise.reject(error);
+                });
+            } else {
+                let error = new Error("Error, MIDATA conformance statement endpoint unknown! Call changePlatform() with a " +
+                                            "valid endpoint in order to fix this issue");
+                return Promise.reject(error);
+            }
+        };
+
+         let loginMidata = (url: string) : Promise<void> => {
 
              return new Promise<void>((resolve,reject) => {
 
@@ -590,45 +602,41 @@ export class Midata {
                          }
                      }
                  },
-                 (error) => {
-                     console.log(`Error! ${error}`);
+                 () => {
                      reject();
              })
              });
          };
-                return this._initSessionParams(128).then(() => {
-
-                let url = `${this._authEndpoint}?response_type=code`+
-                          `&client_id=${this._appName}`+
-                          `&redirect_uri=http://localhost/callback`+
-                          `&aud=${this._host}%2Ffhir`+
-                          `&scope=user%2F*.*`+
-                          `&state=${this._state}`+
-                          `&code_challenge=${this._codeChallenge}`+
-                          `&code_challenge_method=S256`;
-
-                    if (typeof this._user != "undefined" && typeof this._user.email != "undefined") {
-                    url = `${url}&email=${this._user.email}`
-                    }
-
-                    if (typeof this._user != "undefined" && typeof this._user.language != "undefined") {
-                    url = `${url}&language=${this._user.language}`
-                    }
-
-                    return loginMidata(url).then(() => {
-                        return this._exchangeTokenForCode().then((response: TokenResponse) => {
-                            return Promise.resolve(response);
-                            }).catch((error) => {
-                            return Promise.reject(error);
-                        })
-                    }).catch((error) => {
-                        // TODO: Error Message
-                        return Promise.reject(error);
-                    })
-                }).catch((error) => {
-                    // TODO: Error Message
-                    return Promise.reject(error);
-                });
+                 return fetchConformanceStatement()
+                 .then(() => {
+                     return this._initSessionParams(128)
+                 })
+                 .then(() => {
+                     let url = `
+                     ${this._authEndpoint}?response_type=code` +
+                         `&client_id=${this._appName}` +
+                         `&redirect_uri=http://localhost/callback` +
+                         `&aud=${this._host}%2Ffhir` +
+                         `&scope=user%2F*.*` +
+                         `&state=${this._state}` +
+                         `&code_challenge=${this._codeChallenge}` +
+                         `&code_challenge_method=S256`;
+                     if (typeof this._user != "undefined" && typeof this._user.email != "undefined") {
+                         url = `${url}&email=${this._user.email}`}
+                     if (typeof this._user != "undefined" && typeof this._user.language != "undefined") {
+                         url = `${url}&language=${this._user.language}`
+                     }
+                     return loginMidata(url)
+                 })
+                 .then(() => {
+                     return this._exchangeTokenForCode()
+                 })
+                 .then((response: TokenResponse) => {
+                     return Promise.resolve(response);
+                 })
+                 .catch((error) => {
+                     return Promise.reject(error);
+                 });
     }
 
 
@@ -640,7 +648,6 @@ export class Midata {
      **/
 
     private _exchangeTokenForCode(): Promise<TokenResponse> {
-
             let getPayload = () : TokenRequest => {
                 // because of x-www-form-urlencoded
                 let urlParams = new URLSearchParams();
@@ -658,7 +665,7 @@ export class Midata {
 
             let authResponse : TokenResponse;
 
-             var exchangeToken = () : Promise<ApiCallResponse> => {
+            let exchangeToken = () : Promise<ApiCallResponse> => {
                  return apiCall({
                      url: this._tokenEndpoint,
                      method: 'POST',
@@ -676,7 +683,7 @@ export class Midata {
                              this._user.id = authResponse.patient;
                          } else {
                              user = {
-                                 id: authResponse.patient,
+                                 id: authResponse.patient, // TODO: Fetch and set username from response
                              };
                          }
                          this._setLoginData(authResponse.access_token, authResponse.refresh_token, user);
