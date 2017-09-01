@@ -570,12 +570,14 @@ export class Midata {
      authenticate(): Promise<TokenResponse> {
 
         let fetchConformanceStatement = () : Promise<ApiCallResponse> =>  {
-            if (this._conformanceStatementEndpoint !== undefined && (this._authEndpoint == undefined || this._tokenEndpoint == undefined)) {
-                return this.fetchFHIRConformanceStatement().then((response) => {
-                    return Promise.resolve(response);
-                }, (error) => {
-                    return Promise.reject(error);
-                });
+            if (this._conformanceStatementEndpoint !== undefined) {
+                if(this._authEndpoint == undefined || this._tokenEndpoint == undefined) {
+                    return this.fetchFHIRConformanceStatement().then((response) => {
+                        return Promise.resolve(response);
+                    });
+                } else {
+                        return Promise.resolve({});
+                }
             } else {
                 let error = new Error("Error, MIDATA conformance statement endpoint unknown! Call changePlatform() with a " +
                                             "valid endpoint in order to fix this issue");
@@ -605,9 +607,6 @@ export class Midata {
                  () => {
                      reject();
              });
-             this._iab.on('exit').subscribe((event) => {
-                    reject();
-             })
              });
          };
                  return fetchConformanceStatement()
