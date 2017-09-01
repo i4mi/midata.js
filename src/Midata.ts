@@ -604,6 +604,9 @@ export class Midata {
                  },
                  () => {
                      reject();
+             });
+             this._iab.on('exit').subscribe((event) => {
+                    reject();
              })
              });
          };
