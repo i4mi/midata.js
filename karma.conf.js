@@ -7,6 +7,7 @@ module.exports = function(config) {
         frameworks: ['jasmine'],
         // Files to load in the browser.
         files: [
+            'node_modules/babel-polyfill/dist/polyfill.min.js', // ES6 compatibility
             'src/**/*.spec.ts'
         ],
         webpack: {
