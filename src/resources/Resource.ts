@@ -1,3 +1,6 @@
+import {registerResource} from './registry';
+
+@registerResource('resourceType', 'Resource')
 export class Resource {
 
     protected _fhir: any = {};

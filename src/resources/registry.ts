@@ -1,8 +1,19 @@
-const registry: any = {};
+const registry: any = {
+    codes: <any>[],
+    resourceTypes: <any>[]
+};
 
-export function registerResource(code: string) {
+export type mappingType = 'code' |
+    'resourceType';
+
+export function registerResource(type: mappingType, key: string) {
     return (cls: any) => {
-        registry[code] = cls;
+        if(type === "code") {
+        registry.codes[key] = cls;
+        }
+        else if(type === "resourceType"){
+        registry.resourceTypes[key] = cls;
+        }
         w.cls = cls;
     };
 };
@@ -19,19 +30,45 @@ export function fromFhir(fhirObject: any) {
     var mappingExists = false;
     if (tryToMap) {
         let coding = fhirObject.code.coding[0].code;
-        mappingExists = registry[coding] !== undefined;
+        mappingExists = registry.codes[coding] !== undefined;
     }
     if (mappingExists) {
         let coding = fhirObject.code.coding[0].code;
         let resource: any = {
             _fhir: fhirObject
         };
-        let cls = registry[coding];
-        resource.__proto__ = cls.prototype
+        let cls = registry.codes[coding];
+        resource.__proto__ = cls.prototype;
         return resource;
+    } else if (fhirObject.resourceType !== undefined) {
+        // If no mapping key for type code exists try to map the resource according to it's resourceType
+        // NOTE: Each record should have a resourceType at least. If not, throw an exception.
+        let tryToMap = fhirObject.resourceType !== undefined;
+     var mappingExists = false;
+     if (tryToMap) {
+         let coding = fhirObject.resourceType;
+         mappingExists = registry.resourceTypes[coding] !== undefined;
+     }
+     if (mappingExists) {
+         let coding = fhirObject.resourceType;
+         let resource: any = {
+             _fhir: fhirObject
+         };
+         let cls = registry.resourceTypes[coding];
+         resource.__proto__ = cls.prototype;
+         return resource;
+     } else {
+         // Resource type not in registry, map to base class 'resource'
+         let resource: any = {
+             _fhir: fhirObject
+         };
+         let cls = registry.resourceTypes["Resource"];
+         resource.__proto__ = cls.prototype;
+         return resource;
+     }
     } else {
-        fhirObject.toJson = function() { return this; };
-        return fhirObject;
+        // Property 'resourceType' not available, throw an error...
+        throw new Error(`Mapping error: Invalid object structure!`);
     }
 }
 

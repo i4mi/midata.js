@@ -15,7 +15,7 @@ export interface AuthRequest {
  * The user role in an authentication request.
  */
 export type UserRole =
-    'member'    |  // members of the cooperative (default)
+        'member'    |  // members of the cooperative (default)
         'provider'  |  // healthcare providers
         'developer' |  // developers
         'research'  ;  // researchers
@@ -108,7 +108,7 @@ export interface GetRecordRequest {
 }
 
 export type SummarizeLevel =
-    'ALL'     |
+        'ALL'     |
         'GROUP'   |
         'FORMAT'  |
         'CONTENT' |

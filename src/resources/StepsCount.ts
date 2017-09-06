@@ -2,7 +2,8 @@ import {VitalSigns} from "./categories";
 import {registerResource} from './registry';
 import {Observation, Quantity} from "./Observation";
 
-@registerResource('activities/steps')
+// TODO: Change to LOINC Code
+@registerResource('code', 'activities/steps')
 export class StepsCount extends Observation {
     constructor(steps: number, date: Date) {
         let quantity: Quantity = {

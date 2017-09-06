@@ -7,6 +7,7 @@ export type ImageType =
     'jpg' |
     'gif' ;
 
+
 export class ImageMedia extends Media {
     constructor(filename: string, data: Base64Str) {
         let type: string;

@@ -1,6 +1,7 @@
 import {Resource} from './Resource';
 import stringMatching = jasmine.stringMatching;
 import {Promise} from "es6-promise";
+import {registerResource} from './registry';
 import BundleEntry = fhir.BundleEntry;
 
 // http://www.hl7.org/fhir/bundle-type
@@ -23,6 +24,7 @@ export type httpVerb =
         'PUT' |
         'DELETE';
 
+@registerResource('resourceType', 'Bundle')
 export class Bundle extends Resource {
 
     constructor(type: BundleType) {

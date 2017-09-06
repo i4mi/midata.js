@@ -1,18 +1,7 @@
 import { Promise } from 'es6-promise';
 
-
-/**
- * Structure of the error objects with which promises
- * are rejected when an API call fails.
- */
-interface ApiError {
-    status: number;  // HTTP error code or 0 when there was a network error
-    message: string; // a descriptive error message
-}
-
-
 export type HttpMethod =
-    'POST'   |
+        'POST'   |
         'PUT'    |
         'GET'    |
         'DELETE' ;
@@ -23,8 +12,7 @@ export interface ApiCallArgs {
     payload?: any;
     headers?: any;
     jsonBody?: boolean;
-    jsonEncoded?: boolean; // wya3 - added on behalf of comment, see below
-    // in method apiCall()
+    jsonEncoded?: boolean;
 };
 
 export interface ApiCallResponse {
@@ -51,7 +39,7 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
     let jsonBody = args.jsonBody || false;
     let jsonEncoded = args.jsonEncoded; // flag indicating json-encoding
 
-    return new Promise(function(resolve, reject) {
+    return new Promise<ApiCallResponse>((resolve, reject) => {
         let xhr = new XMLHttpRequest();
 
         xhr.open(method, url, true);

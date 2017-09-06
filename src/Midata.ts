@@ -1,19 +1,23 @@
 import {
     TokenRefreshResponse,
     TokenRequest,
-    TokenResponse, AuthRequest, UserRole, AuthResponse
+    TokenResponse,
+    AuthRequest,
+    AuthResponse,
+    UserRole
 } from './api';
+import {MidataJSError} from './errors/MidataJSError';
+import {MappingError} from './errors/MappingError';
+import {UnknownEndpointError} from './errors/UnknownEndpointError';
+import {InvalidCallError} from './errors/InvalidCallError';
 import {Promise} from 'es6-promise'
 import {apiCall, ApiCallResponse, base64EncodeURL} from './util';
-import {InAppBrowser, InAppBrowserEvent} from 'ionic-native';
+import {InAppBrowser} from 'ionic-native';
 import {URLSearchParams} from "@angular/http";
 import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/Resource";
 
-
 let jsSHA = require("jssha");
-
-declare var window: any;
 
 /*
 The user
@@ -28,7 +32,8 @@ export interface User {
 /*
 Languages currently supported by MIDATA
  */
-export type language = 'en' |
+export type language =
+    'en' |
     'de' |
     'it' |
     'fr';
@@ -49,24 +54,18 @@ export class Midata {
     private _codeChallenge: string;
 
     /**
-     * @param _host The url of the midata server, e.g. "https://test.midata.coop:9000".
+     *
+     * @param _host The url of the midata server, e.g. "https://test.midata.coop:443".
      * @param _appName The internal application name accessing the platform (as defined on the midata platform).
      * @param _conformanceStatementEndpoint? The location of the endpoint identifying the OAuth authorize and token
      *        endpoints. Optional parameter.
+     *
      */
     constructor(private _host: string,
                 private _appName: string,
                 private _secret?: string,
                 private _conformanceStatementEndpoint?: string) {
-
         this._conformanceStatementEndpoint = _conformanceStatementEndpoint || `${_host}/fhir/metadata`;
-        if (this._conformanceStatementEndpoint !== undefined) {
-            this.fetchFHIRConformanceStatement().then((response) => {
-                console.log(`Success! (${response.status}, ${response.message})`);
-            }, (error) => {
-                console.log(`Error! ${error}`);
-            });
-        }
     }
 
     /*
@@ -130,8 +129,8 @@ export class Midata {
     }
 
     /*
-     Update the host and if needed the conformanceStatementEndpoint if the target server changes.
-     Changing the target server will force a logout since this should only be done if no connection exists.
+    Update the host and if needed the conformanceStatementEndpoint if the target server changes.
+    Changing the target server will force a logout since this should only be done if no connection exists.
      */
     changePlatform(host: string, conformanceStatementEndpoint?: string){
         this._host = host;
@@ -144,9 +143,8 @@ export class Midata {
     }
 
     /*
-     Destroy all authenication information.
+     Destroy all authentication information.
      */
-
     logout() {
         this._refreshToken = undefined;
         this._authToken = undefined;
@@ -169,36 +167,36 @@ export class Midata {
     }
 
     /**
+     *
      * Login to the MIDATA platform. This method has to be called prior to
      * creating or updating resources.
      *
      * @deprecated only use this method if your app does not support oAuth2 authentication
-     * @param username The user's identifier, most likely an email address.
-     * @param password The user's password.
-     * @param role The user's role used during the login (optional).
-     * @return If the login was successful the return value will be a resolved
-     *         promise that contains the newly generated authentication and
-     *         refresh token. In case the login failed the return value
-     *         will be a rejected promise containing the error message.
+     * @param username The user's identifier, most likely an email address
+     * @param password The user's password
+     * @param role The user's role used during the login (optional)
+     * @return Promise<AuthResponse>
+     *
      */
     login(username: string, password: string, role?: UserRole): Promise<AuthResponse> {
 
-        return new Promise<AuthResponse>((resolve, reject) => {
+        if (username === undefined || password === undefined) {
+            return Promise.reject(new InvalidCallError('You need to supply a username and a password!'));
+        }
+        let authRequest: AuthRequest = {
+            username: username,
+            password: password,
+            appname: this._appName,
+            secret: this._secret
+        };
+        if (role !== undefined) {
+            authRequest.role = role;
+        }
 
-            if (username === undefined || password === undefined) {
-                throw new Error('You need to supply a username and a password!');
-            }
-            let authRequest: AuthRequest = {
-                username: username,
-                password: password,
-                appname: this._appName,
-                secret: this._secret
-            };
-            if (role !== undefined) {
-                authRequest.role = role;
-            }
+        let authResponse: AuthResponse;
 
-            apiCall({
+        let loginMidata = (): Promise<AuthResponse> => {
+            return apiCall({
                 url: this._host + '/v1/auth',
                 method: 'POST',
                 headers: {
@@ -206,146 +204,149 @@ export class Midata {
                 },
                 jsonBody: true,
                 payload: authRequest
-            })
-                .then(response => {
-                    let body: AuthResponse = response.body;
-                    let user: User
-                    if (this._user) {
-                        this._user.id = body.owner;
-                        this._user.name = username;
-                    } else {
-                        user = {
-                            id: body.owner,
-                            name: username
-                        };
-                    }
-                    this._setLoginData(body.authToken, body.refreshToken, user);
-                    this.search("Patient", {_id: body.owner}).then((msg: any) => {
-                        console.log(msg);
-                        console.log(msg[0].telecom[0].value)
-                        this.setUserEmail(msg[0].telecom[0].value);
-                        console.log("Login data set! resolve...");
-                        resolve(body);
-                    });
-                })
-                .catch(error => {
-                    reject(error);
-                });
-        });
-    }
+            }).then((response: ApiCallResponse) => {
+                authResponse = response.body;
+                let user: User
+                if (this._user) {
+                    this._user.id = authResponse.owner;
+                    this._user.name = username;
+                } else {
+                    user = {
+                        id: authResponse.owner,
+                        name: username
+                    };
+                }
+                this._setLoginData(authResponse.authToken, authResponse.refreshToken, user);
+                return Promise.resolve(authResponse);
+            });
+        };
 
+        let fetchUserInfo = (): Promise<Resource[]> => {
+            return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
+                this.setUserEmail(response[0].getProperty("telecom")[0].value);
+                return Promise.resolve(response);
+            })
+        };
+
+        return loginMidata()
+        .then(() => {
+            return fetchUserInfo();
+        }).then(() => {
+            return Promise.resolve(authResponse);
+        }).catch((error) => {
+            return Promise.reject(error);
+            });
+    };
 
     /**
      *
      * This method stores a resource onto midata.
      *
-     * @param resourceType e.g. HeartRate
-     * @return The promise returns the created object. In case of failure, an error of type
-     *         ApiCallResponse will be returned.
+     * @param resourceType The resource to be stored (e.g. HeartRate)
+     * @return Promise<Resource>
+     *
      */
-
-    // TODO: Try to map response objects back to their class (e.g. BodyWeight)
-
-    save(resource: Resource | any) {
+    save(resource: Resource | any) : Promise<Resource> {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
-            throw new Error(`Can\'t create records when no user logged in first. Call authenticate() before trying to create records.`
-            );
+            return Promise.reject(new InvalidCallError('`Can\'t create records when no user logged in first. Call authenticate() before trying to create records.`'));
         }
         // Convert the resource to a FHIR-structured simple js object.
-        var fhirObject: any;
+        let fhirObject: any;
         if (resource instanceof Resource) {
             fhirObject = resource.toJson();
         } else {
             fhirObject = resource;
-        }
-
-        // If the resource didn't have an id, then the resource has to be
+        }// If the resource didn't have an id, then the resource has to be
         // created on the server.
         let shouldCreate = fhirObject.id === undefined || fhirObject.resourceType === "Bundle"; // By default
         // a bundle holds an id upon creation. Therefore, additionally check for resource type
         let apiMethod = shouldCreate ? this._create : this._update;
 
+        let tryToMapResponse = (response: ApiCallResponse) : Resource => {
+            // When the resource is created, the same resource will
+            // be returned (populated with an id field in case it was newly created).
+            if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
+                try {
+                    response.body = fromFhir(JSON.parse(response.body));
+                    return response.body;
+                } catch (mappingError) {
+                    // Although storing the value onto Midata priorly succeeded, rejecting the promise
+                    // at this point is fine since the response itself
+                    // violates FHIR's Resource record structure.
+                    throw new MappingError();
+                }
+            } else {
+                throw new MidataJSError(`Unexpected response status code: ${response.status}`);
+            }
+        };
+
         return apiMethod(fhirObject)
-            .then(response => {
-                // When the resource is created, the same resource will
-                // be returned (populated with an id field in the case
-                // it was newly created).
-                if (response.status === 201) {          // created
-                    return JSON.parse(response.body);
-                } else if (response.status === 200) {  // updated
-                    return JSON.parse(response.body);
-                } else {
-                    console.log(`Unexpected response status code: ${response.status}`);
-                    return Promise.reject(response);
+            .then((response: ApiCallResponse) => {
+                try {
+                    return Promise.resolve(tryToMapResponse(response));
+                } catch(error) {
+                    // Catch and re-throw the error
+                    return Promise.reject(error);
                 }
-            })
-            .catch((response: any) => {
-
-                // convenience variable
-                let logMsg = `Please login again using method authenticate()`;
-
-                if (response.status === 401) { // if token has expired
-
-                    return new Promise<ApiCallResponse>((resolve, reject) => {
-
-                        console.log(`Error, ${response.message} => Trying to refresh your tokens and save again...`);
-
-                        // retry to save resource. Proceed with logout if the operation somehow still fails.
-
-                        // premise: existing refresh token
-                        if (this.refreshToken) {
-
-                            // short logging of what's been going on during each case of the token recovery process.
-
-                            // try to refresh the access token using the refresh token
-                            this.refresh().then(_ => {
-                                console.log(`Success! Tokens restored. Retry action...`); // recovery successful
-                                apiMethod(fhirObject).then((response) => { // retry apiCall with new tokens
-                                    console.log("Success! Proceed..."); // operation successful
-                                    resolve(JSON.parse(response.body)); // return created object 
-                                }, (error) => {
-                                    // retry method call not successful, logout and force authentication
-                                    this.logout();
-                                    console.log(`Still receiving error, abort. ${logMsg}`);
-                                    reject(error);
-                                })
-                            }, (error: any) => {
-                                // token recovery not successful, logout and force authentication
-                                this.logout();
-                                console.log(`Error during refresh process. ${logMsg}`);
-                                reject(error);
-                                // rather unlikely, but still...
-                                // catch other errors during callback..
-                            }).catch(error => {
-                                // .. and force new authentication as well in case of such happenings
-                                this.logout();
-                                console.log(`Internal Error, abort. ${logMsg}`);
-                                reject(error);
-                            });
-
-                        } else {
-                            // refresh token not existing. Force authentication by logging out.
-                            this.logout();
-                            console.log(`Refresh token not available!  ${logMsg}`);
-                            reject(response);
-                        }
-
-                    });
-
-                }
-                // No 401 error. Therefore, no retry. Return response from
-                // first apiMethod call
-                return Promise.reject(response);
-
-            });
-    }
+            }, (error: ApiCallResponse) => {
+                    // Check if the authToken is expired and a refreshToken is available
+                    if(error.status === 401 && this.refreshToken) {
+                        return this.refresh().then(() => {
+                            // If the refresh operation succeeded,
+                            // retry the operation 3 times
+                            return this._retry(3, apiMethod, fhirObject).then((response : ApiCallResponse) => {
+                                try {
+                                    return Promise.resolve(tryToMapResponse(response));
+                                } catch(error) {
+                                    // Catch and re-throw the error
+                                    return Promise.reject(error);
+                                }
+                            }).catch((error) => {
+                                // Reject promise with error thrown within retry function
+                                return Promise.reject(error);
+                            })
+                        }, (error) => {
+                        // Refreshing of token failed. Reject
+                        return Promise.reject(error);
+                        })
+                    } else {
+                        // No 401 error or refreshToken not available. Reject and let the client handle...
+                        return Promise.reject(error);
+                    }
+                });
+    };
 
     /**
-     Helper method to create FHIR resources via a HTTP POST call.
+     *
+     Helper method in order to retry a specific operation (e.g. save or search) on the API.
+     *
+     * @param maxRetries How many times the method should retry the operation before aborting
+     * @param fn The callback function to be executed
+     * @param args? Optional additional arguments that should be passed into the callback function
+     * @return Promise<ApiCallResponse>
+     *
      */
-    private _create = (fhirObject: any) => {
+    private _retry(maxRetries: number, fn: any, ...args: any[]) : Promise<ApiCallResponse> {
+            // Apply is very similar to call(), except for the type of arguments it supports.
+            // You use an arguments array instead of a list of arguments (p1,p2,p3,...).
+            // Thus, you do not have to know the arguments of the called object when you use
+            // the apply method. The called object is then responsible for handling the arguments.
+            return fn.apply(this, args).catch((error: any) => {
+                if(maxRetries <= 1){
+                    throw new MidataJSError("Maximum retries exceeded, abort!");
+                }
+                return this._retry(maxRetries - 1, fn, ...args);
+            })
+         };
+
+    /**
+     *
+     Helper method to create FHIR resources via a HTTP POST call.
+     *
+     */
+    private _create = (fhirObject: any) : Promise<ApiCallResponse> => {
 
         let url: string; // for convenience
 
@@ -369,9 +370,11 @@ export class Midata {
     };
 
     /**
+     *
      Helper method to create FHIR resources via a HTTP PUT call.
+     *
      */
-    private _update = (fhirObject: any) => {
+    private _update = (fhirObject: any) : Promise<ApiCallResponse> => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}/${fhirObject.id}`;
         return apiCall({
             jsonBody: false,
@@ -387,101 +390,192 @@ export class Midata {
     };
 
     /**
-     Helper method to refresh the authentication token by authorizing
-     with the help of the refresh token. This will generate a new authentication as well as
-     a new refresh token. On successful refresh, the old refresh_token will be invalid and
-     both the access_token and the refresh_token stored in the local storage will be overwritten.
-     Previous access_tokens will remain valid until their expiration timestamp is exceeded. However, possibly
-     older access_tokens are neglected due to overwrite logic.
-
-     @return a Promise of type TokenRefreshResponse. On failure the catch clause will forward an error
-     of type ApiCallResponse.
+     *
+     Tries to refresh the authentication token by authorizing with the help of the refresh token.
+     This will generate a new authentication as well as a new refresh token. On successful refresh,
+     the old refresh_token will be invalid and both the access_token and the refresh_token will be overwritten.
+     Previous access_tokens will remain valid until their expiration timestamp is exceeded.
+     *
+     @param withRefreshToken? Optional refresh token coming from an external source e.g. the phone's secure storage
+     @return Promise<TokenRefreshResponse>
+     *
      */
+    refresh(withRefreshToken?: string) : Promise<TokenRefreshResponse> {
 
-    private _refresh = (withRefreshToken?: string) => {
+            let tokenRefreshResponse: TokenRefreshResponse;
 
-        return new Promise<TokenRefreshResponse>((resolve, reject) => {
-
-            let getEncodedParams = () => {
-
-                // because of x-www-form-urlencoded
-
-                let urlSearchParams = new URLSearchParams();
-                urlSearchParams.append("grant_type", "refresh_token");
-                if(withRefreshToken){
-                    urlSearchParams.append("refresh_token", withRefreshToken);
-                } else {
-                    urlSearchParams.append("refresh_token", this._refreshToken);
-                }
-                return urlSearchParams;
-            };
-
-            let refreshTokenRequest: TokenRequest = {
-                encodedParams: getEncodedParams()
-            };
-
-            apiCall({
-                url: this._tokenEndpoint,
-                method: 'POST',
-                payload: refreshTokenRequest.encodedParams.toString(),
-                jsonBody: true,
-                jsonEncoded: false,
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            })
-                .then(response => {
-                    let body: TokenRefreshResponse = response.body;
-                    let user : User
-                    if (this._user) {
-                        this._user.id = body.patient;
-                    } else {
-                    user = {
-                        id: body.patient,
-                    };
+            let fetchConformanceStatement = () : Promise<Resource> =>  {
+                if (this._conformanceStatementEndpoint !== undefined) {
+                    if(this._tokenEndpoint == undefined) {
+                     return this.fetchFHIRConformanceStatement().then((response) => {
+                           return Promise.resolve(response);
+                     });
+                  } else {
+                       return Promise.resolve({});
                     }
-                    this._setLoginData(body.access_token, body.refresh_token, user);
-                    this.search("Patient", {_id: body.patient}).then((msg: any) => {
-                        console.log(msg);
-                        console.log(msg[0].telecom[0].value)
-                        this.setUserEmail(msg[0].telecom[0].value);
-                        console.log("Login data refreshed! resolve...");
-                        resolve(body);
-                    });
+             } else {
+                   return Promise.reject(new UnknownEndpointError());
+                }
+             };
+
+            let getPayload = () : TokenRequest => {
+                let urlParams = new URLSearchParams();
+                urlParams.append("grant_type", "refresh_token");
+                if (withRefreshToken) {
+                    urlParams.append("refresh_token", withRefreshToken);
+                } else {
+                    urlParams.append("refresh_token", this._refreshToken);
+                }
+                let refreshRequest: TokenRequest = {
+                    encodedParams: urlParams
+                };
+
+                return refreshRequest;
+            };
+
+            let refreshToken = (fn: any, withRefreshToken?: string) : Promise<TokenRefreshResponse> => {
+                return apiCall({
+                    url: this._tokenEndpoint,
+                    method: 'POST',
+                    payload: fn(withRefreshToken).encodedParams.toString(),
+                    jsonBody: true,
+                    jsonEncoded: false,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
                 })
-                .catch((response: ApiCallResponse) => {
-                    reject(response);
-                });
-        })
+                    .then((response : ApiCallResponse) => {
+                        tokenRefreshResponse = response.body;
+                        let user: User
+                        if (this._user) {
+                            this._user.id = tokenRefreshResponse.patient;
+                        } else {
+                            user = {
+                                id: tokenRefreshResponse.patient,
+                            };
+                        }
+                        this._setLoginData(tokenRefreshResponse.access_token, tokenRefreshResponse.refresh_token, user);
+                        return Promise.resolve(response);
+                    }).catch((error) => {
+                        return Promise.reject(error);
+                    });
+            };
+
+            let fetchUserInfo = () : Promise<Resource[]>  => {
+            return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
+                this.setUserEmail(response[0].getProperty("telecom")[0].value);
+                return Promise.resolve(response);
+                }).catch((error) => {
+                return Promise.reject(error);
+            })
+            };
+
+            return fetchConformanceStatement().then(() => {
+                return refreshToken(getPayload, withRefreshToken);
+            }).then(() => {
+                return fetchUserInfo();
+            }).then(() => {
+                return Promise.resolve(tokenRefreshResponse);
+            }).catch((error) => {
+                return Promise.reject(error);
+            });
     };
 
+
     /**
+     *
      * Query the midata API using FHIR resource types and optional params.
      *
-     * @param resourceType e.g. Observation
-     * @param params e.g. {status: 'preliminary'}
-     * @return The promise returns an array of objects matching the search param(s). In case of failure, an error of type
-     *         ApiCallResponse will be returned.
+     * @param resourceType The resource to be searched (e.g. Observation)
+     * @param params Parameters refining the search call (e.g. {status: 'preliminary'})
+     * @return Promise<Resource[]>
+     *
      */
-
-    search(resourceType: string, params: any = {}) {
+    search(resourceType: string, params: any = {}) : Promise<Resource[]> {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
-            throw new Error(`Can\'t search for records when no user logged in first. Call authenticate() before trying to query the API.`
-            );
+            return Promise.reject(new InvalidCallError(`Can\'t search for records when no user logged in first. Call authenticate() before trying to query the API.`));
         }
-        let baseUrl = `${this._host}/fhir/${resourceType}`;
-        return this._search(baseUrl, params);
-    }
 
-    private _search(baseUrl: string, params: any = {}) {
+        let baseUrl = `${this._host}/fhir/${resourceType}`;
+
+        let tryToMapResponse = (response: ApiCallResponse) : Promise<Resource[]> => {
+            if (response.status === 200) { // GET == 200
+                if (response.body.entry != undefined){
+                try {
+                    let mappedResponse: Resource[] = response.body.entry.map((e: any) => {
+                        return fromFhir(e.resource);
+                    });
+                    return Promise.resolve(mappedResponse)
+                } catch (mappingError){
+                    // FHIR's Resource record structure's been violated, throw error
+                    throw new MappingError();
+                }
+                } else {
+                    // No entries found...
+                    let entries: Resource[] = [];
+                    return Promise.resolve(entries);
+                }
+            } else {
+                throw new MidataJSError(`Unexpected response status code: ${response.status}`);
+            }
+        };
+
+        return this._search(baseUrl, params)
+            .then((response: ApiCallResponse) => {
+            try {
+                return Promise.resolve(tryToMapResponse(response));
+            } catch (error) {
+                // Catch and re-throw the error
+                return Promise.reject(error);
+            }
+        }, (error: ApiCallResponse) => {
+            // Check if the authToken is expired and a refreshToken is available
+            if(error.status === 401 && this.refreshToken) {
+                return this.refresh().then(() => {
+                    // If the refresh operation succeeded,
+                    // retry the operation 3 times
+                    return this._retry(3, this._search, baseUrl, params).then((response : ApiCallResponse) => {
+                        try {
+                            return Promise.resolve(tryToMapResponse(response));
+                        } catch(error) {
+                            // Catch and re-throw the error.
+                            return Promise.reject(error);
+                        }
+                    }).catch((error) => {
+                        // Reject promise with error thrown within retry function
+                        return Promise.reject(error);
+                    })
+                }, (error) => {
+                    // Refreshing of token failed. Reject
+                    return Promise.reject(error);
+                })
+            } else {
+                // No 401 error or refreshToken not available. Reject and let the client handle...
+                return Promise.reject(error);
+            }
+        })
+    };
+
+
+    /**
+     Helper method to query the FHIR API.
+     * @param baseUrl for target API Call (e.g. Observation)
+     * @param params e.g. {code: '29463-7'} for BodyWeight
+     * @return Promise<ApiCallResponse>
+     */
+
+    private _search(baseUrl: string, params: any = {}) : Promise<ApiCallResponse> {
         let queryParts = Object.keys(params).map(key => {
             return key + '=' + params[key]
         });
         let query = queryParts.join('&');
+        // if 'query' is defined, preset a question mark,
+        // otherwise create an empty string...
         query = query && `?${query}` || '';
         let url = baseUrl + query;
+
         return apiCall({
             url: url,
             method: 'GET',
@@ -490,305 +584,199 @@ export class Midata {
                 'Authorization': 'Bearer ' + this._authToken,
                 'Content-Type': 'application/json+fhir;charset=utf-8'
             }
-        })
-            .then((response: any) => {
-                if (response.body.entry !== undefined) {
-                    let entries = response.body.entry;
-                    let resources = entries.map((e: any) => {
-                        return fromFhir(e.resource);
-                    });
-                    return resources;
-                } else {
-                    return [];
-                }
-            })
-
-            .catch((response: any) => {
-
-                // convenience variable
-                let logMsg = `Please login again using method authenticate()`;
-
-                if (response.status === 401) { // if token has expired
-
-                    return new Promise<any>((resolve, reject) => {
-
-                        console.log(`Error, ${response.message} => Trying to refresh your tokens and save again...`);
-
-                        // retry to save resource. Proceed with logout if the operation somehow still fails.
-
-                        // premise: existing refresh token
-                        if (this.refreshToken) {
-
-                            // short logging of what's been going on during each case of the token recovery process.
-
-                            // try to refresh the access token using the refresh token
-                            this.refresh().then(_ => {
-                                console.log(`Success! Tokens restored. Retry action...`); // recovery successful
-                                apiCall({
-                                    url: url,
-                                    method: 'GET',
-                                    jsonBody: true,
-                                    headers: {
-                                        'Authorization': 'Bearer ' + this._authToken,
-                                        'Content-Type': 'application/json+fhir;charset=utf-8'
-                                    }
-                                }).then((response: any) => {
-                                    if (response.body.entry !== undefined) {
-                                        let entries = response.body.entry;
-                                        // we need Promise.all here since entries is iterable
-                                        let resources = Promise.all(entries.map((e: any) => {
-                                            return fromFhir(e.resource);
-                                        }));
-                                        resolve(resources); // return array containing results
-                                    } else {
-                                        resolve([]); // or return empty array if no results
-                                    }
-                                }, (error) => {
-                                    // retry method call not successful, logout and force authentication
-                                    this.logout();
-                                    console.log(`Still receiving error, abort. ${logMsg}`);
-                                    reject(error);
-                                })
-                            }, (error: any) => {
-                                // token recovery not successful, logout and force authentication
-                                this.logout();
-                                console.log(`Error during refresh process. ${logMsg}`);
-                                reject(error);
-                                // rather unlikely, but still...
-                                // catch other errors during callback..
-                            }).catch(error => {
-                                // .. and force new authentication as well in case of such happenings
-                                this.logout();
-                                console.log(`Internal Error, abort. ${logMsg}`);
-                                reject(error);
-                            });
-
-                        } else {
-                            // refresh token not existing. Force authentication by logging out.
-                            this.logout();
-                            console.log(`Refresh token not available!  ${logMsg}`);
-                            reject(response);
-                        }
-
-                    });
-
-                }
-                // No 401 error. Therefore, no retry. Return response from
-                // first apiCall
-                return Promise.reject(response);
-
-            });
+        });
     }
-
 
     /**
      Login to the MIDATA platform. This method has to be called prior to
      creating or updating resources. Calling authenticate will initiate the
-     oAuth2 authentication process. This method invokes the methods _authenticate &
-     _exchangeTokenForCode.
+     oAuth2 authentication process.
 
-     @return If the login process was successful the return value will be a resolved
-     promise that contains the newly generated authentication and
-     refresh token. In case the login failed the return value
-     will be a rejected promise containing the error message (type any).
+     @return Promise<TokenResponse>
      **/
 
-    authenticate(): Promise<TokenResponse> {
+     authenticate(): Promise<TokenResponse> {
 
-        // wrapper method, call subsequent actions from here
-
-        return new Promise((resolve, reject) => {
-
-            this._authenticate().then(_ => this._exchangeTokenForCode())
-                .then((body) => {
-                    resolve(body);
-                })
-                .catch((error: any) => {
-                    reject(error);
-                })
-        });
-    }
-
-
-    /**
-     Helper method to refresh the authentication token by authorizing
-     with the help of the refresh token. This will generate a new authentication as well as
-     a new refresh token. On successful refresh, the old refresh_token will be invalid and
-     both the access_token and the refresh_token stored in the local storage will be overwritten.
-     Previous access_tokens will remain valid until their expiration timestamp is exceeded. However, possibly
-     older access_tokens are neglected due to overwrite logic.
-     */
-
-    refresh(withRefreshToken?: string): Promise<TokenRefreshResponse> {
-
-        // wrapper method, call subsequent actions from here
-
-        return new Promise((resolve, reject) => {
-            this._refresh(withRefreshToken).then((body) => {
-                resolve(body);
-
-            })
-                .catch((error: ApiCallResponse) => {
-                    reject(error)
-                })
-        });
-    }
-
-
-    /**
-     The user will be redirected to midata.coop in order to login / register and grant
-     the application access to his data. If the event target is equal to the callback url
-     defined in the USERAUTH_ENDPOINT (and ,therefore, authentication on midata was successful)
-     the authentication code is extracted in stored locally. The authentication code will then be further
-     used by the method _exchangeTokenForCode().
-
-     @return A Promise of type InAppBrowserEvent.
-     **/
-
-    private _authenticate(): Promise<InAppBrowserEvent> {
-
-        return new Promise((resolve, reject) => {
-
-            this._initSessionParams(128).then(() => {
-
-                var endpoint = `${this._authEndpoint}?response_type=code&client_id=${this._appName}&redirect_uri=http://localhost/callback&aud=${this._host}%2Ffhir&scope=user%2F*.*&state=${this._state}&code_challenge=${this._codeChallenge}&code_challenge_method=S256`;
-
-                if (typeof this._user != "undefined" && typeof this._user.email != "undefined") {
-                    endpoint = `${endpoint}&email=${this._user.email}`
-                }
-
-                if (typeof this._user != "undefined" && typeof this._user.language != "undefined") {
-                    endpoint = `${endpoint}&language=${this._user.language}`
-                }
-
-                this._iab = new InAppBrowser(endpoint, '_blank', 'location=yes');
-                this._iab.on('loadstart').subscribe((event) => {
-
-                        this._iab.show();
-                        if ((event.url).indexOf("http://localhost/callback") === 0) {
-
-                            let _state = event.url.split("&")[0].split("=")[1];
-
-                            if (_state && _state === this._state) {
-
-                                this._authCode = event.url.split("&")[1].split("=")[1];
-                                this._iab.close();
-                                resolve(event);
-
-                            } else {
-                                this._iab.close();
-                                reject(event);
-                            }
-                        }
-                    },
-                    (error) => {
-                        console.log(`Error! ${error}`);
-                        reject(error);
+        let fetchConformanceStatement = () : Promise<Resource> =>  {
+            if (this._conformanceStatementEndpoint !== undefined) {
+                if(this._authEndpoint == undefined || this._tokenEndpoint == undefined) {
+                    return this.fetchFHIRConformanceStatement().then((response) => {
+                        return Promise.resolve(response);
                     });
-            });
-        });
-    }
+                } else {
+                    return Promise.resolve({});
+                }
+            } else {
+                return Promise.reject(new UnknownEndpointError());
+            }
+        };
+
+         let loginMidata = (url: string) : Promise<void> => {
+
+             return new Promise<void>((resolve,reject) => {
+
+             this._iab = new InAppBrowser(url, '_blank', 'location=yes');
+             this._iab.on('loadstart').subscribe((event) => {
+                     this._iab.show();
+                     if ((event.url).indexOf("http://localhost/callback") === 0) {
+                         let _state = event.url.split("&")[0].split("=")[1];
+                         if (_state && _state === this._state) {
+                             this._authCode = event.url.split("&")[1].split("=")[1];
+                             this._iab.close();
+                             resolve();
+                         } else {
+                             this._iab.close();
+                             reject();
+                         }
+                     }
+                 },
+                 () => {
+                     reject();
+             });
+             });
+         };
+                 return fetchConformanceStatement()
+                 .then(() => {
+                     return this._initSessionParams(128)
+                 }).then(() => {
+                     let url = `
+                     ${this._authEndpoint}?response_type=code` +
+                         `&client_id=${this._appName}` +
+                         `&redirect_uri=http://localhost/callback` +
+                         `&aud=${this._host}%2Ffhir` +
+                         `&scope=user%2F*.*` +
+                         `&state=${this._state}` +
+                         `&code_challenge=${this._codeChallenge}` +
+                         `&code_challenge_method=S256`;
+                     if (typeof this._user != "undefined" && typeof this._user.email != "undefined") {
+                         url = `${url}&email=${this._user.email}`}
+                     if (typeof this._user != "undefined" && typeof this._user.language != "undefined") {
+                         url = `${url}&language=${this._user.language}`
+                     }
+                     return loginMidata(url);
+                 }).then(() => {
+                     return this._exchangeTokenForCode();
+                 }).then((authResponse: TokenResponse) => {
+                     return Promise.resolve(authResponse);
+                 }).catch((error) => {
+                     return Promise.reject(error);
+                 });
+    };
 
 
     /**
      After successful authentication on midata this method is invoked. It exchanges the authCode
      obtained from midata with the access_token used to query the FHIR endpoint API.
 
-     @return On success the resolved promise will hold a body of type TokenResponse as defined in the interface within
-     the api class. On failure the catch clause will forward an error of type ApiCallResponse.
+     @return Promise<TokenResponse>
      **/
 
     private _exchangeTokenForCode(): Promise<TokenResponse> {
-
-        return new Promise<TokenResponse>((resolve, reject) => {
-
-            let getEncodedParams = () => {
-
+            let getPayload = () : TokenRequest => {
                 // because of x-www-form-urlencoded
+                let urlParams = new URLSearchParams();
+                urlParams.append("grant_type", "authorization_code");
+                urlParams.append("code", this._authCode);
+                urlParams.append("redirect_uri", "http://localhost/callback");
+                urlParams.append("client_id", this._appName);
+                urlParams.append("code_verifier", this._codeVerifier);
 
-                let urlSearchParams = new URLSearchParams();
-                urlSearchParams.append("grant_type", "authorization_code");
-                urlSearchParams.append("code", this._authCode);
-                urlSearchParams.append("redirect_uri", "http://localhost/callback");
-                urlSearchParams.append("client_id", this._appName);
-                urlSearchParams.append("code_verifier", this._codeVerifier);
-
-                return urlSearchParams;
+                let refreshRequest: TokenRequest = {
+                    encodedParams: urlParams
+                };
+                return refreshRequest;
             };
 
-            let tokenRequest: TokenRequest = {
-                encodedParams: getEncodedParams()
-            };
+            let authResponse : TokenResponse;
 
-            apiCall({
-                url: this._tokenEndpoint,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                jsonBody: true,
-                payload: tokenRequest.encodedParams.toString(),
-                jsonEncoded: false
-            })
-                .then(response => {
-                    let body: TokenResponse = response.body;
-                        let user: User
-                        if (this._user) {
-                            this._user.id = body.patient;
-                        } else {
-                            user = {
-                                id: body.patient,
-                            };
-                        }
-                        this._setLoginData(body.access_token, body.refresh_token, user);
-                        this.search("Patient", {_id: body.patient}).then((msg : any) => {
-                        console.log(msg);
-                        console.log(msg[0].telecom[0].value)
-                        this.setUserEmail(msg[0].telecom[0].value);
-                        console.log("Login data set! resolve...");
-                        resolve(body);
-                    })
-                })
-                .catch((response: ApiCallResponse) => {
-                    reject(response);
+            let exchangeToken = () : Promise<ApiCallResponse> => {
+                 return apiCall({
+                     url: this._tokenEndpoint,
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/x-www-form-urlencoded'
+                     },
+                     jsonBody: true,
+                     payload: getPayload().encodedParams.toString(),
+                     jsonEncoded: false
+                 })
+                     .then((response: ApiCallResponse) => {
+                         authResponse = response.body;
+                         let user: User
+                         if (this._user) {
+                             this._user.id = authResponse.patient;
+                         } else {
+                             user = {
+                                 id: authResponse.patient, // TODO: Fetch and set username from response
+                             };
+                         }
+                         this._setLoginData(authResponse.access_token, authResponse.refresh_token, user);
+                         return Promise.resolve(response);
+                     }).catch((error) => {
+                     return Promise.reject(error);
+                 });
+             };
+
+            var fetchUserInfo = () : Promise<Resource[]> => {
+                return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
+                    this.setUserEmail(response[0].getProperty("telecom")[0].value);
+                    return Promise.resolve(response);
                 });
-        });
-    }
+            };
+
+            return exchangeToken().then(() => {
+                return fetchUserInfo();
+            }).then(() => {
+                return Promise.resolve(authResponse);
+            }).catch((error) => {
+                return Promise.reject(error);
+            });
+    };
 
 
-    private _initSessionParams(length: number): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
+    /**
+     Helper method to initialize the params used during the oAuth2 authentication process.
+
+     @return Promise<void>
+     **/
+    private _initSessionParams(length: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             this._initRndString(length).then((stateString) => {
                 this._state = stateString;
                 this._initRndString(length).then((codeVerifier) => {
                     this._codeVerifier = codeVerifier;
                     // this._codeChallenge = BASE64URL-ENCODE(SHA256(ASCII(this._codeVerifier)))
-                    var shaObj = new jsSHA("SHA-256", "TEXT"); // create a SHA-256 Base64 hash out of the
+                    let shaObj = new jsSHA("SHA-256", "TEXT"); // create a SHA-256 Base64 hash out of the
                     shaObj.update(this._codeVerifier); // generated code_verifier
-                    var hash = shaObj.getHash("B64");  // transform the hash value into the Base64URL encoded
+                    let hash = shaObj.getHash("B64");  // transform the hash value into the Base64URL encoded
                     this._codeChallenge = base64EncodeURL(hash); // code_challenge
-                    resolve("OK");
+                    resolve();
                 })
             }).catch((error) => {
-                reject(error.toString());
+                reject(error);
             })
         })
-    }
+    };
 
+    /**
+     Helper method to generate a random string with a given length.
+     @param length Length of the string to be generated
+     @return Promise<string>
+     **/
     private _initRndString(length: number): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             if (length && length >= 0) {
-                var _state = "";
-                var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+                let _state = "";
+                let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
                 for (var i = 0; i < length; i++) {
                     _state += possible.charAt(Math.floor(Math.random() * possible.length));
                 }
                 resolve(_state);
             } else {
-                reject("Error");
+                reject(new InvalidCallError('Argument length in function call undefined or < 0'));
             }
         });
-    }
+    };
 
     /**
      This method fetches the conformance statement identifying the OAuth authorize
@@ -796,50 +784,36 @@ export class Midata {
      This method is invoked whenever a new midata object is created. However, it can also
      exclusively be called in order to update existing endpoint information.
 
-     @return In both cases (on success & and failure) the method will return a resolved promise of type ApiCallResponse
-     conforming to the interface defined within the util class.
+     @return Promise<Resource>
      **/
 
-    public fetchFHIRConformanceStatement(): Promise<ApiCallResponse> {
+    public fetchFHIRConformanceStatement(): Promise<Resource> {
+
+        let tryToMapResponse = (response: ApiCallResponse) : Resource => {
+            if (response.status === 200) {
+                try {
+                    response.body = fromFhir(JSON.parse(response.body));
+                    return response.body;
+                } catch (mappingError) {
+                    // FHIR's Resource record structure's been violated, throw error
+                    throw new MappingError();
+                }
+            } else {
+                throw new MidataJSError(`Unexpected response status code: ${response.status}`);
+            }
+        };
 
         return apiCall({
             url: this._conformanceStatementEndpoint,
             method: 'GET'
-
         }).then((response: ApiCallResponse) => {
-
-            this._tokenEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["0"].valueUri;
-            this._authEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["1"].valueUri;
-
-            return response;
-
-        }).catch((error: ApiCallResponse) => {
-
+            return tryToMapResponse(response);
+        }).then((resource) => {
+            this._tokenEndpoint = resource.getProperty("rest")["0"].security.extension["0"].extension["0"].valueUri;
+            this._authEndpoint = resource.getProperty("rest")["0"].security.extension["0"].extension["1"].valueUri;
+            return Promise.resolve(resource);
+        }).catch((error) => {
             return Promise.reject(error);
         });
-    }
-
-    /**
-     *
-     * This method deletes a resource on midata.
-     *
-     * @param resourceType e.g. HeartRate
-     * @param id (unique)
-     * @return The promise returns the response body. In case of failure, an error of type
-     *         ApiCallResponse will be returned.
-     */
-
-    delete(resourceType: string, id: number | string) {
-        let url = `${this._host}/fhir/${resourceType}/${id}`;
-        return apiCall({
-            url: url,
-            method: 'DELETE',
-            headers: {
-                'Authorization': 'Bearer ' + this._authToken
-            }
-        })
-            .then((response: any) => {
-                console.log(response);
-            });
-    }
-}
+    };
+};

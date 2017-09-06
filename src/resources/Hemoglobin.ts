@@ -2,7 +2,7 @@ import {Laboratory} from "./categories";
 import {registerResource} from './registry';
 import {Observation, Quantity} from "./Observation";
 
-@registerResource('718-7')
+@registerResource('code', '718-7')
 export class Hemoglobin extends Observation {
     constructor(gl: number, date: Date) {
         let quantity: Quantity = {

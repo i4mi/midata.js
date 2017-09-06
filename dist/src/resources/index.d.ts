@@ -12,5 +12,6 @@ export { Media } from './Media';
 export { ImageMedia } from './ImageMedia';
 export { Hemoglobin } from './Hemoglobin';
 export { Bundle } from './Bundle';
+export { Patient } from './Patient';
 export { registerResource } from './registry';
 export { Survey, Laboratory, VitalSigns, PatientSpecified } from './categories';

@@ -1,5 +1,6 @@
 import {Resource} from './Resource';
 import ClaimItemDetail = fhir.ClaimItemDetail;
+import {registerResource} from './registry';
 
 /**
  * Measurements and simple assertions made about a patient, device or other
@@ -7,6 +8,7 @@ import ClaimItemDetail = fhir.ClaimItemDetail;
  *
  * https://www.hl7.org/fhir/observation.html
  */
+@registerResource('resourceType', 'Observation')
 export class Observation extends Resource {
 
     constructor(date: Date,
