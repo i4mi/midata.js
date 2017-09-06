@@ -1,8 +1,15 @@
 import {
     TokenRefreshResponse,
     TokenRequest,
-    TokenResponse, AuthRequest, UserRole, AuthResponse
+    TokenResponse,
+    AuthRequest,
+    AuthResponse,
+    UserRole
 } from './api';
+import {MidataJSError} from './errors/MidataJSError';
+import {MappingError} from './errors/MappingError';
+import {UnknownEndpointError} from './errors/UnknownEndpointError';
+import {InvalidCallError} from './errors/InvalidCallError';
 import {Promise} from 'es6-promise'
 import {apiCall, ApiCallResponse, base64EncodeURL} from './util';
 import {InAppBrowser} from 'ionic-native';
@@ -47,18 +54,18 @@ export class Midata {
     private _codeChallenge: string;
 
     /**
+     *
      * @param _host The url of the midata server, e.g. "https://test.midata.coop:443".
      * @param _appName The internal application name accessing the platform (as defined on the midata platform).
      * @param _conformanceStatementEndpoint? The location of the endpoint identifying the OAuth authorize and token
      *        endpoints. Optional parameter.
+     *
      */
     constructor(private _host: string,
                 private _appName: string,
                 private _secret?: string,
                 private _conformanceStatementEndpoint?: string) {
-
         this._conformanceStatementEndpoint = _conformanceStatementEndpoint || `${_host}/fhir/metadata`;
-
     }
 
     /*
@@ -160,19 +167,21 @@ export class Midata {
     }
 
     /**
+     *
      * Login to the MIDATA platform. This method has to be called prior to
      * creating or updating resources.
      *
      * @deprecated only use this method if your app does not support oAuth2 authentication
-     * @param username The user's identifier, most likely an email address.
-     * @param password The user's password.
-     * @param role The user's role used during the login (optional).
+     * @param username The user's identifier, most likely an email address
+     * @param password The user's password
+     * @param role The user's role used during the login (optional)
      * @return Promise<AuthResponse>
+     *
      */
     login(username: string, password: string, role?: UserRole): Promise<AuthResponse> {
 
         if (username === undefined || password === undefined) {
-            throw new Error('You need to supply a username and a password!');
+            return Promise.reject(new InvalidCallError('You need to supply a username and a password!'));
         }
         let authRequest: AuthRequest = {
             username: username,
@@ -209,26 +218,21 @@ export class Midata {
                 }
                 this._setLoginData(authResponse.authToken, authResponse.refreshToken, user);
                 return Promise.resolve(authResponse);
-            }).catch((error) => {
-                return Promise.reject(error);
             });
         };
 
-        let fetchUserInfo = (): Promise<ApiCallResponse> => {
-            return this.search("Patient", {_id: this.user.id}).then((response: ApiCallResponse) => {
-                this.setUserEmail(response.body.entry[0].getProperty("telecom")[0].value);
+        let fetchUserInfo = (): Promise<Resource[]> => {
+            return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
+                this.setUserEmail(response[0].getProperty("telecom")[0].value);
                 return Promise.resolve(response);
-            }).catch((error: any) => {
-                return Promise.reject(error);
-            });
+            })
         };
 
         return loginMidata()
-            .then(() => {
-            return fetchUserInfo()
-            .then(() => {
+        .then(() => {
+            return fetchUserInfo();
+        }).then(() => {
             return Promise.resolve(authResponse);
-            });
         }).catch((error) => {
             return Promise.reject(error);
             });
@@ -238,19 +242,18 @@ export class Midata {
      *
      * This method stores a resource onto midata.
      *
-     * @param resourceType e.g. HeartRate
-     * @return The promise returns the created object. In case of failure, an error of type
-     *         ApiCallResponse will be returned.
+     * @param resourceType The resource to be stored (e.g. HeartRate)
+     * @return Promise<Resource>
+     *
      */
-    save(resource: Resource | any) : Promise<ApiCallResponse> {
+    save(resource: Resource | any) : Promise<Resource> {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
-            throw new Error(`Can\'t create records when no user logged in first. Call authenticate() before trying to create records.`
-            );
+            return Promise.reject(new InvalidCallError('`Can\'t create records when no user logged in first. Call authenticate() before trying to create records.`'));
         }
         // Convert the resource to a FHIR-structured simple js object.
-        var fhirObject: any;
+        let fhirObject: any;
         if (resource instanceof Resource) {
             fhirObject = resource.toJson();
         } else {
@@ -261,22 +264,21 @@ export class Midata {
         // a bundle holds an id upon creation. Therefore, additionally check for resource type
         let apiMethod = shouldCreate ? this._create : this._update;
 
-        let tryToMapResponse = (response: ApiCallResponse) : ApiCallResponse => {
+        let tryToMapResponse = (response: ApiCallResponse) : Resource => {
             // When the resource is created, the same resource will
             // be returned (populated with an id field in case it was newly created).
             if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
                 try {
                     response.body = fromFhir(JSON.parse(response.body));
-                    return response
+                    return response.body;
                 } catch (mappingError) {
                     // Although storing the value onto Midata priorly succeeded, rejecting the promise
                     // at this point is fine since the response itself
                     // violates FHIR's Resource record structure.
-                    // TODO: Custom mapping error so that the client can distinguish the error cause and act appropriately
-                    throw new Error(mappingError);
+                    throw new MappingError();
                 }
             } else {
-                throw new Error(`Unexpected response status code: ${response.status}`);
+                throw new MidataJSError(`Unexpected response status code: ${response.status}`);
             }
         };
 
@@ -288,7 +290,7 @@ export class Midata {
                     // Catch and re-throw the error
                     return Promise.reject(error);
                 }
-                }, (error: ApiCallResponse) => {
+            }, (error: ApiCallResponse) => {
                     // Check if the authToken is expired and a refreshToken is available
                     if(error.status === 401 && this.refreshToken) {
                         return this.refresh().then(() => {
@@ -297,9 +299,9 @@ export class Midata {
                             return this._retry(3, apiMethod, fhirObject).then((response : ApiCallResponse) => {
                                 try {
                                     return Promise.resolve(tryToMapResponse(response));
-                                } catch(mappingError) {
-                                    // Catch and re-throw the mapping error.
-                                    return Promise.reject(mappingError);
+                                } catch(error) {
+                                    // Catch and re-throw the error
+                                    return Promise.reject(error);
                                 }
                             }).catch((error) => {
                                 // Reject promise with error thrown within retry function
@@ -314,15 +316,17 @@ export class Midata {
                         return Promise.reject(error);
                     }
                 });
-    }
+    };
 
     /**
+     *
      Helper method in order to retry a specific operation (e.g. save or search) on the API.
      *
      * @param maxRetries How many times the method should retry the operation before aborting
      * @param fn The callback function to be executed
      * @param args? Optional additional arguments that should be passed into the callback function
      * @return Promise<ApiCallResponse>
+     *
      */
     private _retry(maxRetries: number, fn: any, ...args: any[]) : Promise<ApiCallResponse> {
             // Apply is very similar to call(), except for the type of arguments it supports.
@@ -331,14 +335,16 @@ export class Midata {
             // the apply method. The called object is then responsible for handling the arguments.
             return fn.apply(this, args).catch((error: any) => {
                 if(maxRetries <= 1){
-                    throw new Error("Maximum retries exceeded, abort!");
+                    throw new MidataJSError("Maximum retries exceeded, abort!");
                 }
                 return this._retry(maxRetries - 1, fn, ...args);
             })
          };
 
     /**
+     *
      Helper method to create FHIR resources via a HTTP POST call.
+     *
      */
     private _create = (fhirObject: any) : Promise<ApiCallResponse> => {
 
@@ -364,7 +370,9 @@ export class Midata {
     };
 
     /**
+     *
      Helper method to create FHIR resources via a HTTP PUT call.
+     *
      */
     private _update = (fhirObject: any) : Promise<ApiCallResponse> => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}/${fhirObject.id}`;
@@ -382,17 +390,33 @@ export class Midata {
     };
 
     /**
-     Helper method to refresh the authentication token by authorizing
-     with the help of the refresh token. This will generate a new authentication as well as
-     a new refresh token. On successful refresh, the old refresh_token will be invalid and
-     both the access_token and the refresh_token will be overwritten. Previous access_tokens
-     will remain valid until their expiration timestamp is exceeded.
-
+     *
+     Tries to refresh the authentication token by authorizing with the help of the refresh token.
+     This will generate a new authentication as well as a new refresh token. On successful refresh,
+     the old refresh_token will be invalid and both the access_token and the refresh_token will be overwritten.
+     Previous access_tokens will remain valid until their expiration timestamp is exceeded.
+     *
      @param withRefreshToken? Optional refresh token coming from an external source e.g. the phone's secure storage
-     @return Promise<ApiCallResponse>
+     @return Promise<TokenRefreshResponse>
+     *
      */
+    refresh(withRefreshToken?: string) : Promise<TokenRefreshResponse> {
 
-     refresh = (withRefreshToken?: string) : Promise<ApiCallResponse> => {
+            let tokenRefreshResponse: TokenRefreshResponse;
+
+            let fetchConformanceStatement = () : Promise<Resource> =>  {
+                if (this._conformanceStatementEndpoint !== undefined) {
+                    if(this._tokenEndpoint == undefined) {
+                     return this.fetchFHIRConformanceStatement().then((response) => {
+                           return Promise.resolve(response);
+                     });
+                  } else {
+                       return Promise.resolve({});
+                    }
+             } else {
+                   return Promise.reject(new UnknownEndpointError());
+                }
+             };
 
             let getPayload = () : TokenRequest => {
                 let urlParams = new URLSearchParams();
@@ -409,7 +433,7 @@ export class Midata {
                 return refreshRequest;
             };
 
-            var refreshToken = (fn: any, withRefreshToken?: string) : Promise<ApiCallResponse> => {
+            let refreshToken = (fn: any, withRefreshToken?: string) : Promise<TokenRefreshResponse> => {
                 return apiCall({
                     url: this._tokenEndpoint,
                     method: 'POST',
@@ -421,84 +445,90 @@ export class Midata {
                     }
                 })
                     .then((response : ApiCallResponse) => {
-                        let body: TokenRefreshResponse = response.body;
+                        tokenRefreshResponse = response.body;
                         let user: User
                         if (this._user) {
-                            this._user.id = body.patient;
+                            this._user.id = tokenRefreshResponse.patient;
                         } else {
                             user = {
-                                id: body.patient,
+                                id: tokenRefreshResponse.patient,
                             };
                         }
-                        this._setLoginData(body.access_token, body.refresh_token, user);
+                        this._setLoginData(tokenRefreshResponse.access_token, tokenRefreshResponse.refresh_token, user);
                         return Promise.resolve(response);
                     }).catch((error) => {
                         return Promise.reject(error);
-                    })
+                    });
             };
 
-            var fetchUserInfo = () : Promise<ApiCallResponse>  => {
-            return this.search("Patient", {_id: this.user.id}).then((response: ApiCallResponse) => {
-                this.setUserEmail(response.body.entry[0].getProperty("telecom")[0].value);
-                console.log("Data refreshed! resolve...");
+            let fetchUserInfo = () : Promise<Resource[]>  => {
+            return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
+                this.setUserEmail(response[0].getProperty("telecom")[0].value);
                 return Promise.resolve(response);
                 }).catch((error) => {
                 return Promise.reject(error);
             })
             };
 
-            return refreshToken(getPayload, withRefreshToken).then(fetchUserInfo).then((response) => {
-                return Promise.resolve(response);
+            return fetchConformanceStatement().then(() => {
+                return refreshToken(getPayload, withRefreshToken);
+            }).then(() => {
+                return fetchUserInfo();
+            }).then(() => {
+                return Promise.resolve(tokenRefreshResponse);
+            }).catch((error) => {
+                return Promise.reject(error);
             });
     };
 
+
     /**
+     *
      * Query the midata API using FHIR resource types and optional params.
      *
-     * @param resourceType e.g. Observation
-     * @param params e.g. {status: 'preliminary'}
-     * @return The promise returns an array of objects matching the search param(s). In case of failure, an error of type
-     *         ApiCallResponse will be returned.
+     * @param resourceType The resource to be searched (e.g. Observation)
+     * @param params Parameters refining the search call (e.g. {status: 'preliminary'})
+     * @return Promise<Resource[]>
+     *
      */
-
-    search(resourceType: string, params: any = {}) : Promise<ApiCallResponse> {
+    search(resourceType: string, params: any = {}) : Promise<Resource[]> {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
-            throw new Error(`Can\'t search for records when no user logged in first. Call authenticate() before trying to query the API.`);
+            return Promise.reject(new InvalidCallError(`Can\'t search for records when no user logged in first. Call authenticate() before trying to query the API.`));
         }
 
         let baseUrl = `${this._host}/fhir/${resourceType}`;
 
-        let tryToMapResponse = (response: ApiCallResponse) : Promise<ApiCallResponse> => {
+        let tryToMapResponse = (response: ApiCallResponse) : Promise<Resource[]> => {
             if (response.status === 200) { // GET == 200
                 if (response.body.entry != undefined){
                 try {
-                    let mappedResponse: string[] = response.body.entry.map((e: any) => {
+                    let mappedResponse: Resource[] = response.body.entry.map((e: any) => {
                         return fromFhir(e.resource);
                     });
-                    response.body.entry = mappedResponse;
-                    return Promise.resolve(response)
+                    return Promise.resolve(mappedResponse)
                 } catch (mappingError){
                     // FHIR's Resource record structure's been violated, throw error
-                    // TODO: Custom mapping error so that the client can distinguish the error cause and act appropriately
-                    throw new Error(mappingError);
+                    throw new MappingError();
                 }
                 } else {
                     // No entries found...
-                    return Promise.resolve(response);
+                    let entries: Resource[] = [];
+                    return Promise.resolve(entries);
                 }
             } else {
-                throw new Error(`Unexpected response status code: ${response.status}`);
+                throw new MidataJSError(`Unexpected response status code: ${response.status}`);
             }
         };
 
-        return this._search(baseUrl, params).then((response: ApiCallResponse) => {
+        return this._search(baseUrl, params)
+            .then((response: ApiCallResponse) => {
             try {
-            return Promise.resolve(tryToMapResponse(response));
+                return Promise.resolve(tryToMapResponse(response));
             } catch (error) {
-            // Catch and re-throw the error
-            return Promise.reject(error);
+                // Catch and re-throw the error
+                return Promise.reject(error);
             }
         }, (error: ApiCallResponse) => {
             // Check if the authToken is expired and a refreshToken is available
@@ -509,9 +539,9 @@ export class Midata {
                     return this._retry(3, this._search, baseUrl, params).then((response : ApiCallResponse) => {
                         try {
                             return Promise.resolve(tryToMapResponse(response));
-                        } catch(mappingError) {
-                            // Catch and re-throw the mapping error.
-                            return Promise.reject(mappingError);
+                        } catch(error) {
+                            // Catch and re-throw the error.
+                            return Promise.reject(error);
                         }
                     }).catch((error) => {
                         // Reject promise with error thrown within retry function
@@ -525,8 +555,8 @@ export class Midata {
                 // No 401 error or refreshToken not available. Reject and let the client handle...
                 return Promise.reject(error);
             }
-        });
-    }
+        })
+    };
 
 
     /**
@@ -565,23 +595,19 @@ export class Midata {
      @return Promise<TokenResponse>
      **/
 
-     // TODO: Test changes in authenticate() method
-
      authenticate(): Promise<TokenResponse> {
 
-        let fetchConformanceStatement = () : Promise<ApiCallResponse> =>  {
+        let fetchConformanceStatement = () : Promise<Resource> =>  {
             if (this._conformanceStatementEndpoint !== undefined) {
                 if(this._authEndpoint == undefined || this._tokenEndpoint == undefined) {
                     return this.fetchFHIRConformanceStatement().then((response) => {
                         return Promise.resolve(response);
                     });
                 } else {
-                        return Promise.resolve({});
+                    return Promise.resolve({});
                 }
             } else {
-                let error = new Error("Error, MIDATA conformance statement endpoint unknown! Call changePlatform() with a " +
-                                            "valid endpoint in order to fix this issue");
-                return Promise.reject(error);
+                return Promise.reject(new UnknownEndpointError());
             }
         };
 
@@ -612,8 +638,7 @@ export class Midata {
                  return fetchConformanceStatement()
                  .then(() => {
                      return this._initSessionParams(128)
-                 })
-                 .then(() => {
+                 }).then(() => {
                      let url = `
                      ${this._authEndpoint}?response_type=code` +
                          `&client_id=${this._appName}` +
@@ -628,18 +653,15 @@ export class Midata {
                      if (typeof this._user != "undefined" && typeof this._user.language != "undefined") {
                          url = `${url}&language=${this._user.language}`
                      }
-                     return loginMidata(url)
-                 })
-                 .then(() => {
-                     return this._exchangeTokenForCode()
-                 })
-                 .then((response: TokenResponse) => {
-                     return Promise.resolve(response);
-                 })
-                 .catch((error) => {
+                     return loginMidata(url);
+                 }).then(() => {
+                     return this._exchangeTokenForCode();
+                 }).then((authResponse: TokenResponse) => {
+                     return Promise.resolve(authResponse);
+                 }).catch((error) => {
                      return Promise.reject(error);
                  });
-    }
+    };
 
 
     /**
@@ -695,21 +717,21 @@ export class Midata {
                  });
              };
 
-            var fetchUserInfo = () : Promise<ApiCallResponse> => {
-                return this.search("Patient", {_id: this.user.id}).then((response: ApiCallResponse) => {
-                    this.setUserEmail(response.body.entry[0].getProperty("telecom")[0].value);
+            var fetchUserInfo = () : Promise<Resource[]> => {
+                return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
+                    this.setUserEmail(response[0].getProperty("telecom")[0].value);
                     return Promise.resolve(response);
-                }).catch((error: any) => {
-                    return Promise.reject(error);
                 });
             };
 
-            return exchangeToken().then(fetchUserInfo).then(() => {
+            return exchangeToken().then(() => {
+                return fetchUserInfo();
+            }).then(() => {
                 return Promise.resolve(authResponse);
-            }, error => {
+            }).catch((error) => {
                 return Promise.reject(error);
             });
-    }
+    };
 
 
     /**
@@ -731,16 +753,15 @@ export class Midata {
                     resolve();
                 })
             }).catch((error) => {
-                // TODO: Error Message
                 reject(error);
             })
         })
-    }
+    };
 
     /**
      Helper method to generate a random string with a given length.
      @param length Length of the string to be generated
-     @return Promise<void>
+     @return Promise<string>
      **/
     private _initRndString(length: number): Promise<string> {
         return new Promise<string>((resolve, reject) => {
@@ -752,11 +773,10 @@ export class Midata {
                 }
                 resolve(_state);
             } else {
-                // TODO: Error message
-                reject();
+                reject(new InvalidCallError('Argument length in function call undefined or < 0'));
             }
         });
-    }
+    };
 
     /**
      This method fetches the conformance statement identifying the OAuth authorize
@@ -764,22 +784,36 @@ export class Midata {
      This method is invoked whenever a new midata object is created. However, it can also
      exclusively be called in order to update existing endpoint information.
 
-     @return Promise<ApiCallResponse>
+     @return Promise<Resource>
      **/
 
-    public fetchFHIRConformanceStatement(): Promise<ApiCallResponse> {
+    public fetchFHIRConformanceStatement(): Promise<Resource> {
+
+        let tryToMapResponse = (response: ApiCallResponse) : Resource => {
+            if (response.status === 200) {
+                try {
+                    response.body = fromFhir(JSON.parse(response.body));
+                    return response.body;
+                } catch (mappingError) {
+                    // FHIR's Resource record structure's been violated, throw error
+                    throw new MappingError();
+                }
+            } else {
+                throw new MidataJSError(`Unexpected response status code: ${response.status}`);
+            }
+        };
+
         return apiCall({
             url: this._conformanceStatementEndpoint,
             method: 'GET'
-
         }).then((response: ApiCallResponse) => {
-            this._tokenEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["0"].valueUri;
-            this._authEndpoint = JSON.parse(response.body).rest["0"].security.extension["0"].extension["1"].valueUri;
-
-            return Promise.resolve(response);
-
-        }).catch((error: ApiCallResponse) => {
+            return tryToMapResponse(response);
+        }).then((resource) => {
+            this._tokenEndpoint = resource.getProperty("rest")["0"].security.extension["0"].extension["0"].valueUri;
+            this._authEndpoint = resource.getProperty("rest")["0"].security.extension["0"].extension["1"].valueUri;
+            return Promise.resolve(resource);
+        }).catch((error) => {
             return Promise.reject(error);
         });
-    }
-}
+    };
+};
