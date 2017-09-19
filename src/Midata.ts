@@ -592,10 +592,17 @@ export class Midata {
      creating or updating resources. Calling authenticate will initiate the
      oAuth2 authentication process.
 
+     @param withDeviceID Optional parameter to allocate previously granted consents on the platform to this device.
      @return Promise<TokenResponse>
      **/
 
-     authenticate(): Promise<TokenResponse> {
+     authenticate(withDeviceID?: string): Promise<TokenResponse> {
+
+         if(withDeviceID){
+             if(withDeviceID.length <= 3){
+             return Promise.reject(new InvalidCallError("Device ID must be longer than 3 characters"));
+             }
+         }
 
         let fetchConformanceStatement = () : Promise<Resource> =>  {
             if (this._conformanceStatementEndpoint !== undefined) {
@@ -652,6 +659,9 @@ export class Midata {
                          url = `${url}&email=${this._user.email}`}
                      if (typeof this._user != "undefined" && typeof this._user.language != "undefined") {
                          url = `${url}&language=${this._user.language}`
+                     }
+                     if (withDeviceID) {
+                         url = `${url}&device_id=${withDeviceID}`
                      }
                      return loginMidata(url);
                  }).then(() => {

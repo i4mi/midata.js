@@ -120,9 +120,10 @@ export declare class Midata {
      creating or updating resources. Calling authenticate will initiate the
      oAuth2 authentication process.
 
+     @param withDeviceID Optional parameter to allocate previously granted consents on the platform to this device.
      @return Promise<TokenResponse>
      **/
-    authenticate(): Promise<TokenResponse>;
+    authenticate(withDeviceID?: string): Promise<TokenResponse>;
     /**
      After successful authentication on midata this method is invoked. It exchanges the authCode
      obtained from midata with the access_token used to query the FHIR endpoint API.

@@ -348,6 +348,21 @@ describe('Midata', () => {
         });
     });
 
+
+    describe('method authenticate() should throw an error of type \'InvalidCallError\'', () => {
+
+        it('if the optional deviceID param contains 3 or less than 3 characters', () => {
+            midata.authenticate("abc")
+                .then((response) => {
+                    // not called
+                }).catch((error) => {
+                expect(error).toBeDefined();
+                expect(error).toEqual(jasmine.any(InvalidCallError));
+            })
+        });
+
+    });
+
     describe('method _exchangeTokenForCode()', () => {
 
         beforeEach(() => {
