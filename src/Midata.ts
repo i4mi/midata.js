@@ -638,8 +638,13 @@ export class Midata {
                      }
                  },
                  () => {
-                     reject();
+                 reject();
              });
+
+             this._iab.on('exit').subscribe(() => {
+                 reject();
+             });
+
              });
          };
                  return fetchConformanceStatement()
