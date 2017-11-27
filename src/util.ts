@@ -39,10 +39,14 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
     let jsonBody = args.jsonBody || false;
     let jsonEncoded = args.jsonEncoded; // flag indicating json-encoding
 
+    const DEFAULT_TIMEOUT = 20000;
+
     return new Promise<ApiCallResponse>((resolve, reject) => {
         let xhr = new XMLHttpRequest();
 
         xhr.open(method, url, true);
+
+        xhr.timeout = DEFAULT_TIMEOUT;
 
         if (headers) {
             Object.keys(headers).forEach((key) => {
@@ -75,13 +79,23 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
             }
         };
 
+
+        xhr.ontimeout = function() {
+            reject({
+                message: 'Request timed out. No answer from server received',
+                body: '',
+                status: -1
+
+            });
+        };
+
         xhr.onerror = function() {
             reject({
                 message: 'Network error',
                 body: '',
                 status: 0
             });
-        }
+        };
 
         // NOTE: Note that the payload should probably be stringified
         // before being passed into this function in order to allow
