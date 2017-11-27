@@ -57,7 +57,7 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
         xhr.onload = function() {
 
                 let status = xhr.status
-                if (status >= 200 && status < 300) {  // successfuly
+                if (status >= 200 && status < 300) {  // successful response
                     let body: any;
                     if (jsonBody) {
                         body = JSON.parse(xhr.responseText);

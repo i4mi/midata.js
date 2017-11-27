@@ -640,7 +640,6 @@ var Midata = (function () {
         }).then(function (authResponse) {
             return es6_promise_1.Promise.resolve(authResponse);
         }).catch(function (error) {
-            console.log(error); // CHECK RESPONSE
             return es6_promise_1.Promise.reject(error);
         });
     };
@@ -791,9 +790,6 @@ var Midata = (function () {
             _this._authEndpoint = resource.getProperty("rest")["0"].security.extension["0"].extension["1"].valueUri;
             return es6_promise_1.Promise.resolve(resource);
         }).catch(function (error) {
-            console.log(error.message);
-            console.log(error.status);
-            console.log(error.body);
             return es6_promise_1.Promise.reject(error);
         });
     };
