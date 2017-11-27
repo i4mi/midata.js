@@ -54,15 +54,15 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
             });
         }
 
-        xhr.onreadystatechange = function() {
-            if (this.readyState === 4) {  // loaded
-                let status = this.status;
-                if (status >= 200 && status < 300) {  // successfuly
+        xhr.onload = function() {
+
+                let status = xhr.status
+                if (status >= 200 && status < 300) {  // successful response
                     let body: any;
                     if (jsonBody) {
-                        body = JSON.parse(this.responseText);
+                        body = JSON.parse(xhr.responseText);
                     } else {
-                        body = this.responseText;
+                        body = xhr.responseText;
                     }
                     resolve({
                         message: 'Request successful',
@@ -71,14 +71,13 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
                     });
                 } else {  // loaded but non-successful response
                     reject({
-                        message: this.statusText,
-                        body: this.responseText,
+                        message: xhr.statusText,
+                        body: xhr.responseText,
                         status: status
                     });
                 }
-            }
-        };
 
+        };
 
         xhr.ontimeout = function() {
             reject({
@@ -91,7 +90,7 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
 
         xhr.onerror = function() {
             reject({
-                message: 'Network error',
+                message: 'Error. transaction failed',
                 body: '',
                 status: 0
             });
