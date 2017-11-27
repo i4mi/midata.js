@@ -69,38 +69,22 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
                         body: body,
                         status: status
                     });
-                } else {
-
-                    console.log("else block log");
-                    // loaded but non-successful response
-                    reject({
-                        message: this.statusText,
-                        body: this.responseText,
-                        status: status
-                    });
                 }
             }
         };
 
 
         xhr.ontimeout = function() {
-
-            console.log("TIMEOUT!");
-
             reject({
                 message: 'Request timed out. No answer from server received',
                 body: '',
                 status: -1
-
             });
         };
 
         xhr.onerror = function() {
-
-            console.log("onError LOG");
-
             reject({
-                message: 'Network error',
+                message: 'Error. Transaction failed',
                 body: '',
                 status: 0
             });
