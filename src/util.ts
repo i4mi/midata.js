@@ -57,7 +57,7 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
         xhr.onreadystatechange = function() {
             if (this.readyState === 4) {  // loaded
                 let status = this.status;
-                if (status >= 200 && status < 300) {  // successfuly
+                if (status >= 200 && status < 300) {  // successful
                     let body: any;
                     if (jsonBody) {
                         body = JSON.parse(this.responseText);
@@ -69,7 +69,10 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
                         body: body,
                         status: status
                     });
-                } else {  // loaded but non-successful response
+                } else {
+
+                    console.log("else block log");
+                    // loaded but non-successful response
                     reject({
                         message: this.statusText,
                         body: this.responseText,
@@ -93,6 +96,9 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
         };
 
         xhr.onerror = function() {
+
+            console.log("onError LOG");
+
             reject({
                 message: 'Network error',
                 body: '',
