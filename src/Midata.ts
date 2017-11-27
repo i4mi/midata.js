@@ -829,7 +829,9 @@ export class Midata {
             this._authEndpoint = resource.getProperty("rest")["0"].security.extension["0"].extension["1"].valueUri;
             return Promise.resolve(resource);
         }).catch((error : ApiCallResponse) => {
-            console.log(error);
+            console.log(error.message);
+            console.log(error.status);
+            console.log(error.body);
             return Promise.reject(error);
         });
     };
