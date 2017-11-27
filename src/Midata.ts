@@ -674,6 +674,7 @@ export class Midata {
                  }).then((authResponse: TokenResponse) => {
                      return Promise.resolve(authResponse);
                  }).catch((error) => {
+                     console.log(error); // CHECK RESPONSE
                      return Promise.reject(error);
                  });
     };

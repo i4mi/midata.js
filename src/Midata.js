@@ -640,6 +640,7 @@ var Midata = (function () {
         }).then(function (authResponse) {
             return es6_promise_1.Promise.resolve(authResponse);
         }).catch(function (error) {
+            console.log(error); // CHECK RESPONSE
             return es6_promise_1.Promise.reject(error);
         });
     };
