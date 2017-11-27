@@ -791,6 +791,7 @@ var Midata = (function () {
             _this._authEndpoint = resource.getProperty("rest")["0"].security.extension["0"].extension["1"].valueUri;
             return es6_promise_1.Promise.resolve(resource);
         }).catch(function (error) {
+            console.log(error);
             return es6_promise_1.Promise.reject(error);
         });
     };

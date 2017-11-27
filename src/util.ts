@@ -81,6 +81,9 @@ export function apiCall(args: ApiCallArgs): Promise<ApiCallResponse> {
 
 
         xhr.ontimeout = function() {
+
+            console.log("TIMEOUT!");
+
             reject({
                 message: 'Request timed out. No answer from server received',
                 body: '',
