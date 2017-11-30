@@ -23,10 +23,10 @@ A collection of utility classes and functions to interact with the MIDATA.coop p
 
 `$ bower install midata.js --save`
 
-For details on how to use the library have a look at the [Wiki](https://github.com/i4mi/midata.js/wiki/Usage-(IONIC-2) "MIDATA.js Wiki")
+For details on how to use the library have a look at the [Wiki](https://github.com/i4mi/midata.js/wiki/Usage-(IONIC-2) "MIDATA.js Wiki").
 
-##For Developers
-
+**For Developers**
+--
 
 **Initial setup**
 ---
