@@ -1,10 +1,10 @@
 import {VitalSigns} from './categories';
 import {registerResource} from './registry';
-import {Observation, Quantity} from "./Observation";
+import {Observation, Quantity, effectiveType} from "./Observation";
 
 @registerResource('code', '8867-4')
 export class HeartRate extends Observation {
-    constructor(beatsPerMinute: number, date: Date) {
+    constructor(beatsPerMinute: number, date: Date, withPeriodEndDate?: Date) {
         let quantity: Quantity = {
             _quantity: {
                 value: beatsPerMinute,
@@ -12,7 +12,22 @@ export class HeartRate extends Observation {
                 // TODO: UCUM bpm missing?
             }
         };
-        super(date, {
+
+        let effectiveType : effectiveType;
+                if(withPeriodEndDate){
+                   effectiveType = {
+                        _period : {
+                            start: date.toISOString(),
+                            end: withPeriodEndDate.toISOString()
+                        }
+                    }
+                } else {
+                    effectiveType  = {
+                        _dateTime : date.toISOString()
+                    }
+                }
+
+        super(effectiveType, {
             coding: [{
                 system: 'http://loinc.org',
                 code: '8867-4',

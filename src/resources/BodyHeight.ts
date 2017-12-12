@@ -1,10 +1,10 @@
 import {VitalSigns} from './categories';
 import {registerResource} from './registry';
-import {Observation, Quantity} from "./Observation";
+import {Observation, Quantity, effectiveType} from "./Observation";
 
 @registerResource('code','8302-2')
 export class BodyHeight extends Observation {
-    constructor(heightCm: number, date: Date) {
+    constructor(heightCm: number, date: Date, withPeriodEndDate? : Date) {
         let quantity: Quantity = {
             _quantity: {
                 value: heightCm,
@@ -13,7 +13,22 @@ export class BodyHeight extends Observation {
                 code:  'cm'
             }
         };
-        super(date, {
+
+        let effectiveType : effectiveType;
+                if(withPeriodEndDate){
+                   effectiveType = {
+                        _period : {
+                            start: date.toISOString(),
+                            end: withPeriodEndDate.toISOString()
+                        }
+                    }
+                } else {
+                    effectiveType  = {
+                        _dateTime : date.toISOString()
+                    }
+                }
+
+        super(effectiveType, {
             coding: [{
                 system: 'http://loinc.org',
                 code: '8302-2',

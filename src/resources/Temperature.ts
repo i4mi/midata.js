@@ -1,6 +1,6 @@
 import {VitalSigns} from './categories';
 import {registerResource} from './registry';
-import {Observation, Quantity} from "./Observation";
+import {Observation, Quantity, effectiveType} from "./Observation";
 
 const tempCode = {
     "coding": [
@@ -30,7 +30,7 @@ const tempCode = {
 
 @registerResource('code', '258710007')
 export class Temperature extends Observation {
-    constructor(tempC: number, date: Date) {
+    constructor(tempC: number, date: Date, withPeriodEndDate?: Date) {
         let quantity: Quantity = {
             _quantity: {
                 value: tempC,
@@ -39,7 +39,22 @@ export class Temperature extends Observation {
                 code: '258710007'
             }
         };
-        super(date, tempCode, VitalSigns, quantity);
+
+        let effectiveType : effectiveType;
+                if(withPeriodEndDate){
+                   effectiveType = {
+                        _period : {
+                            start: date.toISOString(),
+                            end: withPeriodEndDate.toISOString()
+                        }
+                    }
+                } else {
+                    effectiveType  = {
+                        _dateTime : date.toISOString()
+                    }
+                }
+
+        super(effectiveType, tempCode, VitalSigns, quantity);
     }
 }
 ;

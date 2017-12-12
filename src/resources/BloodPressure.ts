@@ -1,11 +1,11 @@
 import { VitalSigns } from './categories';
 import { registerResource } from './registry';
-import {Observation} from "./Observation";
+import {Observation, Period, DateTime, effectiveType} from "./Observation";
 
 
 @registerResource('code', '55417-0')
 export class BloodPressure extends Observation {
-    constructor(systolic: number, diastolic: number, date: Date) {
+    constructor(systolic: number, diastolic: number, date: Date, withPeriodEndDate?: Date) {
         let code = {
             coding: [{
                 system: "http://loinc.org",
@@ -13,7 +13,22 @@ export class BloodPressure extends Observation {
                 display: 'Blood Pressure'
             }]
         };
-        super(date, code, VitalSigns);
+
+        let effectiveType : effectiveType;
+        if(withPeriodEndDate){
+           effectiveType = {
+                _period : {
+                    start: date.toISOString(),
+                    end: withPeriodEndDate.toISOString()
+                }
+            }
+        } else {
+            effectiveType  = {
+                _dateTime : date.toISOString()
+            }
+        }
+        
+        super(effectiveType, code, VitalSigns);
 
         this.addComponent({
             code: {

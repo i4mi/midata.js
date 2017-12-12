@@ -11,11 +11,24 @@ import {registerResource} from './registry';
 @registerResource('resourceType', 'Observation')
 export class Observation extends Resource {
 
-    constructor(date: Date,
+    constructor(effectiveType: effectiveType,
                 code: fhir.CodeableConcept,
                 category: fhir.CodeableConcept,
                 valueType?: valueType) {
         super('Observation');
+        
+        // check type of effective property
+
+        if (effectiveType) { // TODO: clarify; according to FHIR effective[x] property could be 0..1
+            if (this._isDateTime(effectiveType)) {
+                this.addProperty('effectiveDateTime', effectiveType._dateTime)
+            } else if (this._isPeriod(effectiveType)) {
+                this.addProperty('effectivePeriod', effectiveType._period)
+            } else {
+                console.log("Internal Error");
+            }
+        }
+
         // check type of value property
         if (valueType) {
             if (this._isValueQuantity(valueType)) {
@@ -29,7 +42,6 @@ export class Observation extends Resource {
         this.addProperty('status', 'preliminary');
         this.addProperty('category', category);
         this.addProperty('code', code);
-        this.addProperty('effectiveDateTime', date.toISOString());
     }
 
     // Determine the type by using user-defined type guards.
@@ -40,6 +52,14 @@ export class Observation extends Resource {
 
     private _isCodeableConcept(type: valueType): type is CodeableConcept {
         return (<CodeableConcept>type)._codeableConcept !== undefined;
+    }
+
+    private _isDateTime(type: effectiveType) : type is DateTime {
+        return (<DateTime>type)._dateTime !== undefined;
+    }
+
+    private _isPeriod(type: effectiveType) : type is Period {
+        return (<Period>type)._period !== undefined;
     }
 
     addComponent(component: fhir.ObservationComponent) {
@@ -80,13 +100,26 @@ export class Observation extends Resource {
 
 // Definition of interfaces each declaring it's property with the corresponding value[x] type (see below).
 
+// Observation.value[x]
+// Interfaces representing the somewhat polymorphic property value[x]
 export interface Quantity {
     _quantity: fhir.Quantity
 }
-
 export interface CodeableConcept {
     _codeableConcept: fhir.CodeableConcept
 }
+
+// Observation.effective[x]
+// Interfaces representing the somewhat polymorphic property effective[x]
+
+export interface DateTime {
+    _dateTime: fhir.dateTime // TODO: Clarify; Fhir defines dateTime as xs:string, though should we guard for Date here?
+}
+
+export interface Period {
+    _period: fhir.Period // TODO: Clarify; Fhir defines dateTime as xs:string, though should we guard for Date here?
+}
+
 
 // The information determined as a result of making the observation.
 // The element, Observation.value[x], has a variable name depending on the type as follows:
@@ -97,3 +130,14 @@ export type valueType =
 
     Quantity |
     CodeableConcept;
+
+
+// The time or time-period the observed value is asserted as being true.
+// The element, Observation.effective[x], has a variable name depending on the type as follows:
+// dateTime, Period
+// See https://www.hl7.org/fhir/observation-definitions.html#Observation.effective_x_
+
+export type effectiveType =
+
+    DateTime |
+    Period;

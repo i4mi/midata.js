@@ -1,11 +1,10 @@
 import {VitalSigns} from "./categories";
 import {registerResource} from './registry';
-import {Observation, Quantity} from "./Observation";
+import {Observation, Quantity, effectiveType} from "./Observation";
 
-// TODO: Change to LOINC Code
 @registerResource('code', 'activities/steps')
 export class StepsCount extends Observation {
-    constructor(steps: number, date: Date) {
+    constructor(steps: number, date: Date, withPeriodEndDate?: Date) {
         let quantity: Quantity = {
             _quantity: {
                 value: steps,
@@ -13,12 +12,28 @@ export class StepsCount extends Observation {
                 // TODO: UCUM steps missing?
             }
         };
-        super(date, {
-            text: 'Steps',
+
+        let effectiveType : effectiveType;
+                if(withPeriodEndDate){
+                   effectiveType = {
+                        _period : {
+                            start: date.toISOString(),
+                            end: withPeriodEndDate.toISOString()
+                        }
+                    }
+                } else {
+                    effectiveType  = {
+                        _dateTime : date.toISOString()
+                    }
+                }
+
+        // TODO: Clarify, won't this interfere with MIDATA's Fitbit import?
+        super(effectiveType, {
+            text: 'Steps [24 hour]',
             coding: [{
-                system: 'http://midata.coop',
-                code: 'activities/steps',
-                display: 'Steps'
+                system: 'http://loinc.org',
+                code: '41950-7',
+                display: 'Steps [24 hour]'
             }]
         }, VitalSigns, quantity);
     }
