@@ -7,6 +7,7 @@ import { Resource } from './Resource';
  * https://www.hl7.org/fhir/observation.html
  */
 export declare class Observation extends Resource {
+    private static DateRegExp;
     constructor(effectiveType: effectiveType, code: fhir.CodeableConcept, category: fhir.CodeableConcept, valueType?: valueType);
     private _isValueQuantity(type);
     private _isCodeableConcept(type);

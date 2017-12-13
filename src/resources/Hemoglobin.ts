@@ -4,7 +4,7 @@ import {Observation, Quantity, effectiveType} from "./Observation";
 
 @registerResource('code', '718-7')
 export class Hemoglobin extends Observation {
-    constructor(gl: number, date: Date, withPeriodEndDate? : Date) {
+    constructor(gl: number, date: string, withPeriodEndDate? : string) {
         let quantity: Quantity = {
             _quantity: {
                 value: gl,
@@ -18,13 +18,13 @@ export class Hemoglobin extends Observation {
                 if(withPeriodEndDate){
                    effectiveType = {
                         _period : {
-                            start: date.toISOString(),
-                            end: withPeriodEndDate.toISOString()
+                            start: date,
+                            end: withPeriodEndDate
                         }
                     }
                 } else {
                     effectiveType  = {
-                        _dateTime : date.toISOString()
+                        _dateTime : date
                     }
                 }
 

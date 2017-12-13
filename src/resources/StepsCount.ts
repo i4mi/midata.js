@@ -4,7 +4,7 @@ import {Observation, Quantity, effectiveType} from "./Observation";
 
 @registerResource('code', 'activities/steps')
 export class StepsCount extends Observation {
-    constructor(steps: number, date: Date, withPeriodEndDate?: Date) {
+    constructor(steps: number, date: string, withPeriodEndDate?: string) {
         let quantity: Quantity = {
             _quantity: {
                 value: steps,
@@ -17,13 +17,13 @@ export class StepsCount extends Observation {
                 if(withPeriodEndDate){
                    effectiveType = {
                         _period : {
-                            start: date.toISOString(),
-                            end: withPeriodEndDate.toISOString()
+                            start: date,
+                            end: withPeriodEndDate
                         }
                     }
                 } else {
                     effectiveType  = {
-                        _dateTime : date.toISOString()
+                        _dateTime : date
                     }
                 }
 

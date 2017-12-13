@@ -30,7 +30,7 @@ const tempCode = {
 
 @registerResource('code', '258710007')
 export class Temperature extends Observation {
-    constructor(tempC: number, date: Date, withPeriodEndDate?: Date) {
+    constructor(tempC: number, date: string, withPeriodEndDate?: string) {
         let quantity: Quantity = {
             _quantity: {
                 value: tempC,
@@ -44,13 +44,13 @@ export class Temperature extends Observation {
                 if(withPeriodEndDate){
                    effectiveType = {
                         _period : {
-                            start: date.toISOString(),
-                            end: withPeriodEndDate.toISOString()
+                            start: date,
+                            end: withPeriodEndDate
                         }
                     }
                 } else {
                     effectiveType  = {
-                        _dateTime : date.toISOString()
+                        _dateTime : date
                     }
                 }
 

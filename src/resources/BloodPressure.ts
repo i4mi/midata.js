@@ -5,7 +5,7 @@ import {Observation, Period, DateTime, effectiveType} from "./Observation";
 
 @registerResource('code', '55417-0')
 export class BloodPressure extends Observation {
-    constructor(systolic: number, diastolic: number, date: Date, withPeriodEndDate?: Date) {
+    constructor(systolic: number, diastolic: number, date: string, withPeriodEndDate?: string) {
         let code = {
             coding: [{
                 system: "http://loinc.org",
@@ -18,13 +18,13 @@ export class BloodPressure extends Observation {
         if(withPeriodEndDate){
            effectiveType = {
                 _period : {
-                    start: date.toISOString(),
-                    end: withPeriodEndDate.toISOString()
+                    start: date,
+                    end: withPeriodEndDate
                 }
             }
         } else {
             effectiveType  = {
-                _dateTime : date.toISOString()
+                _dateTime : date
             }
         }
         

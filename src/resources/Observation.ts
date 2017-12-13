@@ -1,4 +1,5 @@
 import {Resource} from './Resource';
+import {InvalidCallError} from '../errors/InvalidCallError'
 import ClaimItemDetail = fhir.ClaimItemDetail;
 import {registerResource} from './registry';
 
@@ -11,6 +12,10 @@ import {registerResource} from './registry';
 @registerResource('resourceType', 'Observation')
 export class Observation extends Resource {
 
+    // TODO: Test & eventually change param to any
+
+    private static DateRegExp = new RegExp('^-\?\[0-9\]\{4\}\(-\(0\[1-9\]\|1\[0-2\]\)\(-\(0\[0-9\]\|\[1-2\]\[0-9\]\|3\[0-1\]\)\(T\(\[01\]\[0-9\]\|2\[0-3\]\):\[0-5\]\[0-9\]:\[0-5\]\[0-9\]\(\\\.\[0-9\]\+\)\?\(Z\|\(\\\+\|-\)\(\(0\[0-9\]\|1\[0-3\]\):\[0-5\]\[0-9\]\|14:00\)\)\)\?\)\?\)\?$');
+
     constructor(effectiveType: effectiveType,
                 code: fhir.CodeableConcept,
                 category: fhir.CodeableConcept,
@@ -21,9 +26,17 @@ export class Observation extends Resource {
 
         if (effectiveType) { // TODO: clarify; according to FHIR effective[x] property could be 0..1
             if (this._isDateTime(effectiveType)) {
-                this.addProperty('effectiveDateTime', effectiveType._dateTime)
+                if(Observation.DateRegExp.test(effectiveType._dateTime)){
+                    this.addProperty('effectiveDateTime', effectiveType._dateTime)
+                } else {
+                    throw new InvalidCallError("Regex mismatch!");
+                }
             } else if (this._isPeriod(effectiveType)) {
-                this.addProperty('effectivePeriod', effectiveType._period)
+                if((Observation.DateRegExp.test(effectiveType._period.start)) && (Observation.DateRegExp.test(effectiveType._period.end))){
+                    this.addProperty('effectivePeriod', effectiveType._period)
+                } else {
+                    throw new InvalidCallError("Regex mismatch!");
+                }
             } else {
                 console.log("Internal Error");
             }
@@ -113,11 +126,11 @@ export interface CodeableConcept {
 // Interfaces representing the somewhat polymorphic property effective[x]
 
 export interface DateTime {
-    _dateTime: fhir.dateTime // TODO: Clarify; Fhir defines dateTime as xs:string, though should we guard for Date here?
+    _dateTime: fhir.dateTime
 }
 
 export interface Period {
-    _period: fhir.Period // TODO: Clarify; Fhir defines dateTime as xs:string, though should we guard for Date here?
+    _period: fhir.Period
 }
 
 

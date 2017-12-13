@@ -4,7 +4,7 @@ import {Observation, Quantity, effectiveType} from "./Observation";
 
 @registerResource('code', '29463-7')
 export class BodyWeight extends Observation {
-    constructor(weightKg: number, date: Date, withPeriodEndDate?: Date) {
+    constructor(weightKg: number, date: string, withPeriodEndDate?: string) {
         let quantity: Quantity = {
             _quantity: {
                 value: weightKg,
@@ -18,13 +18,13 @@ export class BodyWeight extends Observation {
                 if(withPeriodEndDate){
                    effectiveType = {
                         _period : {
-                            start: date.toISOString(),
-                            end: withPeriodEndDate.toISOString()
+                            start: date,
+                            end: withPeriodEndDate
                         }
                     }
                 } else {
                     effectiveType  = {
-                        _dateTime : date.toISOString()
+                        _dateTime : date
                     }
                 }
 

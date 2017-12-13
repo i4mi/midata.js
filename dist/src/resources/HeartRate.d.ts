@@ -1,4 +1,4 @@
 import { Observation } from "./Observation";
 export declare class HeartRate extends Observation {
-    constructor(beatsPerMinute: number, date: Date, withPeriodEndDate?: Date);
+    constructor(beatsPerMinute: number, date: string, withPeriodEndDate?: string);
 }

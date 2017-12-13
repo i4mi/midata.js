@@ -4,7 +4,7 @@ import {Observation, Quantity, effectiveType} from "./Observation";
 
 @registerResource('code', '8867-4')
 export class HeartRate extends Observation {
-    constructor(beatsPerMinute: number, date: Date, withPeriodEndDate?: Date) {
+    constructor(beatsPerMinute: number, date: string, withPeriodEndDate?: string) {
         let quantity: Quantity = {
             _quantity: {
                 value: beatsPerMinute,
@@ -17,13 +17,13 @@ export class HeartRate extends Observation {
                 if(withPeriodEndDate){
                    effectiveType = {
                         _period : {
-                            start: date.toISOString(),
-                            end: withPeriodEndDate.toISOString()
+                            start: date,
+                            end: withPeriodEndDate
                         }
                     }
                 } else {
                     effectiveType  = {
-                        _dateTime : date.toISOString()
+                        _dateTime : date
                     }
                 }
 
