@@ -14,7 +14,7 @@ module.exports = {
     },
     devtool: 'source-map',
     resolve: {
-        extensions: [ '', '.ts', '.js' ],
+        extensions: [ '.ts', '.js' ],
         alias: {
             '@midata': path.resolve('./src')
         }
