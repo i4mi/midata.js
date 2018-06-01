@@ -14,7 +14,7 @@ module.exports = {
     },
     devtool: 'source-map',
     resolve: {
-        extensions: [ '', '.ts', '.js' ],
+        extensions: [ '.ts', '.js' ],
         alias: {
             '@midata': path.resolve('./src')
         }
@@ -27,11 +27,18 @@ module.exports = {
     plugins: PROD ? [
         new webpack.optimize.UglifyJsPlugin({
             minimize: true,
-            // sourceMap: true,
+            sourceMap: true,
             output: {
                 comments: false
             },
             compress: { warnings: false }
-        })
+            // compress: {
+            //     unused: false
+            // }
+        }),
+        new webpack.ContextReplacementPlugin(
+            /angular(\\|\/)core/,
+            path.resolve(__dirname, '../src')
+        )
     ] : []
 };

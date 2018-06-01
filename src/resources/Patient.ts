@@ -1,6 +1,7 @@
 import {Resource} from './Resource';
 import {registerResource} from './registry';
 
+//https://github.com/angular/angular/issues/17800
 
 export type gender = 'male' |
         'female' |
