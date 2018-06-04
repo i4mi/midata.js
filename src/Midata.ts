@@ -411,7 +411,7 @@ export class Midata {
                            return Promise.resolve(response);
                      });
                   } else {
-                       return Promise.resolve({});
+                       return Promise.resolve(new Resource('empty'));
                     }
              } else {
                    return Promise.reject(new UnknownEndpointError());
@@ -611,7 +611,7 @@ export class Midata {
                         return Promise.resolve(response);
                     });
                 } else {
-                    return Promise.resolve({});
+                    return Promise.resolve(new Resource('empty'));
                 }
             } else {
                 return Promise.reject(new UnknownEndpointError());
@@ -622,12 +622,15 @@ export class Midata {
 
              return new Promise<void>((resolve,reject) => {
 
+             let successful = false;
+
              this._iab = new InAppBrowser(url, '_blank', 'location=yes');
              this._iab.on('loadstart').subscribe((event) => {
                      this._iab.show();
                      if ((event.url).indexOf("http://localhost/callback") === 0) {
                          let _state = event.url.split("&")[0].split("=")[1];
                          if (_state && _state === this._state) {
+                             successful = true;
                              this._authCode = event.url.split("&")[1].split("=")[1];
                              this._iab.close();
                              resolve();
@@ -642,7 +645,8 @@ export class Midata {
              });
 
              this._iab.on('exit').subscribe(() => {
-                 reject();
+                 if (!successful)
+                    reject();
              });
 
              });

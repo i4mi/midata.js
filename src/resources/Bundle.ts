@@ -75,12 +75,22 @@ export class Bundle extends Resource {
     // TODO: comment
 
     getObservationEntries(withCode?: fhir.code) {
+        return this.getEntries("Observation", withCode);
+    }
 
-        let observationEntries = super.getProperty("entry").filter((entry: fhir.BundleEntry) =>
-        entry.resource.resourceType === "Observation");
+    // TODO: Test it
+
+    getQuestionnaireResponseEntries(withCode?: fhir.code) {        
+        return this.getEntries("QuestionnaireResponse", withCode);
+    }
+
+    getEntries(resType:String, withCode?: fhir.code) {
+        let entries = super.getProperty("entry").filter((entry: fhir.BundleEntry) =>
+        entry.resource.resourceType === resType);
+
         if (withCode) {
-            let filtered: fhir.BundleEntry[] = [];
-            for (let entry of observationEntries) {
+            let filtered: fhir.BundleEntry[] = [];       
+            for (let entry of entries) {
                 for (let codeValue of entry.resource.code.coding) {
                     if (codeValue.code === withCode) {
                         filtered.push(entry);
@@ -89,9 +99,8 @@ export class Bundle extends Resource {
             }
             return filtered;
         } else {
-            return observationEntries;
+            return entries;
         }
-
     }
 
     // TODO: comment

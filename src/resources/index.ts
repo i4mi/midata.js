@@ -6,6 +6,7 @@ export {HeartRate} from './HeartRate';
 export {StepsCount} from './StepsCount';
 export {BodyHeight} from './BodyHeight';
 export {Questionnaire} from './Questionnaire';
+export {QuestionnaireResponse} from './QuestionnaireResponse';
 export {BloodPressure} from './BloodPressure';
 export {MedicationStatement} from './MedicationStatement';
 export {Media} from './Media';
