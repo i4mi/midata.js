@@ -1,7 +1,6 @@
 /// <reference types="fhir" />
 import { Resource } from './Resource';
 import { Promise } from "es6-promise";
-import BundleEntry = fhir.BundleEntry;
 export declare type BundleType = 'document' | 'message' | 'transaction' | 'transaction-response' | 'batch' | 'batch-response' | 'history' | 'searchset' | 'collection';
 export declare type httpVerb = 'GET' | 'POST' | 'PUT' | 'DELETE';
 export declare class Bundle extends Resource {
@@ -10,5 +9,5 @@ export declare class Bundle extends Resource {
     getObservationEntries(withCode?: fhir.code): any;
     getQuestionnaireResponseEntries(withCode?: fhir.code): any;
     getEntries(resType: String, withCode?: fhir.code): any;
-    getEntry(withId: string): BundleEntry;
+    getEntry(withId: string): fhir.BundleEntry;
 }

@@ -1,8 +1,6 @@
 import {Resource} from './Resource';
-import stringMatching = jasmine.stringMatching;
 import {Promise} from "es6-promise";
 import {registerResource} from './registry';
-import BundleEntry = fhir.BundleEntry;
 
 // http://www.hl7.org/fhir/bundle-type
 export type BundleType =
