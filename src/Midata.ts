@@ -15,7 +15,7 @@ import {apiCall, ApiCallResponse, base64EncodeURL} from './util';
 import {InAppBrowser} from 'ionic-native';
 import {URLSearchParams} from "@angular/http";
 import {fromFhir} from "./resources/registry";
-import {Resource} from "./resources/Resource";
+import {Resource} from "./resources/resourceTypes/resource";
 
 let jsSHA = require("jssha");
 

@@ -1,6 +1,6 @@
 import { TokenRefreshResponse, TokenResponse, AuthResponse, UserRole } from './api';
 import { Promise } from 'es6-promise';
-import { Resource } from "./resources/Resource";
+import { Resource } from "./resources/resourceTypes/resource";
 export interface User {
     name?: string;
     id?: string;
