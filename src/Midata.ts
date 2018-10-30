@@ -724,18 +724,10 @@ export class Midata {
         let resumeLogin = () : Promise<void> => {
             return new Promise<void>((resolve,reject) => {
                 if ((e_url).indexOf(redirect_url) === 0) {
-                    console.error("Event URL");
-                    console.error(e_url);
                     let _state = e_url.split("&")[0].split("=")[1];
-                    console.error("State")
-                    console.error(_state)
-                    console.error("this State")
-                    console.error(this._state)
                     if (_state && _state === this._state) {
                         this._authCode = e_url.split("&")[1].split("=")[1];
-                        console.error("----------- NO ERROR START -----------");
-                        console.error(this._authCode);
-                        console.error("----------- NO ERROR STOP  -----------");
+
                         resolve();
                     } else {
                         reject();
@@ -748,9 +740,6 @@ export class Midata {
         
         return resumeLogin()
             .then(() => {
-                console.error("----------- NO ERROR START -----------");
-                console.error("we do resume then now exchange");
-                console.error("----------- NO ERROR STOP  -----------");
                 return this._exchangeTokenForCode();
             }).then((authResponse: TokenResponse) => {
                 return Promise.resolve(authResponse);
