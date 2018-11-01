@@ -633,8 +633,6 @@ export class Midata {
 
                 let target = isMobileDevice() ? '_blank' : '_self';
                 let e = isMobileDevice() ? 'loadstart' : 'loadstop';
-                console.error(isMobileDevice());
-                console.error(e);
 
                 this._iab = new InAppBrowser(url, target, 'location=yes');
                 this._iab.on(e).subscribe((event) => {
@@ -692,11 +690,8 @@ export class Midata {
                     url = `${url}&device_id=${withDeviceID}`;
                 }
                 if (!isMobileDevice) {
-                    console.error('wiiuuu wiiiuuu wiiiuuu');
                     url = `${url}&output=embed`;
                 }
-
-                console.error(url);
 
                 return loginMidata(url);
             }).then(() => {
@@ -773,9 +768,6 @@ export class Midata {
                 encodedParams: urlParams
             };
 
-            console.error("----------- NO ERROR START -----------");
-            console.error(this.refreshToken);
-            console.error("----------- NO ERROR STOP  -----------");
             return refreshRequest;
         };
 
@@ -796,9 +788,6 @@ export class Midata {
                 payload: getPayload().encodedParams.toString(),
                 jsonEncoded: false
             }).then((response: ApiCallResponse) => {
-                console.error("----------- NO ERROR START -----------");
-                console.error(response);
-                console.error("----------- NO ERROR STOP  -----------");
                 authResponse = response.body;
                 let user: User
                 if (this._user) {

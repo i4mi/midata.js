@@ -17,6 +17,7 @@ export { Patient } from './resourceTypes/patient';
 export { BloodPressure } from './categoryTypes/bloodPressure';
 export { BodyHeight } from './categoryTypes/bodyHeight';
 export { BodyWeight } from './categoryTypes/bodyWeight';
+export { Handedness } from './categoryTypes/handedness';
 export { HeartRate } from './categoryTypes/heartRate';
 export { Hemoglobin } from './categoryTypes/hemoglobin';
 export { ImageMedia } from './categoryTypes/imageMedia';
@@ -83,6 +84,10 @@ export { COD_BODYTEMPERATURE,
          COD_HEARTRATE, 
          COD_BODYWEIGHT, 
          COD_BODYHEIGHT, 
-         COD_BLOODPRESSURE } from './codings';
+         COD_BLOODPRESSURE,
+         COD_HANDEDNESS,
+         COD_LEFTHANDED,
+         COD_RIGHTHANDED,
+         COD_AMBIDEXTROUS } from './codings';
 
 

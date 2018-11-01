@@ -5,6 +5,43 @@
 
 /**
  * --------------------------------------------------------------------------------
+ *                                  Handedness
+ */
+export const COD_HANDEDNESS = {
+    coding: [{
+        system: "http://snomed.info/sct",
+        code: "57427004",
+        display: "Handedness"
+    }],
+    text: "Handedness"
+};
+export const COD_LEFTHANDED = {
+    coding: [{
+        system: "http://snomed.info/sct",
+        code: "87683000",
+        display: "Left handed"
+    }],
+    text: "Left handed"
+};
+export const COD_RIGHTHANDED = {
+    coding: [{
+        system: "http://snomed.info/sct",
+        code: "46669005",
+        display: "Right handed"
+    }],
+    text: "Right handed"
+};
+export const COD_AMBIDEXTROUS = {
+    coding: [{
+        system: "http://snomed.info/sct",
+        code: "23088002",
+        display: "Ambidextrous"
+    }],
+    text: "Ambidextrous"
+}
+
+/**
+ * --------------------------------------------------------------------------------
  *                                  Blood Pressure
  */
 export const COD_BLOODPRESSURE = {

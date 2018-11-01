@@ -4,6 +4,42 @@
  */
 /**
  * --------------------------------------------------------------------------------
+ *                                  Handedness
+ */
+export declare const COD_HANDEDNESS: {
+    coding: {
+        system: string;
+        code: string;
+        display: string;
+    }[];
+    text: string;
+};
+export declare const COD_LEFTHANDED: {
+    coding: {
+        system: string;
+        code: string;
+        display: string;
+    }[];
+    text: string;
+};
+export declare const COD_RIGHTHANDED: {
+    coding: {
+        system: string;
+        code: string;
+        display: string;
+    }[];
+    text: string;
+};
+export declare const COD_AMBIDEXTROUS: {
+    coding: {
+        system: string;
+        code: string;
+        display: string;
+    }[];
+    text: string;
+};
+/**
+ * --------------------------------------------------------------------------------
  *                                  Blood Pressure
  */
 export declare const COD_BLOODPRESSURE: {
