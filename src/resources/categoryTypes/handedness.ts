@@ -36,6 +36,10 @@ export class Handedness extends Observation {
         super.addProperty('valueCodeableConcept', val.valueCodeableConcept);
     }
 
+    getHandedness(): ValueCodeableConcept {
+        return super.getProperty('valueCodeableConcept');
+    }
+
     changeHandedness(handSide: string) {
         super.removeProperty('valueCodeableConcept');
         let val = this.resolveValueCodeableConcept(handSide);
@@ -45,11 +49,11 @@ export class Handedness extends Observation {
     resolveValueCodeableConcept(handSide: string): ValueCodeableConcept {
         let value: ValueCodeableConcept;
 
-        if (handSide === COD_LEFTHANDED.text) {
+        if (handSide === COD_LEFTHANDED.coding[0].code) {
             value = {
                 valueCodeableConcept: COD_LEFTHANDED
             };
-        } else if (handSide === COD_RIGHTHANDED.text) {
+        } else if (handSide === COD_RIGHTHANDED.coding[0].code) {
             value = {
                 valueCodeableConcept: COD_RIGHTHANDED
             };

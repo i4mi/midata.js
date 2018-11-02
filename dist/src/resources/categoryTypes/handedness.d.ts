@@ -6,6 +6,7 @@ import { ValueCodeableConcept } from '../basicTypes';
 export declare class Handedness extends Observation {
     constructor(handSide: string, date: string, withPeriodEndDate?: string);
     setHandedness(handSide: string): void;
+    getHandedness(): ValueCodeableConcept;
     changeHandedness(handSide: string): void;
     resolveValueCodeableConcept(handSide: string): ValueCodeableConcept;
 }
