@@ -11,6 +11,38 @@ import { COD_HANDEDNESS, COD_LEFTHANDED, COD_RIGHTHANDED, COD_AMBIDEXTROUS } fro
  @registerResource('code', '57427004')
 export class Handedness extends Observation {
     constructor(handSide: string, date: string, withPeriodEndDate? : string) {
+        let effectiveType : ObservationEffective;
+                if(withPeriodEndDate){
+                   effectiveType = {
+                        effectivePeriod : {
+                            start: date,
+                            end: withPeriodEndDate
+                        }
+                    }
+                } else {
+                    effectiveType  = {
+                        effectiveDateTime : date
+                    }
+                }
+
+        super(effectiveType, OBSERVATIONSTATUS.preliminary, CAT_SURVEY, COD_HANDEDNESS);
+        
+        this.setHandedness(handSide);
+
+    }
+
+    setHandedness(handSide: string) {
+        let val = this.resolveValueCodeableConcept(handSide);
+        super.addProperty('valueCodeableConcept', val.valueCodeableConcept);
+    }
+
+    changeHandedness(handSide: string) {
+        super.removeProperty('valueCodeableConcept');
+        let val = this.resolveValueCodeableConcept(handSide);
+        super.addProperty('valueCodeableConcept', val.valueCodeableConcept);
+    }
+
+    resolveValueCodeableConcept(handSide: string): ValueCodeableConcept {
         let value: ValueCodeableConcept;
 
         if (handSide === COD_LEFTHANDED.text) {
@@ -27,20 +59,6 @@ export class Handedness extends Observation {
             };  
         }
 
-        let effectiveType : ObservationEffective;
-                if(withPeriodEndDate){
-                   effectiveType = {
-                        effectivePeriod : {
-                            start: date,
-                            end: withPeriodEndDate
-                        }
-                    }
-                } else {
-                    effectiveType  = {
-                        effectiveDateTime : date
-                    }
-                }
-
-        super(effectiveType, OBSERVATIONSTATUS.preliminary, CAT_SURVEY, COD_HANDEDNESS, value); 
+        return value;
     }
 }
