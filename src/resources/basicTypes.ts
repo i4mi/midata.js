@@ -148,14 +148,14 @@ export type ObservationEffective =
 
 //https://www.hl7.org/fhir/valueset-observation-status.html
 export enum OBSERVATIONSTATUS {
-    registered = "registered",
-    preliminary = "preliminary",
-    final = "final",
-    amended = "amended",
-    corrected = "corrected",
-    cancelled = "cancelled",
-    entered_in_error = "entered_in_error",
-    unknown = "unknown"
+    "registered" = "registered",
+    "preliminary" = "preliminary",
+    "final" = "final",
+    "amended" = "amended",
+    "corrected" = "corrected",
+    "cancelled" = "cancelled",
+    "entered-in-error" = "entered-in-error",
+    "unknown" = "unknown"
 }
 export type ObservationStatus = keyof typeof OBSERVATIONSTATUS;
 
@@ -282,4 +282,48 @@ export enum HTTPVERB {
     "DELETE" = "DELETE"
 }
 export type HTTPVerb = keyof typeof HTTPVERB;
+ 
+/**
+ * --------------------------------------------------------------------------------
+ *                                  Composition
+ */
 
+//https://www.hl7.org/fhir/valueset-composition-status.html
+export enum COMPOSITIONSTATUS {
+    "preliminary" = "preliminary",
+    "final" = "final",
+    "amended" = "amended",
+    "entered-in-error" = "entered-in-error"
+}
+export type CompositionStatus = keyof typeof COMPOSITIONSTATUS; 
+
+//https://www.hl7.org/fhir/composition-definitions.html#Composition.section
+export type CompositionSection = CompositionSectionText | 
+                                 CompositionSectionEntry | 
+                                 CompositionSectionSection;
+
+export interface CompositionSectionBasic {
+    title?: string,
+    code?: fhir.CodeableConcept,
+    mode?: fhir.code,
+    orderedBy?: fhir.CodeableConcept,
+    emptyReason?: fhir.CodeableConcept
+};
+
+export interface CompositionSectionText extends CompositionSectionBasic {
+    text: string,
+    entry?: fhir.Reference,
+    section?: CompositionSection
+};
+
+export interface CompositionSectionEntry extends CompositionSectionBasic {
+    text?: string,
+    entry: fhir.Reference,
+    section?: CompositionSection
+};
+
+export interface CompositionSectionSection extends CompositionSectionBasic {
+    text?: string,
+    entry?: fhir.Reference,
+    section: CompositionSection
+};

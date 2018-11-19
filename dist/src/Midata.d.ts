@@ -1,11 +1,16 @@
 import { TokenRefreshResponse, TokenResponse, AuthResponse, UserRole } from './api';
 import { Promise } from 'es6-promise';
 import { Resource } from "./resources/resourceTypes/resource";
+import { Patient } from './resources';
 export interface User {
     name?: string;
     id?: string;
     email?: string;
     language?: language;
+}
+export interface AuthAndPatResponse {
+    authResponse: TokenResponse;
+    patientResource: Patient;
 }
 export declare type language = 'en' | 'de' | 'it' | 'fr';
 export declare class Midata {
@@ -121,23 +126,23 @@ export declare class Midata {
     oAuth2 authentication process.
 
     @param withDeviceID Optional parameter to allocate previously granted consents on the platform to this device.
-    @return Promise<TokenResponse>
+    @return Promise<AuthAndPatResponse>
     **/
-    authenticate(withDeviceID?: string): Promise<TokenResponse>;
+    authenticate(withDeviceID?: string): Promise<AuthAndPatResponse>;
     /**
     Resume the midata login
     Needs to be used, when the oAuth login is performed in browser. Only working, when the browser is startet on port 8001.
 
     Todo: Config file
 
-    @return Promise<TokenResponse>
+    @return Promise<AuthAndPatResponse>
     **/
-    resumeAuthenticate(): Promise<TokenResponse>;
+    resumeAuthenticate(): Promise<AuthAndPatResponse>;
     /**
     After successful authentication on midata this method is invoked. It exchanges the authCode
     obtained from midata with the access_token used to query the FHIR endpoint API.
 
-    @return Promise<TokenResponse>
+    @return Promise<AuthAndPatResponse>
     **/
     private _exchangeTokenForCode();
     /**

@@ -4,7 +4,7 @@ import {
     TokenResponse,
     AuthRequest,
     AuthResponse,
-    UserRole
+    UserRole,
 } from './api';
 import {MidataJSError} from './errors/MidataJSError';
 import {MappingError} from './errors/MappingError';
@@ -16,6 +16,7 @@ import {InAppBrowser} from 'ionic-native';
 import {URLSearchParams} from "@angular/http";
 import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/resourceTypes/resource";
+import { Patient } from './resources';
 
 let jsSHA = require("jssha");
 
@@ -27,6 +28,11 @@ export interface User {
     id?: string;
     email?: string;
     language?: language
+}
+
+export interface AuthAndPatResponse {
+    authResponse: TokenResponse,
+    patientResource: Patient
 }
 
 /*
@@ -600,10 +606,10 @@ export class Midata {
     oAuth2 authentication process.
 
     @param withDeviceID Optional parameter to allocate previously granted consents on the platform to this device.
-    @return Promise<TokenResponse>
+    @return Promise<AuthAndPatResponse>
     **/
 
-    authenticate(withDeviceID?: string): Promise<TokenResponse> {
+    authenticate(withDeviceID?: string): Promise<AuthAndPatResponse> {
 
         if(withDeviceID) {
             if(withDeviceID.length <= 3) {
@@ -696,8 +702,8 @@ export class Midata {
                 return loginMidata(url);
             }).then(() => {
                 return this._exchangeTokenForCode();
-            }).then((authResponse: TokenResponse) => {
-                return Promise.resolve(authResponse);
+            }).then((allResponses: AuthAndPatResponse) => {
+                return Promise.resolve(allResponses);
             }).catch((error) => {
                 return Promise.reject(error);
             });
@@ -709,10 +715,10 @@ export class Midata {
 
     Todo: Config file
 
-    @return Promise<TokenResponse>
+    @return Promise<AuthAndPatResponse>
     **/
 
-    resumeAuthenticate(): Promise<TokenResponse> {
+    resumeAuthenticate(): Promise<AuthAndPatResponse> {
         let redirect_url = "http://localhost:8001/index.html";
         let e_url = window.location.href; 
 
@@ -736,8 +742,8 @@ export class Midata {
         return resumeLogin()
             .then(() => {
                 return this._exchangeTokenForCode();
-            }).then((authResponse: TokenResponse) => {
-                return Promise.resolve(authResponse);
+            }).then((allResponses: AuthAndPatResponse) => {
+                return Promise.resolve(allResponses);
             }).catch((error) => {
                 return Promise.reject(error);
             });
@@ -749,10 +755,10 @@ export class Midata {
     After successful authentication on midata this method is invoked. It exchanges the authCode
     obtained from midata with the access_token used to query the FHIR endpoint API.
 
-    @return Promise<TokenResponse>
+    @return Promise<AuthAndPatResponse>
     **/
 
-    private _exchangeTokenForCode(): Promise<TokenResponse> {
+    private _exchangeTokenForCode(): Promise<AuthAndPatResponse> {
         let getPayload = () : TokenRequest => {
             // because of x-www-form-urlencoded
             let urlParams = new URLSearchParams();
@@ -771,7 +777,10 @@ export class Midata {
             return refreshRequest;
         };
 
-        let authResponse : TokenResponse;
+        
+        let allResponses = {} as AuthAndPatResponse;
+        console.warn("MIDATAJS", "_exchangeTokenForCode", "defined allResponses", allResponses);
+        //let authResponse : TokenResponse;
 
         let isMobileDevice = () : boolean => {
             return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
@@ -788,16 +797,17 @@ export class Midata {
                 payload: getPayload().encodedParams.toString(),
                 jsonEncoded: false
             }).then((response: ApiCallResponse) => {
-                authResponse = response.body;
+                allResponses.authResponse = response.body;
+                console.warn("MIDATAJS", "_exchangeTokenForCode - exchangeToken", "got token response", allResponses);
                 let user: User
                 if (this._user) {
-                    this._user.id = authResponse.patient;
+                    this._user.id = allResponses.authResponse.patient;
                 } else {
                     user = {
-                        id: authResponse.patient, // TODO: Fetch and set username from response
+                        id: allResponses.authResponse.patient, // TODO: Fetch and set username from response
                     };
                 }
-                this._setLoginData(authResponse.access_token, authResponse.refresh_token, user);
+                this._setLoginData(allResponses.authResponse.access_token, allResponses.authResponse.refresh_token, user);
                 return Promise.resolve(response);
             }).catch((error) => {
                 return Promise.reject(error);
@@ -807,14 +817,16 @@ export class Midata {
         var fetchUserInfo = () : Promise<Resource[]> => {
             return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
                 this.setUserEmail(response[0].getProperty("telecom")[0].value);
+                allResponses.patientResource = <Patient>response[0];
+                console.warn("MIDATAJS", "_exchangeTokenForCode - fetchUserInfo", "got patient response", allResponses);
                 return Promise.resolve(response);
             });
         };
 
         return exchangeToken().then(() => {
             return fetchUserInfo();
-        }).then(() => {
-            return Promise.resolve(authResponse);
+        }).then(() => {  
+            return Promise.resolve(allResponses);
         }).catch((error) => {
             return Promise.reject(error);
         });

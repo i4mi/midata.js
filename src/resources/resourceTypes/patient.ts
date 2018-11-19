@@ -6,18 +6,28 @@ import { AdministrativeGender } from '../basicTypes';
 
 @registerResource("resourceType", "Patient")
 export class Patient extends Resource {
-    constructor(address : fhir.Address,
-                birthdate: string,
-                gender: AdministrativeGender,
-                identifier: fhir.Identifier,
-                name: fhir.HumanName,
-                telecom: fhir.ContactPoint){
+    constructor(gender: AdministrativeGender){
         super("Patient");
-        this.addProperty('address', address);
-        this.addProperty('birthdate', birthdate);
         this.addProperty('gender', gender);
+    }
+
+    set address(address: fhir.Address) {
+        this.addProperty('address', address);
+    }
+
+    set birthdate(birthdate: string) {
+        this.addProperty('birthdate', birthdate);
+    }
+
+    set identifier(identifier: fhir.Identifier) {
         this.addProperty('identifier', identifier);
+    }
+
+    set name(name: fhir.HumanName) {
         this.addProperty('name', name);
+    }
+
+    set telecom(telecom: fhir.ContactPoint) {
         this.addProperty('telecom', telecom);
     }
 }

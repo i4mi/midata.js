@@ -9,6 +9,7 @@ export { MedicationStatement } from './resourceTypes/medicationStatement';
 export { Media } from './resourceTypes/media';
 export { Bundle } from './resourceTypes/bundle';
 export { Patient } from './resourceTypes/patient';
+export { Composition } from './resourceTypes/composition';
 
 
 /**
@@ -70,7 +71,10 @@ export { PUBLICATIONSTATUS,
          BUNDLETYPE,
          BundleType,
          HTTPVERB,
-         HTTPVerb } from './basicTypes';
+         HTTPVerb,
+         COMPOSITIONSTATUS,
+         CompositionStatus,
+         CompositionSection } from './basicTypes';
 
 export { CAT_PATIENTSPECIFIED, 
          CAT_SOCIALHISTORY, 

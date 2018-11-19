@@ -85,14 +85,14 @@ export interface EffectivePeriod {
 }
 export declare type ObservationEffective = EffectiveDateTime | EffectivePeriod;
 export declare enum OBSERVATIONSTATUS {
-    registered = "registered",
-    preliminary = "preliminary",
-    final = "final",
-    amended = "amended",
-    corrected = "corrected",
-    cancelled = "cancelled",
-    entered_in_error = "entered_in_error",
-    unknown = "unknown",
+    "registered" = "registered",
+    "preliminary" = "preliminary",
+    "final" = "final",
+    "amended" = "amended",
+    "corrected" = "corrected",
+    "cancelled" = "cancelled",
+    "entered-in-error" = "entered-in-error",
+    "unknown" = "unknown",
 }
 export declare type ObservationStatus = keyof typeof OBSERVATIONSTATUS;
 /**
@@ -184,3 +184,37 @@ export declare enum HTTPVERB {
     "DELETE" = "DELETE",
 }
 export declare type HTTPVerb = keyof typeof HTTPVERB;
+/**
+ * --------------------------------------------------------------------------------
+ *                                  Composition
+ */
+export declare enum COMPOSITIONSTATUS {
+    "preliminary" = "preliminary",
+    "final" = "final",
+    "amended" = "amended",
+    "entered-in-error" = "entered-in-error",
+}
+export declare type CompositionStatus = keyof typeof COMPOSITIONSTATUS;
+export declare type CompositionSection = CompositionSectionText | CompositionSectionEntry | CompositionSectionSection;
+export interface CompositionSectionBasic {
+    title?: string;
+    code?: fhir.CodeableConcept;
+    mode?: fhir.code;
+    orderedBy?: fhir.CodeableConcept;
+    emptyReason?: fhir.CodeableConcept;
+}
+export interface CompositionSectionText extends CompositionSectionBasic {
+    text: string;
+    entry?: fhir.Reference;
+    section?: CompositionSection;
+}
+export interface CompositionSectionEntry extends CompositionSectionBasic {
+    text?: string;
+    entry: fhir.Reference;
+    section?: CompositionSection;
+}
+export interface CompositionSectionSection extends CompositionSectionBasic {
+    text?: string;
+    entry?: fhir.Reference;
+    section: CompositionSection;
+}

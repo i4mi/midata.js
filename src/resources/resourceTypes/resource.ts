@@ -30,9 +30,7 @@ export class Resource {
     }
 
     setRelativeId(idParam: string) {
-
         this._fhir.id = idParam;
-
     }
 
     get resourceType(): string {
