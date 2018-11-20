@@ -46,3 +46,50 @@ Autorun tests:
 Build for production in the `dist` directory.
 
     $ npm run build
+
+**Whats new**
+---
+The whole file structure of the midata.js library has changed. The old 'flat' structure got more confusing for each new Resource or Category implemented. The new structure in the `resource` folder has the following ideas:
+
+    -errors:            //additional errors
+
+    -categoryTypes:     //some standard categories that are extending the resources.
+                        //for example the blood preassure or the body wheight observation.
+
+    -resourceTypes:     //all the resources that are currently in use by some apps from the i4mi
+                        //or from the students of the BFH medical informatics.
+
+    -basicTypes:        //the basic types used in the resources or categories. For example the different status.
+                        //the basic types mostly are requered fields in the different resources.
+
+    -categories:        //the categories of the different resources. Like vital sign or survey
+
+    -codings:           //additional codings implemented in the categoreis. Like the coding for blood preassure and so on.
+
+--
+
+In addition the `promise` type of the following public funtion has changed: 
+    -`authenticate`
+    -`resumeAuthenticate`
+
+It has changed form the `TokenResponse`, which only returns the tokens, to the `AuthAndPatResponse`. This means that now, not only the token response is returned to the client, but also the patient resource. Why? There always existed the `fetchUserInfo` function which was executed but never used. Now we can use this function to lookup for the user information of the logged in person, so that the app doesn't have to execute a similar funciton all the time. 
+IMPORTANT: This change needs some adaption of the midataService classes on the client side.
+
+-OLD PROMISE HANDLING:
+
+    -this.midata.authenticate()
+        .then((rsp : TokenResponse) => {
+            //do some awesome stuff with the token stuff;
+        });
+    
+-NEW PROMISE HANDLING:
+
+    -this.midata.authenticate()
+        .then((rsp : AuthAndPatResponse) => {
+            //we can now acces the token response with
+            let tokenResponse = rsp.authResponse;
+            
+            //and access the patient resource of the logged in user
+            let patientResource = rsp.patientResource;
+        });
+    
