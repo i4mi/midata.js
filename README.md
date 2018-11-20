@@ -78,19 +78,23 @@ IMPORTANT: This change needs some adaption of the midataService classes on the c
 
 -OLD PROMISE HANDLING:
 
-    ```this.midata.authenticate()
+    ```javascript
+    this.midata.authenticate()
         .then((rsp : TokenResponse) => {
             //do some awesome stuff with the token stuff;
-        });```
+        });
+        ```
     
 -NEW PROMISE HANDLING:
 
-    ```this.midata.authenticate()
+    ```javascript
+    this.midata.authenticate()
         .then((rsp : AuthAndPatResponse) => {
             //we can now acces the token response with
             let tokenResponse = rsp.authResponse;
             
             //and access the patient resource of the logged in user
             let patientResource = rsp.patientResource;
-        });```
+        });
+        ```
     
