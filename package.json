@@ -1,31 +1,38 @@
 {
   "name": "midata",
-  "version": "1.0.0",
-  "description": "git agit",
+  "version": "1.1.0",
+  "description": "Library for simplified midata access and communication for ionic projects",
   "main": "dist/midata.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "test": "karma start karma.conf.js",
     "dev": "rm -rf dist/ && webpack -w",
-    "build": "rm -rf dist/ && PROD=1 webpack"
+    "build": "rm -rf dist/ && PROD=1 webpack",
+    "win-dev": "rd /s /q dist & webpack -w",
+    "win-build": "rd /s /q dist & set PROD=1 && webpack"
   },
-  "author": "Robin Hafen",
+  "author": "BFH - I4MI",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/i4mi/midata.js.git"
+  },
   "devDependencies": {
-    "@types/jasmine": "^2.5.47",
-    "jasmine": "^2.5.2",
-    "karma": "^1.3.0",
-    "karma-jasmine": "^1.0.2",
-    "karma-mocha-reporter": "^2.2.1",
-    "karma-phantomjs-launcher": "^1.0.2",
-    "karma-webpack": "^1.8.1",
-    "phantomjs": "^2.1.7",
-    "ts-loader": "^1.2.2",
-    "webpack": "^1.13.3"
+    "ts-loader": "3.2.0",
+    "typescript": "2.4.1",
+    "webpack": "3.10.0"
   },
   "dependencies": {
-    "@types/fhir": "^1.0.30",
-    "es6-promise": "^4.0.5",
-    "jssha": "^2.2.0"
+    "@angular/common": "^5.1.1",
+    "@angular/core": "^5.1.1",
+    "@angular/http": "^5.1.1",
+    "@angular/platform-browser": "^5.1.1",
+    "@types/fhir": "1.0.30",
+    "@types/node": "^8.5.1",
+    "es6-promise": "^4.1.1",
+    "ionic-native": "^2.9.0",
+    "jssha": "^2.3.1",
+    "rxjs": "^5.5.5",
+    "zone.js": "^0.8.18"
   }
 }

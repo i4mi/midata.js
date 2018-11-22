@@ -1,11 +1,16 @@
 import { TokenRefreshResponse, TokenResponse, AuthResponse, UserRole } from './api';
 import { Promise } from 'es6-promise';
-import { Resource } from "./resources/Resource";
+import { Resource } from "./resources/resourceTypes/resource";
+import { Patient } from './resources';
 export interface User {
     name?: string;
     id?: string;
     email?: string;
     language?: language;
+}
+export interface AuthAndPatResponse {
+    authResponse: TokenResponse;
+    patientResource: Patient;
 }
 export declare type language = 'en' | 'de' | 'it' | 'fr';
 export declare class Midata {
@@ -66,37 +71,37 @@ export declare class Midata {
     /**
      *
      Helper method in order to retry a specific operation (e.g. save or search) on the API.
-     *
-     * @param maxRetries How many times the method should retry the operation before aborting
-     * @param fn The callback function to be executed
-     * @param args? Optional additional arguments that should be passed into the callback function
-     * @return Promise<ApiCallResponse>
-     *
-     */
+    *
+    * @param maxRetries How many times the method should retry the operation before aborting
+    * @param fn The callback function to be executed
+    * @param args? Optional additional arguments that should be passed into the callback function
+    * @return Promise<ApiCallResponse>
+    *
+    */
     private _retry(maxRetries, fn, ...args);
     /**
      *
      Helper method to create FHIR resources via a HTTP POST call.
-     *
-     */
+    *
+    */
     private _create;
     /**
      *
      Helper method to create FHIR resources via a HTTP PUT call.
-     *
-     */
+    *
+    */
     private _update;
     /**
      *
      Tries to refresh the authentication token by authorizing with the help of the refresh token.
-     This will generate a new authentication as well as a new refresh token. On successful refresh,
-     the old refresh_token will be invalid and both the access_token and the refresh_token will be overwritten.
-     Previous access_tokens will remain valid until their expiration timestamp is exceeded.
-     *
-     @param withRefreshToken? Optional refresh token coming from an external source e.g. the phone's secure storage
-     @return Promise<TokenRefreshResponse>
-     *
-     */
+    This will generate a new authentication as well as a new refresh token. On successful refresh,
+    the old refresh_token will be invalid and both the access_token and the refresh_token will be overwritten.
+    Previous access_tokens will remain valid until their expiration timestamp is exceeded.
+    *
+    @param withRefreshToken? Optional refresh token coming from an external source e.g. the phone's secure storage
+    @return Promise<TokenRefreshResponse>
+    *
+    */
     refresh(withRefreshToken?: string): Promise<TokenRefreshResponse>;
     /**
      *
@@ -110,46 +115,54 @@ export declare class Midata {
     search(resourceType: string, params?: any): Promise<Resource[]>;
     /**
      Helper method to query the FHIR API.
-     * @param baseUrl for target API Call (e.g. Observation)
-     * @param params e.g. {code: '29463-7'} for BodyWeight
-     * @return Promise<ApiCallResponse>
-     */
+    * @param baseUrl for target API Call (e.g. Observation)
+    * @param params e.g. {code: '29463-7'} for BodyWeight
+    * @return Promise<ApiCallResponse>
+    */
     private _search(baseUrl, params?);
     /**
-     Login to the MIDATA platform. This method has to be called prior to
-     creating or updating resources. Calling authenticate will initiate the
-     oAuth2 authentication process.
+    Login to the MIDATA platform. This method has to be called prior to
+    creating or updating resources. Calling authenticate will initiate the
+    oAuth2 authentication process.
 
-     @param withDeviceID Optional parameter to allocate previously granted consents on the platform to this device.
-     @return Promise<TokenResponse>
-     **/
-    authenticate(withDeviceID?: string): Promise<TokenResponse>;
+    @param withDeviceID Optional parameter to allocate previously granted consents on the platform to this device.
+    @return Promise<AuthAndPatResponse>
+    **/
+    authenticate(withDeviceID?: string): Promise<AuthAndPatResponse>;
     /**
-     After successful authentication on midata this method is invoked. It exchanges the authCode
-     obtained from midata with the access_token used to query the FHIR endpoint API.
+    Resume the midata login
+    Needs to be used, when the oAuth login is performed in browser. Only working, when the browser is startet on port 8001.
 
-     @return Promise<TokenResponse>
-     **/
+    Todo: Config file
+
+    @return Promise<AuthAndPatResponse>
+    **/
+    resumeAuthenticate(): Promise<AuthAndPatResponse>;
+    /**
+    After successful authentication on midata this method is invoked. It exchanges the authCode
+    obtained from midata with the access_token used to query the FHIR endpoint API.
+
+    @return Promise<AuthAndPatResponse>
+    **/
     private _exchangeTokenForCode();
     /**
-     Helper method to initialize the params used during the oAuth2 authentication process.
+    Helper method to initialize the params used during the oAuth2 authentication process.
 
-     @return Promise<void>
-     **/
+    @return Promise<void>
+    **/
     private _initSessionParams(length);
     /**
-     Helper method to generate a random string with a given length.
-     @param length Length of the string to be generated
-     @return Promise<string>
-     **/
+    Helper method to generate a random string with a given length.
+    @param length Length of the string to be generated
+    @return Promise<string>
+    **/
     private _initRndString(length);
     /**
-     This method fetches the conformance statement identifying the OAuth authorize
-     and token endpoint URLs for use in requesting authorization to access FHIR resources.
-     This method is invoked whenever a new midata object is created. However, it can also
-     exclusively be called in order to update existing endpoint information.
-
-     @return Promise<Resource>
-     **/
+    This method fetches the conformance statement identifying the OAuth authorize
+    and token endpoint URLs for use in requesting authorization to access FHIR resources.
+    This method is invoked whenever a new midata object is created. However, it can also
+    exclusively be called in order to update existing endpoint information.
+    @return Promise<Resource>
+    **/
     fetchFHIRConformanceStatement(): Promise<Resource>;
 }

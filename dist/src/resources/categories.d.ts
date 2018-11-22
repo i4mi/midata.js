@@ -1,6 +1,6 @@
 /// <reference types="fhir" />
-export declare const VitalSigns: fhir.CodeableConcept;
-export declare const Laboratory: fhir.CodeableConcept;
-export declare const Survey: fhir.CodeableConcept;
-export declare const SocialHistory: fhir.CodeableConcept;
-export declare const PatientSpecified: fhir.CodeableConcept;
+export declare const CAT_VITALSIGNS: fhir.CodeableConcept;
+export declare const CAT_LABORATORY: fhir.CodeableConcept;
+export declare const CAT_SURVEY: fhir.CodeableConcept;
+export declare const CAT_SOCIALHISTORY: fhir.CodeableConcept;
+export declare const CAT_PATIENTSPECIFIED: fhir.CodeableConcept;

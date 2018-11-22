@@ -1,6 +1,6 @@
 // All codes from system http://hl7.org/fhir/observation-category
 
-export const VitalSigns: fhir.CodeableConcept = {
+export const CAT_VITALSIGNS: fhir.CodeableConcept = {
     coding: [{
         system: 'http://hl7.org/fhir/observation-category',
         code: 'vital-signs',
@@ -9,7 +9,7 @@ export const VitalSigns: fhir.CodeableConcept = {
     text: 'Vital Signs'
 };
 
-export const Laboratory: fhir.CodeableConcept = {
+export const CAT_LABORATORY: fhir.CodeableConcept = {
     coding: [{
         system: 'http://hl7.org/fhir/observation-category',
         code: 'laboratory',
@@ -18,7 +18,7 @@ export const Laboratory: fhir.CodeableConcept = {
     text: 'Laboratory'
 };
 
-export const Survey: fhir.CodeableConcept = {
+export const CAT_SURVEY: fhir.CodeableConcept = {
     coding: [{
         system: 'http://hl7.org/fhir/observation-category',
         code: 'survey',
@@ -28,7 +28,7 @@ export const Survey: fhir.CodeableConcept = {
 
 };
 
-export const SocialHistory: fhir.CodeableConcept = {
+export const CAT_SOCIALHISTORY: fhir.CodeableConcept = {
     coding: [{
         system: 'http://hl7.org/fhir/observation-category',
         code: 'social-history',
@@ -40,7 +40,7 @@ export const SocialHistory: fhir.CodeableConcept = {
 
 // All codes from system http://hl7.org/fhir/medication-statement-category
 
-export const PatientSpecified: fhir.CodeableConcept = {
+export const CAT_PATIENTSPECIFIED: fhir.CodeableConcept = {
     coding: [{
         system: 'http://hl7.org/fhir/medication-statement-category',
         code: 'patientspecified',
