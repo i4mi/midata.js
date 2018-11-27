@@ -5,6 +5,10 @@ MIDATA.js
 
 A collection of utility classes and functions to interact with the MIDATA.coop platform.
 
+**Getting started**
+New to midata and midata js?
+[Here](https://github.com/i4mi/midata.js/wiki) you can find a step by step guide on how to use this library.
+
 **Installation**
 ---
 **1.** Register your application in the midata developer backend (see [here](https://test.midata.coop/#/developer/guide "MIDATA Developer Guide")).
