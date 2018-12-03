@@ -74,7 +74,11 @@ export { PUBLICATIONSTATUS,
          HTTPVerb,
          COMPOSITIONSTATUS,
          CompositionStatus,
-         CompositionSection } from './basicTypes';
+         CompositionSection,
+         CompositionSectionText,
+         CompositionSectionEntry,
+         NARRATIVESTATUS,
+         NarrativeStatus } from './basicTypes';
 
 export { CAT_PATIENTSPECIFIED, 
          CAT_SOCIALHISTORY, 
