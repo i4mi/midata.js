@@ -42,6 +42,16 @@ export enum PUBLICATIONSTATUS {
 };
 export type PublicationStatus = keyof typeof PUBLICATIONSTATUS;
 
+//https://www.hl7.org/fhir/valueset-narrative-status.html
+export enum NARRATIVESTATUS {
+    "generated" = "generated",
+    "extensions" = "extensions",
+    "additional" = "additional",
+    "empty" = "empty"
+};
+export type NarrativeStatus = keyof typeof NARRATIVESTATUS;
+
+
 //https://www.hl7.org/fhir/valueset-administrative-gender.html
 // This status is used in the following resources
     // --> RelatedPerson.gender (Required)
@@ -311,19 +321,19 @@ export interface CompositionSectionBasic {
 };
 
 export interface CompositionSectionText extends CompositionSectionBasic {
-    text: string,
-    entry?: fhir.Reference,
+    text: fhir.Narrative,
+    entry?: Array<fhir.Reference>,
     section?: CompositionSection
 };
 
 export interface CompositionSectionEntry extends CompositionSectionBasic {
-    text?: string,
-    entry: fhir.Reference,
+    text?: fhir.Narrative,
+    entry: Array<fhir.Reference>,
     section?: CompositionSection
 };
 
 export interface CompositionSectionSection extends CompositionSectionBasic {
-    text?: string,
-    entry?: fhir.Reference,
+    text?: fhir.Narrative,
+    entry?: Array<fhir.Reference>,
     section: CompositionSection
 };

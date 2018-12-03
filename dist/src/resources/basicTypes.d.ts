@@ -14,6 +14,13 @@ export declare enum PUBLICATIONSTATUS {
     "unknown" = "unknown",
 }
 export declare type PublicationStatus = keyof typeof PUBLICATIONSTATUS;
+export declare enum NARRATIVESTATUS {
+    "generated" = "generated",
+    "extensions" = "extensions",
+    "additional" = "additional",
+    "empty" = "empty",
+}
+export declare type NarrativeStatus = keyof typeof NARRATIVESTATUS;
 export declare enum ADMINISTRATIVEGENDER {
     "male" = "male",
     "female" = "female",
@@ -204,17 +211,17 @@ export interface CompositionSectionBasic {
     emptyReason?: fhir.CodeableConcept;
 }
 export interface CompositionSectionText extends CompositionSectionBasic {
-    text: string;
-    entry?: fhir.Reference;
+    text: fhir.Narrative;
+    entry?: Array<fhir.Reference>;
     section?: CompositionSection;
 }
 export interface CompositionSectionEntry extends CompositionSectionBasic {
-    text?: string;
-    entry: fhir.Reference;
+    text?: fhir.Narrative;
+    entry: Array<fhir.Reference>;
     section?: CompositionSection;
 }
 export interface CompositionSectionSection extends CompositionSectionBasic {
-    text?: string;
-    entry?: fhir.Reference;
+    text?: fhir.Narrative;
+    entry?: Array<fhir.Reference>;
     section: CompositionSection;
 }

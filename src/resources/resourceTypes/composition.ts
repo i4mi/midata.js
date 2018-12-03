@@ -1,6 +1,6 @@
 import { registerResource } from '../registry';
 import { Resource } from './resource';
-import { CompositionStatus, CompositionSection } from '../basicTypes';
+import { CompositionStatus, CompositionSection, NarrativeStatus } from '../basicTypes';
 
 @registerResource('resourceType', 'Composition')
 export class Composition extends Resource {
@@ -40,18 +40,21 @@ export class Composition extends Resource {
         return super.getProperty("section");
     }
 
-    getSectionsWithText(sectionText: string): CompositionSection[] {
+    getSectionsWithText(sectionStatusCode: NarrativeStatus): CompositionSection[] {
         let sections = super.getProperty("section")
                        .filter((section: CompositionSection) => 
-                                section.text === sectionText);
+                                section.text.status === sectionStatusCode);
 
         return sections;
     }
 
     getSectionsWithEntryReference(sectionReference: fhir.Reference): CompositionSection[] {
         let sections = super.getProperty("section")
-                       .filter((section: CompositionSection) =>
-                                section.entry.reference === sectionReference);
+                       .filter((section: CompositionSection) => {
+                        for(let entryReference of section.entry) {
+                            entryReference.reference === sectionReference   
+                        } 
+                       });
         
         return sections;
     }

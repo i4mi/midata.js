@@ -1,6 +1,6 @@
 /// <reference types="fhir" />
 import { Resource } from './resource';
-import { CompositionStatus, CompositionSection } from '../basicTypes';
+import { CompositionStatus, CompositionSection, NarrativeStatus } from '../basicTypes';
 export declare class Composition extends Resource {
     /**
      *
@@ -11,7 +11,7 @@ export declare class Composition extends Resource {
     constructor(status: CompositionStatus, type: fhir.CodeableConcept, author: fhir.Reference);
     addSection(entry: CompositionSection): Promise<string>;
     getSections(): CompositionSection[];
-    getSectionsWithText(sectionText: string): CompositionSection[];
+    getSectionsWithText(sectionStatusCode: NarrativeStatus): CompositionSection[];
     getSectionsWithEntryReference(sectionReference: fhir.Reference): CompositionSection[];
     getSectionsWithSection(): CompositionSection[];
 }
