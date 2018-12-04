@@ -19,6 +19,7 @@ export class Composition extends Resource {
         super.addProperty('status', status);
         super.addProperty('type', type);
         super.addProperty('author', [author]);
+        super.addProperty('date', new Date().toISOString());
 
         //prepare section property
         super.addProperty('section', []);
