@@ -641,7 +641,7 @@ export class Midata {
                 let target = isMobileDevice() ? '_blank' : '_self';
                 let e = isMobileDevice() ? 'loadstart' : 'loadstop';
 
-                this._iab = new InAppBrowser(url, target, 'location=yes');
+                this._iab = new InAppBrowser(url, target, 'location=yes,clearcache=yes');
                 this._iab.on(e).subscribe((event) => {
                     this._iab.show();
                     if ((event.url).indexOf(redirect_url) === 0) {
@@ -817,9 +817,12 @@ export class Midata {
 
         var fetchUserInfo = () : Promise<Resource[]> => {
             return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
-                this.setUserEmail(response[0].getProperty("telecom")[0].value);
-                allResponses.patientResource = <Patient>response[0];
-                console.warn("MIDATAJS", "_exchangeTokenForCode - fetchUserInfo", "got patient response", allResponses);
+                console.warn('Patientloockup', response);
+                if (response.length !== 0 ){
+                    this.setUserEmail(response[0].getProperty("telecom")[0].value);
+                    allResponses.patientResource = <Patient>response[0];
+                    console.warn("MIDATAJS", "_exchangeTokenForCode - fetchUserInfo", "got patient response", allResponses);
+                }
                 return Promise.resolve(response);
             });
         };
