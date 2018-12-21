@@ -802,6 +802,7 @@ export class Midata {
                 console.warn("MIDATAJS", "_exchangeTokenForCode - exchangeToken", "got token response", allResponses);
                 let user: User
                 if (this._user) {
+                    console.warn("HM", allResponses.authResponse)
                     this._user.id = allResponses.authResponse.patient;
                 } else {
                     user = {
@@ -816,15 +817,16 @@ export class Midata {
         };
 
         var fetchUserInfo = () : Promise<Resource[]> => {
-            return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
-                console.warn('Patientloockup', response);
-                if (response.length !== 0 ){
-                    this.setUserEmail(response[0].getProperty("telecom")[0].value);
-                    allResponses.patientResource = <Patient>response[0];
-                    console.warn("MIDATAJS", "_exchangeTokenForCode - fetchUserInfo", "got patient response", allResponses);
-                }
-                return Promise.resolve(response);
-            });
+            // return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
+            //     console.warn('Patientloockup', response);
+            //     if (response.length !== 0 ){
+            //         this.setUserEmail(response[0].getProperty("telecom")[0].value);
+            //         allResponses.patientResource = <Patient>response[0];
+            //         console.warn("MIDATAJS", "_exchangeTokenForCode - fetchUserInfo", "got patient response", allResponses);
+            //     }
+            //     return Promise.resolve(response);
+            // });
+            return Promise.resolve([]);
         };
 
         return exchangeToken().then(() => {
