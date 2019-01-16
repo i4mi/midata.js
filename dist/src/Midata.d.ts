@@ -12,6 +12,7 @@ export interface AuthAndPatResponse {
     authResponse: TokenResponse;
     patientResource: Patient;
 }
+export declare type UserType = 'Patient' | 'Practitioner';
 export declare type language = 'en' | 'de' | 'it' | 'fr';
 export declare class Midata {
     private _host;
@@ -25,6 +26,7 @@ export declare class Midata {
     private _authEndpoint;
     private _user;
     private _iab;
+    private _userType;
     private _state;
     private _codeVerifier;
     private _codeChallenge;
@@ -37,6 +39,7 @@ export declare class Midata {
      *
      */
     constructor(_host: string, _appName: string, _secret?: string, _conformanceStatementEndpoint?: string);
+    userType: UserType;
     readonly loggedIn: boolean;
     readonly authToken: string;
     readonly refreshToken: string;

@@ -35,6 +35,8 @@ export interface AuthAndPatResponse {
     patientResource: Patient
 }
 
+export type UserType = 'Patient' | 'Practitioner';
+
 /*
 Languages currently supported by MIDATA
 */
@@ -53,6 +55,7 @@ export class Midata {
     private _authEndpoint: string;
     private _user: User;
     private _iab: InAppBrowser;
+    private _userType: UserType;
 
 
     private _state: string;
@@ -72,6 +75,10 @@ export class Midata {
                 private _secret?: string,
                 private _conformanceStatementEndpoint?: string) {
         this._conformanceStatementEndpoint = _conformanceStatementEndpoint || `${_host}/fhir/metadata`;
+    }
+
+    set userType(uT: UserType) {
+        this._userType = uT;
     }
 
     /*
@@ -229,10 +236,16 @@ export class Midata {
         };
 
         let fetchUserInfo = (): Promise<Resource[]> => {
-            return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
-                this.setUserEmail(response[0].getProperty("telecom")[0].value);
-                return Promise.resolve(response);
-            });
+            if (this._userType) {
+                console.warn('FETCHING USER INFO FOR', this._userType);
+                return this.search(`${this._userType}`, {_id: this.user.id}).then((response: Resource[]) => {
+                    console.warn('FETCHED', response);
+                    this.setUserEmail(response[0].getProperty("telecom")[0].value);
+                    return Promise.resolve(response);
+                });
+            } else {
+                return Promise.resolve([]);
+            }
         };
 
         return loginMidata()
@@ -474,20 +487,28 @@ export class Midata {
         };
 
         let fetchUserInfo = () : Promise<Resource[]>  => {
-            return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
-                this.setUserEmail(response[0].getProperty("telecom")[0].value);
-                return Promise.resolve(response);
-            }).catch((error) => {
-                return Promise.reject(error);
-            });
+            if (this._userType) {
+                console.warn('FETCHING USER INFO FOR', this._userType);
+                return this.search(`${this._userType}`, {_id: this.user.id}).then((response: Resource[]) => {
+                    console.warn('FETCHED', response);
+                    this.setUserEmail(response[0].getProperty("telecom")[0].value);
+                    return Promise.resolve(response);
+                }).catch((error) => {
+                    return Promise.reject(error);
+                });
+            } else {
+                return Promise.resolve([]);
+            }
         };
 
         return fetchConformanceStatement()
             .then(() => {
                 return refreshToken(getPayload, withRefreshToken);
-            }).then(() => {
+            })
+            .then(() => {
                 return fetchUserInfo();
-            }).then(() => {
+            })
+            .then(() => {
                 return Promise.resolve(tokenRefreshResponse);
             }).catch((error) => {
                 return Promise.reject(error);
@@ -817,16 +838,20 @@ export class Midata {
         };
 
         var fetchUserInfo = () : Promise<Resource[]> => {
-            // return this.search("Patient", {_id: this.user.id}).then((response: Resource[]) => {
-            //     console.warn('Patientloockup', response);
-            //     if (response.length !== 0 ){
-            //         this.setUserEmail(response[0].getProperty("telecom")[0].value);
-            //         allResponses.patientResource = <Patient>response[0];
-            //         console.warn("MIDATAJS", "_exchangeTokenForCode - fetchUserInfo", "got patient response", allResponses);
-            //     }
-            //     return Promise.resolve(response);
-            // });
-            return Promise.resolve([]);
+            if (this._userType) {
+                console.warn('FETCHING USER INFO FOR', this._userType);
+                return this.search(`${this._userType}`, {_id: this.user.id}).then((response: Resource[]) => {
+                    console.warn('FETCHED', response);
+                    if (response.length !== 0 ){
+                        this.setUserEmail(response[0].getProperty("telecom")[0].value);
+                        allResponses.patientResource = <Patient>response[0];
+                        console.warn("MIDATAJS", "_exchangeTokenForCode - fetchUserInfo", "got patient response", allResponses);
+                    }
+                    return Promise.resolve(response);
+                });
+            } else {
+                return Promise.resolve([]);
+            }
         };
 
         return exchangeToken().then(() => {
