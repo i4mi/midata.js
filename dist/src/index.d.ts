@@ -1,4 +1,4 @@
-export { Midata } from './Midata';
+export { Midata, AuthAndPatResponse } from './Midata';
 export * from './resources';
 import * as resources from './resources';
 export { resources };
