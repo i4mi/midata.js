@@ -23,10 +23,9 @@
     "webpack": "3.10.0"
   },
   "dependencies": {
-    "@angular/common": "^5.1.1",
-    "@angular/core": "^5.1.1",
-    "@angular/http": "^5.1.1",
-    "@angular/platform-browser": "^5.1.1",
+    "@angular/common": "^5.2.10",
+    "@angular/core": "^5.2.10",
+    "@angular/platform-browser": "^5.2.10",
     "@types/fhir": "1.0.30",
     "@types/node": "^8.5.1",
     "es6-promise": "^4.1.1",

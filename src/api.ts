@@ -1,4 +1,4 @@
-import {URLSearchParams} from "@angular/http";
+import {HttpParams} from "@angular/common/http";
 
 /**
  * The authentication request payload.
@@ -38,7 +38,7 @@ export interface AuthResponse {
  */
 export interface TokenRequest {
 
-    encodedParams: URLSearchParams;
+    encodedParams: HttpParams;
 }
 
 

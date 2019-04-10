@@ -13,7 +13,7 @@ import {InvalidCallError} from './errors/InvalidCallError';
 import {Promise} from 'es6-promise'
 import {apiCall, ApiCallResponse, base64EncodeURL} from './util';
 import {InAppBrowser} from 'ionic-native';
-import {URLSearchParams} from "@angular/http";
+import { HttpParams } from "@angular/common/http";
 import {fromFhir} from "./resources/registry";
 import {Resource} from "./resources/resourceTypes/resource";
 import { Patient } from './resources';
@@ -444,7 +444,7 @@ export class Midata {
 
         //ies1 --> ev. "getPayload = (withRefreshToken?: string)" or else call in apiCall, payload from refreshToken not working? Line 446
         let getPayload = () : TokenRequest => {
-            let urlParams = new URLSearchParams();
+            let urlParams = new HttpParams();
             urlParams.append("grant_type", "refresh_token");
 
             if (withRefreshToken) {
@@ -783,7 +783,7 @@ export class Midata {
     private _exchangeTokenForCode(): Promise<AuthAndPatResponse> {
         let getPayload = () : TokenRequest => {
             // because of x-www-form-urlencoded
-            let urlParams = new URLSearchParams();
+            let urlParams = new HttpParams();
             let r_url = isMobileDevice() ? 'http://localhost/callback' : 'http://localhost:8001/index.html';
 
             urlParams.append("grant_type", "authorization_code");

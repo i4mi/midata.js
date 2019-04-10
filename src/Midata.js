@@ -7,7 +7,7 @@ var InvalidCallError_1 = require("./errors/InvalidCallError");
 var es6_promise_1 = require("es6-promise");
 var util_1 = require("./util");
 var ionic_native_1 = require("ionic-native");
-var http_1 = require("@angular/http");
+var http_1 = require("@angular/common/http");
 var registry_1 = require("./resources/registry");
 var Resource_1 = require("./resources/Resource");
 var jsSHA = require("jssha");
@@ -391,7 +391,7 @@ var Midata = (function () {
             }
         };
         var getPayload = function () {
-            var urlParams = new http_1.URLSearchParams();
+            var urlParams = new http_1.HttpParams();
             urlParams.append("grant_type", "refresh_token");
             if (withRefreshToken) {
                 urlParams.append("refresh_token", withRefreshToken);
@@ -654,7 +654,7 @@ var Midata = (function () {
         var _this = this;
         var getPayload = function () {
             // because of x-www-form-urlencoded
-            var urlParams = new http_1.URLSearchParams();
+            var urlParams = new http_1.HttpParams();
             urlParams.append("grant_type", "authorization_code");
             urlParams.append("code", _this._authCode);
             urlParams.append("redirect_uri", "http://localhost/callback");
