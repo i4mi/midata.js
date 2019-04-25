@@ -532,7 +532,8 @@ export class Midata {
             return Promise.reject(new InvalidCallError(`Can\'t search for records when no user logged in first. Call authenticate() before trying to query the API.`));
         }
 
-        let baseUrl = `${this._host}/fhir/${resourceType}`;
+        //OPEN FHIR MANIPULATION
+        let baseUrl = `${this._host}/${resourceType}`;
 
         let tryToMapResponse = (response: ApiCallResponse) : Promise<Resource[]> => {
             if (response.status === 200) { // GET == 200
@@ -611,12 +612,12 @@ export class Midata {
         query = query && `?${query}` || '';
         let url = baseUrl + query;
 
+        //OPEN FHIR MANIPULATION
         return apiCall({
             url: url,
             method: 'GET',
             jsonBody: true,
             headers: {
-                'Authorization': 'Bearer ' + this._authToken,
                 'Content-Type': 'application/json+fhir;charset=utf-8'
             }
         });
