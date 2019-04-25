@@ -620,7 +620,8 @@ export class Midata {
             method: 'GET',
             jsonBody: true,
             headers: {
-                'Content-Type': 'application/json;charset=utf-8'
+                'Accept': 'application/json, text/javacript, */*; q=0.01',
+                'Content-Type': 'application/json; charset=utf-8'
             }
         });
     }
