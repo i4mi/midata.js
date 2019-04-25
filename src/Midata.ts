@@ -528,9 +528,11 @@ export class Midata {
     search(resourceType: string, params: any = {}) : Promise<Resource[]> {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
-        if (this._authToken === undefined) {
-            return Promise.reject(new InvalidCallError(`Can\'t search for records when no user logged in first. Call authenticate() before trying to query the API.`));
-        }
+
+        //OPEN FHIR MANIPULATION
+        // if (this._authToken === undefined) {
+        //     return Promise.reject(new InvalidCallError(`Can\'t search for records when no user logged in first. Call authenticate() before trying to query the API.`));
+        // }
 
         //OPEN FHIR MANIPULATION
         let baseUrl = `${this._host}/${resourceType}`;
