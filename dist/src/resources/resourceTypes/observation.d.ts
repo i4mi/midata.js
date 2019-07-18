@@ -24,20 +24,20 @@ export declare class Observation extends Resource {
      * --------------------------------------------------------------------------------
      *                                  value[x] type determinators
      */
-    private _isValueQuantity(type);
-    private _isValueDateTime(type);
-    private _isValueTime(type);
-    private _isValueString(type);
-    private _isValueAttachment(type);
-    private _isValueCodeableConcept(type);
-    private _isValueRange(type);
-    private _isValueRatio(type);
-    private _isValueSampledData(type);
-    private _isValuePeriod(type);
+    private _isValueQuantity;
+    private _isValueDateTime;
+    private _isValueTime;
+    private _isValueString;
+    private _isValueAttachment;
+    private _isValueCodeableConcept;
+    private _isValueRange;
+    private _isValueRatio;
+    private _isValueSampledData;
+    private _isValuePeriod;
     /**
      * --------------------------------------------------------------------------------
      *                                  effective[x] type determinators
      */
-    private _isDateTime(type);
-    private _isPeriod(type);
+    private _isDateTime;
+    private _isPeriod;
 }

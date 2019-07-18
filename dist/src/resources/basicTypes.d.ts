@@ -1,8 +1,8 @@
-/// <reference types="fhir" />
 /**
  * This file contains all types used in the fhir resource.
  * For each type should always the 'definition-link' be given
  */
+/// <reference types="fhir" />
 /**
  * --------------------------------------------------------------------------------
  *                                  MOST BASIC
@@ -11,14 +11,14 @@ export declare enum PUBLICATIONSTATUS {
     "draft" = "draft",
     "active" = "active",
     "retired" = "retired",
-    "unknown" = "unknown",
+    "unknown" = "unknown"
 }
 export declare type PublicationStatus = keyof typeof PUBLICATIONSTATUS;
 export declare enum ADMINISTRATIVEGENDER {
     "male" = "male",
     "female" = "female",
     "other" = "other",
-    "unknown" = "unknown",
+    "unknown" = "unknown"
 }
 export declare type AdministrativeGender = keyof typeof ADMINISTRATIVEGENDER;
 export interface ValueString {
@@ -92,7 +92,7 @@ export declare enum OBSERVATIONSTATUS {
     "corrected" = "corrected",
     "cancelled" = "cancelled",
     "entered-in-error" = "entered-in-error",
-    "unknown" = "unknown",
+    "unknown" = "unknown"
 }
 export declare type ObservationStatus = keyof typeof OBSERVATIONSTATUS;
 /**
@@ -104,7 +104,7 @@ export declare enum QUESTIONNAIRERESPONSESTATUS {
     "completed" = "completed",
     "amended" = "amended",
     "entered-in-error" = "entered-in-error",
-    "stopped" = "stopped",
+    "stopped" = "stopped"
 }
 export declare type QuestionnaireResponseStatus = keyof typeof QUESTIONNAIRERESPONSESTATUS;
 export declare type QuestionnaireResponseValue = ValueQuantity | ValueDateTime | ValueTime | ValueString | ValueAttachment | ValueBoolean | ValueDecimal | ValueInteger | ValueDate | ValueUri | ValueCoding | ValueReference;
@@ -128,7 +128,7 @@ export declare enum QUESTIONNAIREITEMTYPE {
     "open-choise" = "open-choise",
     "attachement" = "attachement",
     "reference" = "reference",
-    "quantity" = "quantity",
+    "quantity" = "quantity"
 }
 export declare type QuestionnaireItemType = keyof typeof QUESTIONNAIREITEMTYPE;
 /**
@@ -141,14 +141,14 @@ export declare enum MEDICATIONSTATEMENTSTATUS {
     "entered-in-error" = "entered-in-error",
     "intended" = "intended",
     "stopped" = "stopped",
-    "on-hold" = "on-hold",
+    "on-hold" = "on-hold"
 }
 export declare type MedicationStatementStatus = keyof typeof MEDICATIONSTATEMENTSTATUS;
 export declare enum MEDICATIONSTATEMENTTAKEN {
     "y" = "y",
     "n" = "n",
     "unk" = "unk",
-    "na" = "na",
+    "na" = "na"
 }
 export declare type MedicationStatementTaken = keyof typeof MEDICATIONSTATEMENTTAKEN;
 /**
@@ -158,7 +158,7 @@ export declare type MedicationStatementTaken = keyof typeof MEDICATIONSTATEMENTT
 export declare enum DIGITALMEDIATYPE {
     photo = "photo",
     video = "video",
-    audio = "audio",
+    audio = "audio"
 }
 export declare type DigitalMediaType = keyof typeof DIGITALMEDIATYPE;
 /**
@@ -174,14 +174,14 @@ export declare enum BUNDLETYPE {
     "batch-response" = "batch-response",
     "history" = "history",
     "searchset" = "searchset",
-    "collection" = "collection",
+    "collection" = "collection"
 }
 export declare type BundleType = keyof typeof BUNDLETYPE;
 export declare enum HTTPVERB {
     "GET" = "GET",
     "POST" = "POST",
     "PUT" = "PUT",
-    "DELETE" = "DELETE",
+    "DELETE" = "DELETE"
 }
 export declare type HTTPVerb = keyof typeof HTTPVERB;
 /**
@@ -192,7 +192,7 @@ export declare enum COMPOSITIONSTATUS {
     "preliminary" = "preliminary",
     "final" = "final",
     "amended" = "amended",
-    "entered-in-error" = "entered-in-error",
+    "entered-in-error" = "entered-in-error"
 }
 export declare type CompositionStatus = keyof typeof COMPOSITIONSTATUS;
 export declare type CompositionSection = CompositionSectionText | CompositionSectionEntry | CompositionSectionSection;

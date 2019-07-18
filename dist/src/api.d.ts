@@ -12,7 +12,10 @@ export interface AuthRequest {
 /**
  * The user role in an authentication request.
  */
-export declare type UserRole = 'member' | 'provider' | 'developer' | 'research';
+export declare type UserRole = 'member' | // members of the cooperative (default)
+'provider' | // healthcare providers
+'developer' | // developers
+'research';
 /**
 
  /**
