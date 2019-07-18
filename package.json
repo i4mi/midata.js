@@ -1,6 +1,6 @@
 {
   "name": "midata",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Library for simplified midata access and communication for ionic projects",
   "main": "dist/midata.js",
   "types": "./dist/src/index.d.ts",
