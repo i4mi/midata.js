@@ -1,6 +1,6 @@
 {
   "name": "midata",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Library for simplified midata access and communication for ionic projects",
   "main": "dist/midata.js",
   "types": "./dist/src/index.d.ts",
@@ -19,20 +19,22 @@
   },
   "devDependencies": {
     "ts-loader": "3.2.0",
-    "typescript": "2.4.1",
+    "typescript": "^3.1.6",
     "webpack": "3.10.0"
   },
   "dependencies": {
-    "@angular/common": "^5.1.1",
-    "@angular/core": "^5.1.1",
-    "@angular/http": "^5.1.1",
-    "@angular/platform-browser": "^5.1.1",
+    "@angular/cli": "^7.2.2",
+    "@angular/common": "^7.2.2",
+    "@angular/core": "^7.2.2",
+    "@angular/http": "^7.2.2",
+    "@angular/platform-browser": "^7.2.2",
     "@types/fhir": "1.0.30",
-    "@types/node": "^8.5.1",
+    "@types/node": "^12.6.6",
     "es6-promise": "^4.1.1",
     "ionic-native": "^2.9.0",
     "jssha": "^2.3.1",
-    "rxjs": "^5.5.5",
-    "zone.js": "^0.8.18"
+    "rxjs": "^6.5.2",
+    "rxjs-compat": "^6.0.0-rc.0",
+    "zone.js": "^0.8.29"
   }
 }
