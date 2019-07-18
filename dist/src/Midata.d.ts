@@ -16,8 +16,8 @@ export declare type language = 'en' | 'de' | 'it' | 'fr';
 export declare class Midata {
     private _host;
     private _appName;
-    private _secret;
-    private _conformanceStatementEndpoint;
+    private _secret?;
+    private _conformanceStatementEndpoint?;
     private _authToken;
     private _refreshToken;
     private _authCode;
@@ -45,7 +45,7 @@ export declare class Midata {
     setUserLanguage(language: language): void;
     changePlatform(host: string, conformanceStatementEndpoint?: string): void;
     logout(): void;
-    private _setLoginData(authToken, refreshToken, user?);
+    private _setLoginData;
     /**
      *
      * Login to the MIDATA platform. This method has to be called prior to
@@ -78,7 +78,7 @@ export declare class Midata {
     * @return Promise<ApiCallResponse>
     *
     */
-    private _retry(maxRetries, fn, ...args);
+    private _retry;
     /**
      *
      Helper method to create FHIR resources via a HTTP POST call.
@@ -119,7 +119,7 @@ export declare class Midata {
     * @param params e.g. {code: '29463-7'} for BodyWeight
     * @return Promise<ApiCallResponse>
     */
-    private _search(baseUrl, params?);
+    private _search;
     /**
     Login to the MIDATA platform. This method has to be called prior to
     creating or updating resources. Calling authenticate will initiate the
@@ -144,19 +144,19 @@ export declare class Midata {
 
     @return Promise<AuthAndPatResponse>
     **/
-    private _exchangeTokenForCode();
+    private _exchangeTokenForCode;
     /**
     Helper method to initialize the params used during the oAuth2 authentication process.
 
     @return Promise<void>
     **/
-    private _initSessionParams(length);
+    private _initSessionParams;
     /**
     Helper method to generate a random string with a given length.
     @param length Length of the string to be generated
     @return Promise<string>
     **/
-    private _initRndString(length);
+    private _initRndString;
     /**
     This method fetches the conformance statement identifying the OAuth authorize
     and token endpoint URLs for use in requesting authorization to access FHIR resources.
