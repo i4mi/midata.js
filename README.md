@@ -1,9 +1,13 @@
-MIDATA.js
+MIDATA.js for ionic 5
 =========
 
 2017 - Bern University of Applied Sciences - Institute for Medical Informatics (I4MI)
 
 A collection of utility classes and functions to interact with the MIDATA.coop platform.
+
+**Disclaimer**
+---
+*Forked by [frickerg](https://github.com/frickerg) for the single purpose of making midata.js compatible with the latest ionic version*
 
 **Installation**
 ---
@@ -98,3 +102,8 @@ IMPORTANT: This change needs some adaption of the midataService classes on the c
         });
         ```
     
+**Whats next (for developers)**
+---
+**Upgrade to the latest angular version**
+- ```@angular/http``` is deprecated in angular 8. As soon as ionic upgrades to the next angular version, ```@angular/http``` must be replaced by ```@angular/common/http```. Read the updated documentation for HttpClient [here](https://angular.io/guide/http) and follow the instructions to upgrade angular [here](https://update.angular.io/).
+- The same update should also consider upgrading to [TypeScript 3.4](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html)
