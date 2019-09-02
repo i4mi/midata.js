@@ -237,9 +237,9 @@ export class Midata {
 
         let fetchUserInfo = (): Promise<Resource[]> => {
             if (this._userType) {
-                console.warn('FETCHING USER INFO FOR', this._userType);
+                // console.warn('FETCHING USER INFO FOR', this._userType);
                 return this.search(`${this._userType}`, { _id: this.user.id }).then((response: Resource[]) => {
-                    console.warn('FETCHED', response);
+                    // console.warn('FETCHED', response);
                     this.setUserEmail(response[0].getProperty("telecom")[0].value);
                     return Promise.resolve(response);
                 });
@@ -488,9 +488,9 @@ export class Midata {
 
         let fetchUserInfo = (): Promise<Resource[]> => {
             if (this._userType) {
-                console.warn('FETCHING USER INFO FOR', this._userType);
+                // console.warn('FETCHING USER INFO FOR', this._userType);
                 return this.search(`${this._userType}`, { _id: this.user.id }).then((response: Resource[]) => {
-                    console.warn('FETCHED', response);
+                    // console.warn('FETCHED', response);
                     this.setUserEmail(response[0].getProperty("telecom")[0].value);
                     return Promise.resolve(response);
                 }).catch((error) => {
@@ -801,7 +801,7 @@ export class Midata {
 
 
         let allResponses = {} as AuthAndPatResponse;
-        console.warn("MIDATAJS", "_exchangeTokenForCode", "defined allResponses", allResponses);
+        // console.warn("MIDATAJS", "_exchangeTokenForCode", "defined allResponses", allResponses);
         //let authResponse : TokenResponse;
 
         let isMobileDevice = (): boolean => {
@@ -820,10 +820,10 @@ export class Midata {
                 jsonEncoded: false
             }).then((response: ApiCallResponse) => {
                 allResponses.authResponse = response.body;
-                console.warn("MIDATAJS", "_exchangeTokenForCode - exchangeToken", "got token response", allResponses);
+                // console.warn("MIDATAJS", "_exchangeTokenForCode - exchangeToken", "got token response", allResponses);
                 let user: User
                 if (this._user) {
-                    console.warn("HM", allResponses.authResponse)
+                    // console.warn("HM", allResponses.authResponse)
                     this._user.id = allResponses.authResponse.patient;
                 } else {
                     user = {
@@ -839,13 +839,13 @@ export class Midata {
 
         var fetchUserInfo = (): Promise<Resource[]> => {
             if (this._userType) {
-                console.warn('FETCHING USER INFO FOR', this._userType);
+                // console.warn('FETCHING USER INFO FOR', this._userType);
                 return this.search(`${this._userType}`, { _id: this.user.id }).then((response: Resource[]) => {
-                    console.warn('FETCHED', response);
+                    // console.warn('FETCHED', response);
                     if (response.length !== 0) {
                         this.setUserEmail(response[0].getProperty("telecom")[0].value);
                         allResponses.patientResource = <Patient>response[0];
-                        console.warn("MIDATAJS", "_exchangeTokenForCode - fetchUserInfo", "got patient response", allResponses);
+                        // console.warn("MIDATAJS", "_exchangeTokenForCode - fetchUserInfo", "got patient response", allResponses);
                     }
                     return Promise.resolve(response);
                 });
