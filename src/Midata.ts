@@ -6,16 +6,16 @@ import {
     AuthResponse,
     UserRole,
 } from './api';
-import {MidataJSError} from './errors/MidataJSError';
-import {MappingError} from './errors/MappingError';
-import {UnknownEndpointError} from './errors/UnknownEndpointError';
-import {InvalidCallError} from './errors/InvalidCallError';
-import {Promise} from 'es6-promise'
-import {apiCall, ApiCallResponse, base64EncodeURL} from './util';
-import {InAppBrowser} from 'ionic-native';
-import {URLSearchParams} from "@angular/http";
-import {fromFhir} from "./resources/registry";
-import {Resource} from "./resources/resourceTypes/resource";
+import { MidataJSError } from './errors/MidataJSError';
+import { MappingError } from './errors/MappingError';
+import { UnknownEndpointError } from './errors/UnknownEndpointError';
+import { InvalidCallError } from './errors/InvalidCallError';
+import { Promise } from 'es6-promise'
+import { apiCall, ApiCallResponse, base64EncodeURL } from './util';
+import { InAppBrowser } from 'ionic-native';
+import { URLSearchParams } from "@angular/http";
+import { fromFhir } from "./resources/registry";
+import { Resource } from "./resources/resourceTypes/resource";
 import { Patient } from './resources';
 
 let jsSHA = require("jssha");
@@ -71,9 +71,9 @@ export class Midata {
      *
      */
     constructor(private _host: string,
-                private _appName: string,
-                private _secret?: string,
-                private _conformanceStatementEndpoint?: string) {
+        private _appName: string,
+        private _secret?: string,
+        private _conformanceStatementEndpoint?: string) {
         this._conformanceStatementEndpoint = _conformanceStatementEndpoint || `${_host}/fhir/metadata`;
     }
 
@@ -131,13 +131,13 @@ export class Midata {
     Set the current user's language.
     */
     setUserLanguage(language: language) {
-    if (this._user) {
-        this._user.language = language
-    } else {
-        let user: User = {
-            language: language
-        }
-        this._user = user;
+        if (this._user) {
+            this._user.language = language
+        } else {
+            let user: User = {
+                language: language
+            }
+            this._user = user;
         }
     }
 
@@ -145,9 +145,9 @@ export class Midata {
     Update the host and if needed the conformanceStatementEndpoint if the target server changes.
     Changing the target server will force a logout since this should only be done if no connection exists.
     */
-    changePlatform(host: string, conformanceStatementEndpoint?: string){
+    changePlatform(host: string, conformanceStatementEndpoint?: string) {
         this._host = host;
-        if(conformanceStatementEndpoint){
+        if (conformanceStatementEndpoint) {
             this._conformanceStatementEndpoint = conformanceStatementEndpoint;
         } else {
             this._conformanceStatementEndpoint = `${this._host}/fhir/metadata`;
@@ -174,7 +174,7 @@ export class Midata {
     private _setLoginData(authToken: string, refreshToken: string, user?: User) {
         this._authToken = authToken;
         this._refreshToken = refreshToken;
-        if(user){
+        if (user) {
             this._user = user;
         }
     }
@@ -238,7 +238,7 @@ export class Midata {
         let fetchUserInfo = (): Promise<Resource[]> => {
             if (this._userType) {
                 console.warn('FETCHING USER INFO FOR', this._userType);
-                return this.search(`${this._userType}`, {_id: this.user.id}).then((response: Resource[]) => {
+                return this.search(`${this._userType}`, { _id: this.user.id }).then((response: Resource[]) => {
                     console.warn('FETCHED', response);
                     this.setUserEmail(response[0].getProperty("telecom")[0].value);
                     return Promise.resolve(response);
@@ -266,7 +266,7 @@ export class Midata {
      * @return Promise<Resource>
      *
      */
-    save(resource: Resource | any) : Promise<Resource> {
+    save(resource: Resource | any): Promise<Resource> {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
@@ -280,14 +280,14 @@ export class Midata {
         } else {
             fhirObject = resource;
         }
-        
+
         // If the resource didn't have an id, then the resource has to be
         // created on the server.
         let shouldCreate = fhirObject.id === undefined || fhirObject.resourceType === "Bundle"; // By default
         // a bundle holds an id upon creation. Therefore, additionally check for resource type
         let apiMethod = shouldCreate ? this._create : this._update;
 
-        let tryToMapResponse = (response: ApiCallResponse) : Resource => {
+        let tryToMapResponse = (response: ApiCallResponse): Resource => {
             // When the resource is created, the same resource will
             // be returned (populated with an id field in case it was newly created).
             if (response.status === 201 || response.status === 200) { // POST, PUT == 201, GET == 200
@@ -309,20 +309,20 @@ export class Midata {
             .then((response: ApiCallResponse) => {
                 try {
                     return Promise.resolve(tryToMapResponse(response));
-                } catch(error) {
+                } catch (error) {
                     // Catch and re-throw the error
                     return Promise.reject(error);
                 }
             }, (error: ApiCallResponse) => {
                 // Check if the authToken is expired and a refreshToken is available
-                if(error.status === 401 && this.refreshToken) {
+                if (error.status === 401 && this.refreshToken) {
                     return this.refresh().then(() => {
                         // If the refresh operation succeeded,
                         // retry the operation 3 times
-                        return this._retry(3, apiMethod, fhirObject).then((response : ApiCallResponse) => {
+                        return this._retry(3, apiMethod, fhirObject).then((response: ApiCallResponse) => {
                             try {
                                 return Promise.resolve(tryToMapResponse(response));
-                            } catch(error) {
+                            } catch (error) {
                                 // Catch and re-throw the error
                                 return Promise.reject(error);
                             }
@@ -339,7 +339,7 @@ export class Midata {
                     return Promise.reject(error);
                 }
             });
-            
+
     };
 
     /**
@@ -352,13 +352,13 @@ export class Midata {
     * @return Promise<ApiCallResponse>
     *
     */
-    private _retry(maxRetries: number, fn: any, ...args: any[]) : Promise<ApiCallResponse> {
+    private _retry(maxRetries: number, fn: any, ...args: any[]): Promise<ApiCallResponse> {
         // Apply is very similar to call(), except for the type of arguments it supports.
         // You use an arguments array instead of a list of arguments (p1,p2,p3,...).
         // Thus, you do not have to know the arguments of the called object when you use
         // the apply method. The called object is then responsible for handling the arguments.
         return fn.apply(this, args).catch((error: any) => {
-            if(maxRetries <= 1){
+            if (maxRetries <= 1) {
                 throw new MidataJSError("Maximum retries exceeded, abort!");
             }
             return this._retry(maxRetries - 1, fn, ...args);
@@ -370,7 +370,7 @@ export class Midata {
      Helper method to create FHIR resources via a HTTP POST call.
     *
     */
-    private _create = (fhirObject: any) : Promise<ApiCallResponse> => {
+    private _create = (fhirObject: any): Promise<ApiCallResponse> => {
 
         let url: string; // for convenience
 
@@ -398,7 +398,7 @@ export class Midata {
      Helper method to create FHIR resources via a HTTP PUT call.
     *
     */
-    private _update = (fhirObject: any) : Promise<ApiCallResponse> => {
+    private _update = (fhirObject: any): Promise<ApiCallResponse> => {
         let url = `${this._host}/fhir/${fhirObject.resourceType}/${fhirObject.id}`;
         return apiCall({
             jsonBody: false,
@@ -424,13 +424,13 @@ export class Midata {
     @return Promise<TokenRefreshResponse>
     *
     */
-    refresh(withRefreshToken?: string) : Promise<TokenRefreshResponse> {
+    refresh(withRefreshToken?: string): Promise<TokenRefreshResponse> {
 
         let tokenRefreshResponse: TokenRefreshResponse;
 
-        let fetchConformanceStatement = () : Promise<Resource> =>  {
+        let fetchConformanceStatement = (): Promise<Resource> => {
             if (this._conformanceStatementEndpoint !== undefined) {
-                if(this._tokenEndpoint == undefined) {
+                if (this._tokenEndpoint == undefined) {
                     return this.fetchFHIRConformanceStatement().then((response) => {
                         return Promise.resolve(response);
                     });
@@ -443,7 +443,7 @@ export class Midata {
         };
 
         //ies1 --> ev. "getPayload = (withRefreshToken?: string)" or else call in apiCall, payload from refreshToken not working? Line 446
-        let getPayload = () : TokenRequest => {
+        let getPayload = (): TokenRequest => {
             let urlParams = new URLSearchParams();
             urlParams.append("grant_type", "refresh_token");
 
@@ -459,7 +459,7 @@ export class Midata {
             return refreshRequest;
         };
 
-        let refreshToken = (fn: any, withRefreshToken?: string) : Promise<TokenRefreshResponse> => {
+        let refreshToken = (fn: any, withRefreshToken?: string): Promise<TokenRefreshResponse> => {
             return apiCall({
                 url: this._tokenEndpoint,
                 method: 'POST',
@@ -469,7 +469,7 @@ export class Midata {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
-            }).then((response : ApiCallResponse) => {
+            }).then((response: ApiCallResponse) => {
                 tokenRefreshResponse = response.body;
                 let user: User
                 if (this._user) {
@@ -486,10 +486,10 @@ export class Midata {
             });
         };
 
-        let fetchUserInfo = () : Promise<Resource[]>  => {
+        let fetchUserInfo = (): Promise<Resource[]> => {
             if (this._userType) {
                 console.warn('FETCHING USER INFO FOR', this._userType);
-                return this.search(`${this._userType}`, {_id: this.user.id}).then((response: Resource[]) => {
+                return this.search(`${this._userType}`, { _id: this.user.id }).then((response: Resource[]) => {
                     console.warn('FETCHED', response);
                     this.setUserEmail(response[0].getProperty("telecom")[0].value);
                     return Promise.resolve(response);
@@ -525,7 +525,7 @@ export class Midata {
      * @return Promise<Resource[]>
      *
      */
-    search(resourceType: string, params: any = {}) : Promise<Resource[]> {
+    search(resourceType: string, params: any = {}): Promise<Resource[]> {
         // Check if the user is logged in, otherwise no record can be
         // created or updated.
         if (this._authToken === undefined) {
@@ -534,7 +534,7 @@ export class Midata {
 
         let baseUrl = `${this._host}/fhir/${resourceType}`;
 
-        let tryToMapResponse = (response: ApiCallResponse) : Promise<Resource[]> => {
+        let tryToMapResponse = (response: ApiCallResponse): Promise<Resource[]> => {
             if (response.status === 200) { // GET == 200
                 if (response.body.entry != undefined) {
                     try {
@@ -542,7 +542,7 @@ export class Midata {
                             return fromFhir(e.resource);
                         });
                         return Promise.resolve(mappedResponse)
-                    } catch (mappingError){
+                    } catch (mappingError) {
                         // FHIR's Resource record structure's been violated, throw error
                         throw new MappingError();
                     }
@@ -566,14 +566,14 @@ export class Midata {
                 }
             }, (error: ApiCallResponse) => {
                 // Check if the authToken is expired and a refreshToken is available
-                if(error.status === 401 && this.refreshToken) {
+                if (error.status === 401 && this.refreshToken) {
                     return this.refresh().then(() => {
                         // If the refresh operation succeeded,
                         // retry the operation 3 times
-                        return this._retry(3, this._search, baseUrl, params).then((response : ApiCallResponse) => {
+                        return this._retry(3, this._search, baseUrl, params).then((response: ApiCallResponse) => {
                             try {
                                 return Promise.resolve(tryToMapResponse(response));
-                            } catch(error) {
+                            } catch (error) {
                                 // Catch and re-throw the error.
                                 return Promise.reject(error);
                             }
@@ -600,7 +600,7 @@ export class Midata {
     * @return Promise<ApiCallResponse>
     */
 
-    private _search(baseUrl: string, params: any = {}) : Promise<ApiCallResponse> {
+    private _search(baseUrl: string, params: any = {}): Promise<ApiCallResponse> {
         let queryParts = Object.keys(params).map(key => {
             return key + '=' + params[key]
         });
@@ -633,17 +633,17 @@ export class Midata {
 
     authenticate(withDeviceID?: string): Promise<AuthAndPatResponse> {
 
-        if(withDeviceID) {
-            if(withDeviceID.length <= 3) {
+        if (withDeviceID) {
+            if (withDeviceID.length <= 3) {
                 return Promise.reject(new InvalidCallError("Device ID must be longer than 3 characters"));
             }
         }
 
         let redirect_url = "http://localhost/callback";
 
-        let fetchConformanceStatement = () : Promise<Resource> =>  {
+        let fetchConformanceStatement = (): Promise<Resource> => {
             if (this._conformanceStatementEndpoint !== undefined) {
-                if(this._authEndpoint == undefined || this._tokenEndpoint == undefined) {
+                if (this._authEndpoint == undefined || this._tokenEndpoint == undefined) {
                     return this.fetchFHIRConformanceStatement().then((response) => {
                         return Promise.resolve(response);
                     });
@@ -655,14 +655,14 @@ export class Midata {
             }
         };
 
-        let loginMidata = (url: string) : Promise<void> => {
-            return new Promise<void>((resolve,reject) => {
+        let loginMidata = (url: string): Promise<void> => {
+            return new Promise<void>((resolve, reject) => {
                 let successful = false;
 
                 let target = isMobileDevice() ? '_blank' : '_self';
                 let e = isMobileDevice() ? 'loadstart' : 'loadstop';
 
-                this._iab = new InAppBrowser(url, target, 'location=yes,clearcache=yes');
+                this._iab = new InAppBrowser(url, target, 'location=no,clearcache=yes');
                 this._iab.on(e).subscribe((event) => {
                     this._iab.show();
                     if ((event.url).indexOf(redirect_url) === 0) {
@@ -688,7 +688,7 @@ export class Midata {
             });
         };
 
-        let isMobileDevice = () : boolean => {
+        let isMobileDevice = (): boolean => {
             return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
         };
 
@@ -742,10 +742,10 @@ export class Midata {
 
     resumeAuthenticate(): Promise<AuthAndPatResponse> {
         let redirect_url = "http://localhost:8001/index.html";
-        let e_url = window.location.href; 
+        let e_url = window.location.href;
 
-        let resumeLogin = () : Promise<void> => {
-            return new Promise<void>((resolve,reject) => {
+        let resumeLogin = (): Promise<void> => {
+            return new Promise<void>((resolve, reject) => {
                 if ((e_url).indexOf(redirect_url) === 0) {
                     let _state = e_url.split("&")[0].split("=")[1];
                     if (_state && _state === this._state) {
@@ -757,10 +757,10 @@ export class Midata {
                     }
                 } else {
                     reject();
-                } 
+                }
             });
         };
-        
+
         return resumeLogin()
             .then(() => {
                 return this._exchangeTokenForCode();
@@ -781,7 +781,7 @@ export class Midata {
     **/
 
     private _exchangeTokenForCode(): Promise<AuthAndPatResponse> {
-        let getPayload = () : TokenRequest => {
+        let getPayload = (): TokenRequest => {
             // because of x-www-form-urlencoded
             let urlParams = new URLSearchParams();
             let r_url = isMobileDevice() ? 'http://localhost/callback' : 'http://localhost:8001/index.html';
@@ -799,16 +799,16 @@ export class Midata {
             return refreshRequest;
         };
 
-        
+
         let allResponses = {} as AuthAndPatResponse;
         console.warn("MIDATAJS", "_exchangeTokenForCode", "defined allResponses", allResponses);
         //let authResponse : TokenResponse;
 
-        let isMobileDevice = () : boolean => {
+        let isMobileDevice = (): boolean => {
             return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
         };
 
-        let exchangeToken = () : Promise<ApiCallResponse> => {
+        let exchangeToken = (): Promise<ApiCallResponse> => {
             return apiCall({
                 url: this._tokenEndpoint,
                 method: 'POST',
@@ -837,12 +837,12 @@ export class Midata {
             });
         };
 
-        var fetchUserInfo = () : Promise<Resource[]> => {
+        var fetchUserInfo = (): Promise<Resource[]> => {
             if (this._userType) {
                 console.warn('FETCHING USER INFO FOR', this._userType);
-                return this.search(`${this._userType}`, {_id: this.user.id}).then((response: Resource[]) => {
+                return this.search(`${this._userType}`, { _id: this.user.id }).then((response: Resource[]) => {
                     console.warn('FETCHED', response);
-                    if (response.length !== 0 ){
+                    if (response.length !== 0) {
                         this.setUserEmail(response[0].getProperty("telecom")[0].value);
                         allResponses.patientResource = <Patient>response[0];
                         console.warn("MIDATAJS", "_exchangeTokenForCode - fetchUserInfo", "got patient response", allResponses);
@@ -856,7 +856,7 @@ export class Midata {
 
         return exchangeToken().then(() => {
             return fetchUserInfo();
-        }).then(() => {  
+        }).then(() => {
             return Promise.resolve(allResponses);
         }).catch((error) => {
             return Promise.reject(error);
@@ -917,7 +917,7 @@ export class Midata {
     **/
 
     public fetchFHIRConformanceStatement(): Promise<Resource> {
-        let tryToMapResponse = (response: ApiCallResponse) : Resource => {
+        let tryToMapResponse = (response: ApiCallResponse): Resource => {
             if (response.status === 200) {
                 try {
                     response.body = fromFhir(JSON.parse(response.body));
@@ -940,7 +940,7 @@ export class Midata {
             this._tokenEndpoint = resource.getProperty("rest")["0"].security.extension["0"].extension["0"].valueUri;
             this._authEndpoint = resource.getProperty("rest")["0"].security.extension["0"].extension["1"].valueUri;
             return Promise.resolve(resource);
-        }).catch((error : ApiCallResponse) => {
+        }).catch((error: ApiCallResponse) => {
             return Promise.reject(error);
         });
     };
